@@ -140,7 +140,7 @@ def eucjp_convert():
 def write_permuter_settings():
     with open("permuter_settings.toml", "w") as f:
         f.write(
-            """compiler_command = "tools/toolchain/ee-gcc29/bin/ee-gcc -c -Iinclude -Iinclude/sdk/ee -Iinclude/gcc -Iinclude/gcc/gcc-lib -O2 -G8 -g -D__GNUC__ -DVERSION_PAL -include include/version.h"
+            """compiler_command = "tools/toolchain/ee-gcc29/bin/ee-gcc -c -Iinclude -Isrc -Iinclude/rtl/common -Iinclude/rtl/ee -Iinclude/rtl/ee_gcc -Iinclude/rtl/ee_gcc/gcc-lib -O2 -G8 -g -D__GNUC__ -DVERSION_PAL -include include/version.h"
 assembler_command = "mips-linux-gnu-as -march=r5900 -mabi=eabi -Iinclude"
 compiler_type = "gcc"
 
