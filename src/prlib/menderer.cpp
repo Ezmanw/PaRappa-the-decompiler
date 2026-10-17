@@ -5,8 +5,25 @@
 #endif
 
 #include "renderstuff.h"
+#include "utility.h"
 
 #include <eeregs.h>
+
+/* sdata */
+extern float prMendererRatio;
+extern int prMendererDirection;
+extern int prMendererColorModulation;
+extern u_int mendererTbp;
+extern u_int mendererFbp;
+extern int mendererInitialized;
+
+void PrInitializeTextureCreation(u_int arg0, u_int arg1, u_int arg2, u_int arg3);
+void PrInitializeAlphaModulation();
+void PrInitializeAwfulBackground(void *picture);
+void PrInitializeNoodlePolygonPosition();
+
+void InitializeNoodleStripRendering(u_int arg0, u_int arg1, u_int arg2, u_int arg3);
+void StartNoodleRotation();
 
 INCLUDE_ASM("asm/nonmatchings/prlib/menderer", InitializeNoodleStripRendering__FUiUiUiUi);
 
@@ -37,19 +54,56 @@ INCLUDE_ASM("asm/nonmatchings/prlib/menderer", PrRestartMenderer);
 INCLUDE_ASM("asm/nonmatchings/prlib/menderer", DrawMenderer__Fv);
 void DrawMenderer();
 
-INCLUDE_ASM("asm/nonmatchings/prlib/menderer", PrSetMendererRatio);
+PR_EXTERN
+void PrSetMendererRatio(float ratio) {
+    prMendererRatio = ratio;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/menderer", PrGetMendererRatio);
+PR_EXTERN
+float PrGetMendererRatio() {
+    return prMendererRatio;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/menderer", PrSetMendererDirection);
+PR_EXTERN
+void PrSetMendererDirection(int direction) {
+    prMendererDirection = direction;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/menderer", PrGetMendererDirection);
+PR_EXTERN
+int PrGetMendererDirection() {
+    return prMendererDirection;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/menderer", PrSetMendererColorModulation);
+PR_EXTERN
+void PrSetMendererColorModulation(int color) {
+    prMendererColorModulation = color;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/menderer", PrIsMendererColorModulation);
+PR_EXTERN
+int PrIsMendererColorModulation() {
+    return prMendererColorModulation;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/menderer", PrInitializeMenderer);
+PR_EXTERN
+void PrInitializeMenderer(u_int tbp, void *noodlePicture, u_int fbp) {
+    sceGsZbuf zbuf = prRenderStuff.m_zbuf;
+
+    prMendererColorModulation = 1;
+    mendererTbp = tbp;
+    mendererFbp = fbp;
+
+    u_int width = PrGetBitSize(256);
+    u_int height = PrGetBitSize(16);
+
+    PrInitializeTextureCreation(tbp, zbuf.ZBP, width, height);
+    InitializeNoodleStripRendering(tbp, fbp, width, height);
+    PrInitializeAlphaModulation();
+    PrInitializeAwfulBackground(noodlePicture);
+    PrInitializeNoodlePolygonPosition();
+    StartNoodleRotation();
+
+    mendererInitialized = 1;
+}
 
 PR_EXTERN
 void PrRenderMenderer() {
