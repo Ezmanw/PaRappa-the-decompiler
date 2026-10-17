@@ -52,7 +52,55 @@ segments:
       subsegments:
         # .text
         - [0x0,      asm, sdk/crt0]
-        - [0xC8,     asm, pal/text]
+        - [0xC8,     asm, sdk/libgcc]
+
+        - [0x130,   asm, dbug/dbgmsg]
+        - [0x838,   asm, dbug/syori]
+        - [0x858,   asm, dbug/vramsave]
+
+        - [0x14A0,  asm, os/mtc]
+        - [0x19D0,  asm, os/syssub]
+        - [0x3098,  asm, os/system]
+        - [0x3808,  asm, os/cmngifpk]
+        - [0x3F20,  asm, os/usrmem]
+        - [0x4218,  asm, os/tim2]
+
+        - [0x5008,  asm, main/cdctrl]
+        - [0x6AB8,  asm, main/stdat]
+        - [0x6C78,  asm, main/scrctrl]
+        - [0xE8F0,  asm, main/sprite]
+        - [0xF248,  asm, main/fadectrl]
+        - [0xF358,  asm, main/subt]
+        - [0xFEB0,  asm, main/drawctrl]
+        - [0x16278, asm, main/effect]
+        - [0x17950, asm, main/mbar]
+        - [0x1B3C0, asm, main/pack]
+        - [0x1B5B8, asm, main/etc]
+        - [0x1C338, asm, main/wipe]
+        - [0x1E460, asm, main/mcctrl]
+        - [0x1ED50, asm, main/main]
+        - [0x21068, asm, main/cmnfile]
+        - [0x21260, asm, main/p3str]
+        - [0x21F40, asm, main/commake]
+
+        - [0x22D10, asm, menu/menu]
+        - [0x230B8, asm, menu/menudata]
+        - [0x238A8, asm, menu/menu_mdl]
+        - [0x25268, asm, menu/menusub]
+        - [0x377D8, asm, menu/p3mc]
+        - [0x3A608, asm, menu/memc]
+        - [0x3C478, asm, menu/mntm2hed]
+        - [0x3C490, asm, menu/menufont]
+        - [0x3D3D8, asm, menu/pksprite]
+
+        - [0x3F570, asm, iop_mdl/wp2cd_rpc]
+        - [0x3F7A0, asm, iop_mdl/tapctrl_rpc]
+
+        # PAL-only: MPEG movie playback (not in the prototype)
+        - [0x3F8C0,  asm, pal/movie]
+
+        # TODO: split prlib/nalib/SDK per file
+        - [0x43200,  asm, pal/prlib]
 
         # .vutext
         - { start: 0x85960, type: vutext, use_src_path: True, name: prlib/vu1/vump_common }
