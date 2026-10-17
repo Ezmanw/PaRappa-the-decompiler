@@ -1428,7 +1428,43 @@ void TsMENU_SetMapScreen(int mapNo) {
     CurMapState = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsCheckTimeMapChange);
+/* static */ int TsCheckTimeMapChange(void) {
+    if (CurMapState == 0) {
+        if (CurMapBakFlg != CurMapOldFlg) {
+            if (MNScene_isSeniAnime(&MNS_StageMap)) {
+                return 0;
+            }
+            _bMapCaptureReq = 1;
+            CurMapState = 1;
+            return 1;
+        }
+    }
+
+    switch (CurMapState) {
+    case 0:
+        TsMENU_GetMapTimeState(0);
+        break;
+    case 1:
+        TsSetScene_Map(&MNS_StageMap2, CurMapNo, CurMapBakFlg, 0);
+        MNScene_CopyState(&MNS_StageMap2, &MNS_StageMap);
+        TsMENU_SetMapScreen(CurMapNo);
+        MNScene_CopyState(&MNS_StageMap, &MNS_StageMap2);
+        MNScene_DispSw(&MNS_StageMap, 0);
+        MNScene_DispSw(&MNS_StageMap2, 1);
+        CurMapState = 2;
+    case 2:
+        if (TsSCFADE_Set(5, 30, 2)) {
+            break;
+        }
+        MNScene_DispSw(&MNS_StageMap2, 0);
+        MNScene_End(&MNS_StageMap2);
+        MNScene_DispSw(&MNS_StageMap, 1);
+        CurMapState = 0;
+        break;
+    }
+
+    return CurMapState;
+}
 
 int TsAnimeWait_withKeySkip(u_int tpad, MN_SCENE *scene, int ltim, u_int bnk) {
     if (bnk == -1) {
