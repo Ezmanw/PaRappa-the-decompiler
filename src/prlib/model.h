@@ -24,9 +24,15 @@ class SpaFileHeader;
 
 struct PrVuNodeHeaderDmaPacket {
     sceDmaTag m_tag;
-    PR_PADDING(unk10, 0x50);
+    NaMATRIX<float, 4, 4> unk10;
+    PR_PADDING(unk50, 0x10);
     PrMICRO_PROGRAM_MODULE unk60;
-    PR_PADDING(unk64, 0x130);
+    PR_PADDING(unk64, 0x4);
+    float unk68;
+    PR_PADDING(unk6C, 0x4);
+    float unk70;
+    float unk74;
+    PR_PADDING(unk78, 0x11c);
     int unk194;
 };
 
@@ -63,7 +69,8 @@ public:
     PrVuNodeHeaderDmaPacket *unk16C[2];
     PR_PADDING(unk174, 0x8);
     PrVuNodeHeaderDmaPacket *unk17C;
-    PR_PADDING(unk180, 0x8);
+    float unk180;
+    float unk184;
     u_int unk188;
     PR_PADDING(unk18C, 0xc);
     int *unk198;
@@ -163,7 +170,10 @@ public:
     PR_PADDING(unk50, 0x8);
     SpmFileHeader *m_spm_image;
     u_int m_flags;
-    PR_PADDING(unk60, 0x10);
+    float unk60;
+    PR_PADDING(unk64, 0x4);
+    int unk68;
+    PR_PADDING(unk6C, 0x4);
     int m_active_transition;
     PR_PADDING(unk74, 0x10);
     int m_rendered_once;

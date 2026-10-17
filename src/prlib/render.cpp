@@ -12,7 +12,7 @@
 
 extern PrSPRAM_DATA *prSpramData;
 
-extern bool AwfulStatus;
+extern int AwfulStatus;
 
 extern PrVu1InitPacket initVu1DmaPacket;
 
@@ -49,23 +49,56 @@ INCLUDE_ASM("asm/nonmatchings/prlib/render", CalculateClusterMatrix__13SpmFileHe
 
 INCLUDE_ASM("asm/nonmatchings/prlib/render", CalculateClusterMatrixAnimation__13SpmFileHeaderP13PrModelObjectRCt8NaMATRIX3Zfi4i4);
 
-INCLUDE_ASM("asm/nonmatchings/prlib/render", RenderContext1Model__13PrModelObject);
+void PrModelObject::RenderContext1Model() {
+    m_spm_image->RenderContext1Model(this);
+    m_rendered_once = 1;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/render", RenderContext1Model__13SpmFileHeaderP13PrModelObject);
+void SpmFileHeader::RenderContext1Model(PrModelObject *model) {
+    if (!(m_flags & 0x10)) {
+        for (u_int i = 0; i < m_node_num; i++) {
+            m_nodes[i]->RenderContext1Node(model);
+        }
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/render", ModifySimpleDmaPacket__7SpmNodeP23PrVuNodeHeaderDmaPacket);
+void SpmNode::ModifySimpleDmaPacket(PrVuNodeHeaderDmaPacket *packet) {
+    packet = (PrVuNodeHeaderDmaPacket*)((u_int)packet | 0x30000000);
 
-#ifndef NON_MATCHING
-INCLUDE_ASM("asm/nonmatchings/prlib/render", RenderContext1Node__7SpmNodeP13PrModelObject);
-#else /* Need to match .sdata */
+    packet->unk10 = this->unk40;
+    packet->unk68 = prSpramData->m_disturbance;
+
+    if (!AwfulStatus) {
+        float a = this->unk180;
+        float b = this->unk184;
+        if (a != 0.0f) {
+            packet->unk70 += a;
+            if (packet->unk70 > 1.0f) {
+                packet->unk70 -= 1.0f;
+            } else if (packet->unk70 < 0.0f) {
+                packet->unk70 += 1.0f;
+            }
+        }
+
+        if (b != 0.0f) {
+            packet->unk74 += b;
+            if (packet->unk74 > 1.0f) {
+                packet->unk74 -= 1.0f;
+            } else if (packet->unk74 < 0.0f) {
+                packet->unk74 += 1.0f;
+            }
+        }
+    }
+}
+
 void SpmNode::RenderContext1Node(PrModelObject *model) {
     prRenderStuff.m_statistics.node_num++;
 
-    if (this->unk154 & 0x2000) {
+    if (this->m_flags & 0x2000) {
         return;
     }
 
-    if ((this->unk154 & 0x4000) && (!AwfulStatus || (this->unk154 & 0x400000))) {
+    if ((this->m_flags & 0x4000) && (!AwfulStatus || (this->m_flags & 0x400000))) {
         PrVuNodeHeaderDmaPacket *packet = this->unk16C[0];
         if (packet != NULL) {
             prRenderStuff.m_statistics.opaque_context1_node_num++;
@@ -105,39 +138,65 @@ void SpmNode::RenderContext1Node(PrModelObject *model) {
                 "vmaddaz  ACC,   vf15,    vf17  \n\t"
                 "vmaddw   vf17,  vf16,    vf17  \n\t"
                 "sqc2     vf17,   0x0(%0)       \n\t"
-            : : "r"(sp0), "r"(&prSpramData->unkE0));
+            : : "r"(sp0), "r"(&prSpramData->m_view_projection_matrix));
 
             float f12 = sp0[2] / sp0[3];
             if (sp0[3] == 0.0f) {
-                f12 = sp0[2] * D_FLT_003998E4;
+                f12 = sp0[2] * 3.4028235e+38f;
             }
 
             prRenderStuff.AppendTransmitDmaTag(&packet->m_tag, this->unk188, f12);
         }
 
-        if (this->unk154 & 0x40) {
+        if (this->m_flags & 0x40) {
             SpmComplexNode *complex = reinterpret_cast<SpmComplexNode*>(this);
             complex->RenderContour(model);
         }
     }
 }
-#endif
 
-INCLUDE_ASM("asm/nonmatchings/prlib/render", RenderScreenModelNode__13PrModelObject);
+void PrModelObject::RenderScreenModelNode() {
+    m_spm_image->RenderScreenModelNode();
+    m_rendered_once = 1;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/render", RenderScreenModelNode__13SpmFileHeader);
+void SpmFileHeader::RenderScreenModelNode() {
+    for (u_int i = 0; i < m_node_num; i++) {
+        m_nodes[i]->RenderScreenModelNode();
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/prlib/render", RenderScreenModelNode__7SpmNode);
 
-INCLUDE_ASM("asm/nonmatchings/prlib/render", RenderBackgroundScreenModel__13PrModelObject);
+void PrModelObject::RenderBackgroundScreenModel() {
+    m_spm_image->RenderBackgroundScreenModel();
+    m_rendered_once = 1;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/render", RenderBackgroundScreenModel__13SpmFileHeader);
+void SpmFileHeader::RenderBackgroundScreenModel() {
+    for (u_int i = 0; i < m_node_num; i++) {
+        m_nodes[i]->RenderBackgroundScreenModel();
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/prlib/render", RenderBackgroundScreenModel__7SpmNode);
 
-INCLUDE_ASM("asm/nonmatchings/prlib/render", RenderContext2Model__13PrModelObject);
+void PrModelObject::RenderContext2Model() {
+    PrSPRAM_DATA *spram = prSpramData;
+    SpmFileHeader *spm = m_spm_image;
+    spram->unk668 = this->unk68;
+    spram->unk660 = this->unk60;
+    spm->RenderContext2Model(this);
+    m_rendered_once = 1;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/render", RenderContext2Model__13SpmFileHeaderP13PrModelObject);
+void SpmFileHeader::RenderContext2Model(PrModelObject *model) {
+    if (!(m_flags & 0x8)) {
+        for (u_int i = 0; i < m_node_num; i++) {
+            m_nodes[i]->RenderContext2Node(model);
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/prlib/render", RenderContext2Node__7SpmNodeP13PrModelObject);
 
