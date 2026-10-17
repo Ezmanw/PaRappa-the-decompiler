@@ -3231,7 +3231,39 @@ static void TsUserList_SetCurDispUserData(USER_DATA *psrc) {
     *(pfw->pusrdspWk->pUserDisp + (pfw->curuser + pfw->curPageTop)) = *psrc;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsUserList_SetCurFileNoCusor);
+/* static */ void TsUserList_SetCurFileNoCusor(int fileNo, u_int *fDate) {
+    USERLIST_MENU *pfw = &UserListMenu;
+    USER_DATA     *puser;
+    int            i;
+
+    if (fileNo < 0) {
+        return;
+    }
+
+    if (pfw->pusrlst == NULL) {
+        return;
+    }
+
+    for (i = 0; i < pfw->userMax; i++) {
+        puser = pfw->pusrlst->pUserTbl[i];
+        if (puser->fileNo == fileNo && *(u_int*)&puser->date_day == fDate[0] && *(u_int*)&puser->date_pad == fDate[1]) {
+            break;
+        }
+    }
+
+    if (i < pfw->userMax) {
+        pfw->curuser = 2;
+        pfw->curPageTop = i - 2;
+        if (i + 3 >= pfw->userMax) {
+            pfw->curPageTop = pfw->userMax - 5;
+            pfw->curuser = i - pfw->curPageTop;
+        }
+        if (pfw->curPageTop < 0) {
+            pfw->curuser += pfw->curPageTop;
+            pfw->curPageTop = 0;
+        }
+    }
+}
 
 static void TsUserList_SetType(USERLISTTYPE_TABLE *ptbl, int mode, int curTag) {
     USERLIST_MENU *pfw = &UserListMenu;
@@ -3269,6 +3301,38 @@ static int TsUserList_TagChangeAble(USERLIST_MENU *pfw, int *pno) {
 }
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsUserList_SetCurTag);
+#if 0
+// TODO: nonmatching (regalloc in the curFileDate copy; target loads curFileNo via the date pointer)
+/* static */ int TsUserList_SetCurTag(USERLIST_MENU *pfw, int no) {
+    USERLIST_TYPE *ptype;
+    int            fileNo;
+
+    TsUserList_TagChangeAble(pfw, &no);
+    TsUserList_Flow(2, 0, 0);
+
+    ptype = &UserListTbl[pfw->ptypttbl->typeNo[no]];
+    pfw->scene     = ptype->pScene;
+    pfw->isSave    = ptype->isSave;
+    pfw->cmpMesTbl = ptype->cmpMesTbl;
+    pfw->dataMode  = ptype->dataMode;
+    pfw->dispColor = ptype->dispColor;
+    pfw->nTag      = no;
+
+    fileNo = -1;
+    if (pfw->dataMode == 1) {
+        memcpy(pfw->curFileDate, CurFileInfo.logDate, sizeof(pfw->curFileDate));
+        fileNo = CurFileInfo.logFileNo;
+    } else {
+        memcpy(pfw->curFileDate, CurFileInfo.repDate, sizeof(pfw->curFileDate));
+        if (!pfw->isSave) {
+            fileNo = CurFileInfo.repFileNo;
+        }
+    }
+    pfw->curFileNo = fileNo;
+
+    return 0;
+}
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsUserList_Flow);
 
@@ -3324,7 +3388,52 @@ INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsNAMEINBox_Flow);
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsNAMEINBox_Draw);
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsSCFADE_Set);
+int TsSCFADE_Set(int flg, int num, int prio) {
+    SCFADE *pfw = &ScFade;
+    int     isSet = 0;
+    int     ret;
+
+    switch (flg) {
+    case 1:
+    case 5:
+        if (pfw->state == flg) {
+            isSet = 1;
+        } else {
+            TsSCFADE_Flow(1, 0);
+            pfw->ton = 256;
+        }
+        break;
+    case 2:
+    case 6:
+        if (pfw->state == flg) {
+            isSet = 1;
+        } else {
+            TsSCFADE_Flow(1, 0);
+            pfw->ton = 0;
+        }
+        break;
+    default:
+        isSet = 1;
+        break;
+    }
+
+    if (isSet) {
+        ret = pfw->ttim0 - 1;
+        ret -= pfw->ttim;
+        if (ret <= 0) {
+            return 0;
+        }
+        return ret;
+    }
+    if (num != 0) {
+        pfw->prio  = prio;
+        pfw->state = flg;
+        pfw->ttim0 = num;
+        pfw->ttim  = 0;
+    }
+    return num;
+
+}
 
 static void TsSCFADE_Flow(int flg, int prm) {
     SCFADE *pfw = &ScFade;
