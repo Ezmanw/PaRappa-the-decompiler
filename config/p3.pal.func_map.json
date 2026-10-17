@@ -10947,10 +10947,10 @@
   "name": "RenderScreenModelNode__7SpmNode",
   "file": "prlib/render.cpp",
   "proto": 1333056,
-  "pal": null,
+  "pal": 1345584,
   "proto_size": 320,
   "est": 1345584,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "RenderBackgroundScreenModel__13PrModelObject",
@@ -10974,10 +10974,10 @@
   "name": "RenderBackgroundScreenModel__7SpmNode",
   "file": "prlib/render.cpp",
   "proto": 1333520,
-  "pal": null,
+  "pal": 1346528,
   "proto_size": 272,
-  "est": 1345584,
-  "conf": "estimate"
+  "est": 1346528,
+  "conf": "anchored"
  },
  {
   "name": "RenderContext2Model__13PrModelObject",
@@ -12063,28 +12063,28 @@
   "name": "PrUpdateMendererSpeed__Fv",
   "file": "prlib/menderer.cpp",
   "proto": 1371064,
-  "pal": null,
+  "pal": 1384880,
   "proto_size": 120,
-  "est": 1384872,
-  "conf": "estimate"
+  "est": 1384880,
+  "conf": "anchored"
  },
  {
   "name": "PrDecelerateMenderer",
   "file": "prlib/menderer.cpp",
   "proto": 1371184,
-  "pal": null,
+  "pal": 1385008,
   "proto_size": 184,
-  "est": 1384992,
-  "conf": "estimate"
+  "est": 1385008,
+  "conf": "anchored"
  },
  {
   "name": "PrRestartMenderer",
   "file": "prlib/menderer.cpp",
   "proto": 1371368,
-  "pal": null,
+  "pal": 1385200,
   "proto_size": 24,
-  "est": 1385192,
-  "conf": "estimate"
+  "est": 1385200,
+  "conf": "anchored"
  },
  {
   "name": "DrawMenderer__Fv",
@@ -12378,10 +12378,10 @@
   "name": "SetNextTarget__FP20PrNoodlePositionData",
   "file": "prlib/mendererdata.cpp",
   "proto": 1380976,
-  "pal": null,
+  "pal": 1394936,
   "proto_size": 544,
-  "est": 1395056,
-  "conf": "estimate"
+  "est": 1394936,
+  "conf": "anchored"
  },
  {
   "name": "InitializeNoodlePositionData__Fv",
