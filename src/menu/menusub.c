@@ -2974,7 +2974,41 @@ static int TsANIME_GetRate(ANIME_WK *wk, float *rt0, float *rt1, float *rt2) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", _TsSortSetRanking);
+/* static */ void _TsSortSetRanking(P3MC_RANKSCORE **ptRank, int n, P3MC_RANKSCORE *pRank, int bNameCmp) {
+    P3MC_RANKSCORE *pcur;
+    int             i, j, k, l, flg;
+
+    for (i = 0; i < n; i++, pRank++) {
+        for (j = 0; j < 20; j++) {
+            pcur = ptRank[j];
+            if (pcur == NULL || pcur->score < pRank->score) {
+                for (l = 19; j < l; l--) {
+                    ptRank[l] = ptRank[l - 1];
+                }
+                ptRank[j] = pRank;
+                break;
+            }
+
+            if (pcur->score == pRank->score && pcur->scDate[0] == pRank->scDate[0] && pcur->scDate[1] == pRank->scDate[1]) {
+                flg = 1;
+                if (bNameCmp) {
+                    for (k = 0; k < 8; k++) {
+                        if (ptRank[j]->name[k] != pRank->name[k]) {
+                            flg = 0;
+                            break;
+                        }
+                        if (ptRank[j]->name[k] == 0) {
+                            break;
+                        }
+                    }
+                }
+                if (flg) {
+                    break;
+                }
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsGetRankingList);
 
