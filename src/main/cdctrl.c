@@ -449,6 +449,9 @@ static void cdctrlReadDataOne(void *x) {
         MtcWait(1);
     }
 
+#ifdef VERSION_PAL
+    FlushCache(WRITEBACK_DCACHE);
+#endif
     MtcWait(1);
     cdctrl_str.status = 0;
     MtcExit();
@@ -741,7 +744,11 @@ int CdctrlWp2GetSample(void) {
 }
 
 int CdctrlWp2GetFrame(void) {
+#ifdef VERSION_PAL
+    return (WP2Ctrl(WP2_GETTIME, WP2_NONE) * 4) / 15;
+#else
     return (WP2Ctrl(WP2_GETTIME, WP2_NONE) * 24) / 75;
+#endif
 }
 
 int CdctrlFrame2WP2sample(int frame) {
@@ -778,7 +785,11 @@ int CdctrlWp2GetSampleTmp(void) {
 
 int CdctrlWp2GetFrameTmp(void) {
     int frame = cdSampleTmp;
+#ifdef VERSION_PAL
+    return (frame * 4) / 15;
+#else
     return (frame * 24) / 75;
+#endif
 }
 
 long CdctrlWp2GetSndTimeTmp(float tempo) {
@@ -796,7 +807,11 @@ long CdctrlWp2CdSample2SndTime(long samplecnt, float tempo) {
 }
 
 long CdctrlWp2CdSample2Frame(long samplecnt) {
+#ifdef VERSION_PAL
+    return (samplecnt * 4) / 15;
+#else
     return (samplecnt * 24) / 75;
+#endif
 }
 
 void CdctrlXTRset(FILE_STR *fstr_pp, u_int usebuf) {
