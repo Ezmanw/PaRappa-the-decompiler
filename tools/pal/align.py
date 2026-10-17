@@ -56,3 +56,34 @@ for f, L in fs.items():
     a = [o for o in L if o['pal']]
     ds = sorted(set(o['pal'] - o['proto'] for o in a))
     print(f"{str(f):34s} n={len(L):4d} anchored={len(a):4d} deltas={[hex(d) for d in ds[:4]]}{'...' if len(ds)>4 else ''}")
+
+# Estimate PAL addresses for unanchored functions from the nearest anchor in the
+# same file; mark whether the estimate lands on a plausible function start.
+import numpy as np
+from elftools.elf.elffile import ELFFile
+_t = ELFFile(open('iso/SCES_504.08', 'rb')).get_section_by_name('.text')
+_base, _w = _t['sh_addr'], np.frombuffer(_t.data(), dtype='<u4')
+def _starts_func(a):
+    i = (a - _base) // 4
+    return i >= 2 and (_w[i-2] == 0x03e00008 or _w[i-1] == 0x03e00008 or _w[i-1] == 0)
+for i, o in enumerate(out):
+    o['proto_size'] = (out[i+1]['proto'] - o['proto']) if i + 1 < len(out) else None
+    if o['pal'] is not None:
+        o['est'] = o['pal']; o['conf'] = 'anchored'; continue
+    d = None
+    for j in range(i - 1, -1, -1):
+        if out[j]['file'] != o['file']: break
+        if out[j]['pal'] is not None: d = out[j]['pal'] - out[j]['proto']; break
+    if d is None:
+        for j in range(i + 1, len(out)):
+            if out[j]['file'] != o['file']: break
+            if out[j]['pal'] is not None: d = out[j]['pal'] - out[j]['proto']; break
+    xfile = False
+    if d is None and o['file'] and '/' in o['file'] and not o['file'].startswith('sce/'):
+        for j in range(i - 1, -1, -1):  # fall back to the previous file's anchor
+            if out[j]['pal'] is not None: d = out[j]['pal'] - out[j]['proto']; xfile = True; break
+    if d is None:
+        o['est'] = None; o['conf'] = 'none'; continue
+    o['est'] = o['proto'] + d
+    o['conf'] = ('estimate' if _starts_func(o['est']) else 'estimate?') + ('-xfile' if xfile else '')
+json.dump(out, open(sys.argv[2], 'w'), indent=1)
