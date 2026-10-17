@@ -55,7 +55,7 @@ segments:
         - [0xC8,     asm, sdk/libgcc]
 
         - [0x130, c, dbug/dbgmsg]
-        - [0x838, asm, dbug/syori]
+        - [0x838, c, dbug/syori]
         - [0x858, asm, dbug/vramsave]
 
         - [0x14a0, asm, os/mtc]
@@ -63,7 +63,7 @@ segments:
         - [0x3098, asm, os/system]
         - [0x3808, asm, os/cmngifpk]
         - [0x3f20, asm, os/usrmem]
-        - [0x4218, asm, os/tim2]
+        - [0x4218, c, os/tim2]
 
         - [0x5008, asm, main/cdctrl]
         - [0x6ab8, asm, main/stdat]
@@ -109,10 +109,14 @@ segments:
         - [0x88200, data, pal/data_188200]
         - [0x88270, .data, dbug/dbgmsg]
         - [0x892e0, data, pal/data_1892e0]
+        - [0x8e1e0, .data, os/tim2]
+        - [0x8e1f8, data, pal/data_18e1f8]
 
         # .rodata
         - [0x277280, .rodata, dbug/dbgmsg]
         - [0x2772a0, rodata, pal/rodata_3772a0]
+        - [0x277ac0, .rodata, os/tim2]
+        - [0x277b10, rodata, pal/rodata_377b10]
 
         # .gcc_except_table
         - [0x282b80, rodata, gcc_except_table]
@@ -122,6 +126,8 @@ segments:
 
         # .sdata
         - [0x283100, sdata, pal/sdata_383100]
+        - [0x283150, .sdata, os/tim2]
+        - [0x283160, sdata, pal/sdata_383160]
 
         # .sbss
         - { type: .sbss, vram: 0x00383700, name: dbug/dbgmsg }
@@ -131,6 +137,8 @@ segments:
         - { type: bss, vram: 0x00383980, name: pal/bss_383980 }
         - { type: .bss, vram: 0x00383ae0, name: dbug/dbgmsg }
         - { type: bss, vram: 0x00393b10, name: pal/bss_393b10 }
+        - { type: .bss, vram: 0x01c48100, name: os/tim2 }
+        - { type: bss, vram: 0x01c48d80, name: pal/bss_1c48d80 }
 
     - name: mfifo
       type: code

@@ -169,7 +169,7 @@ SLINKY_SEGMENTS = [
     ("vudata",           [".vudata"],           {"keep_sections": "True", "subalign": "16"}),
     ("rodata",           [".rodata"],           {"segment_start_align": "0x80"}),
     ("gcc_except_table", [".rodata"],           {"segment_start_align": "0x80"}),
-    ("lit8",             [".lit8"],             {"segment_start_align": "0x80"}),
+    ("lit8",             [".lit8"],             {}), # no .lit8 in retail builds; must not add padding
     ("lit4",             [".lit4"],             {"segment_start_align": "0x80"}),
     ("sdata",            [".sdata"],            {"segment_start_align": "0x80"}),
     ("sbss",             [".sbss", ".scommon"], {"segment_start_align": "0x80"}),

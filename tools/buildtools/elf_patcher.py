@@ -90,6 +90,14 @@ if elf_path.parent.name == "sdk":
     # SDK seems to have 0x4 alignment on .data
     section_align_override.setdefault(".data", 0x4)
 
+# PAL data blobs are named after their start address (e.g. rodata_377b10.rodata.s.o);
+# align them to that address so preceding alignment padding is reproduced.
+import re
+_blob = re.match(r"^(data|rodata|lit4|sdata|sbss|bss)_([0-9a-f]+)\.", elf_path.name)
+if _blob and elf_path.parent.name == "pal":
+    _addr = int(_blob.group(2), 16)
+    section_align_override["." + _blob.group(1)] = min(0x10, _addr & -_addr)
+
 # Override specific alignments
 specific_alignments = SPECIFIC_ALIGNMENTS.get(elf_path.name)
 if specific_alignments:

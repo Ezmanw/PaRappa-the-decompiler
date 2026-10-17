@@ -41,9 +41,17 @@ def obj_sizes(name):
         if m: sz[m.group(1)] = int(m.group(2), 16)
     return sz
 
+sys.path.insert(0, 'tools/pal')
+import secmatch
+
 def base(name, sec):
     ext = 'cpp' if jtext.get(name) == 'cpp' else 'c'
+    objp = f"pal_work/obj/{name.replace('/', '__')}.{ext}.o"
     v = symmap.get(f"{name.replace('/', '__')}.{ext}.o:{sec}")
+    if sec in ('.data', '.rodata', '.sdata', '.lit4'):
+        cands = [int(a, 16) for a in (v or {})]
+        hit = secmatch.find(objp, sec, cands)
+        if hit is not None: return hit
     if not v: return None
     (a, c), *rest = v.items()
     if rest: return None
@@ -59,6 +67,15 @@ def blob_start(sec, end):
     nb = [b for b in known_bases.get(sec, ()) if b >= end]
     if nb and min(nb) - end < 0x40:
         return min(nb)
+    # otherwise skip zero padding up to the next 16-byte boundary
+    up = (end + 15) & ~15
+    if sec in ('.bss', '.sbss'):
+        return up
+    if up != end:
+        lo, t = secmatch._target(sec)
+        raw = t.tobytes()[end - lo:up - lo]
+        if raw.count(0) == len(raw):
+            return up
     return end
 
 errors = []

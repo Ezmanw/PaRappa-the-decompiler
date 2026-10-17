@@ -1,1 +1,3 @@
 dbug/dbgmsg
+dbug/syori
+os/tim2
