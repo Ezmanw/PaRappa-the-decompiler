@@ -12,6 +12,7 @@
 
 class PrModelObject;
 class PrSceneObject;
+class SpaFileHeader;
 
 class PrSPRAM_DATA {
 public:
@@ -31,7 +32,10 @@ public:
     sceDmaTag m_end_dmatag;
     char unk2B0[0x100];
     PrDisplayHeader m_display_header;
-    char unk660[0x1c];
+    float unk660;
+    char unk664[0x4];
+    SpaFileHeader *unk668;
+    char unk66C[0x10];
     float m_model_contour_blur_alpha[2];
     float m_model_transaction_blend_ratio;
     u_int m_disturbance_param;
