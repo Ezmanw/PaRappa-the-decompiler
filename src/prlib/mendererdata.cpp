@@ -48,8 +48,34 @@ INCLUDE_ASM("asm/nonmatchings/prlib/mendererdata", PrInitializeNoodlePolygonPosi
 INCLUDE_ASM("asm/nonmatchings/prlib/mendererdata", PrGetNoodlePolygonPosition__FPt8NaVECTOR2Zfi4Ui);
 
 /* nalib/navector.h */
-INCLUDE_ASM("asm/nonmatchings/prlib/mendererdata", func_00151D78);
+float* func_00151D78(float* self, const float& a0, const float& a1, const float& a2, const float& a3) asm("func_00151D78");
+float* func_00151D78(float* self, const float& a0, const float& a1, const float& a2, const float& a3) {
+    self[0] = a0;
+    self[1] = a1;
+    self[2] = a2;
+    self[3] = a3;
+    return self;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/mendererdata", func_00151DA0);
+float* func_00151DA0(float* self, const float& a0, const float& a1, const float& a2, const float& a3, const float& a4, const float& a5, const float& a6, const float& a7, const float& a8) asm("func_00151DA0");
+float* func_00151DA0(float* self, const float& a0, const float& a1, const float& a2, const float& a3, const float& a4, const float& a5, const float& a6, const float& a7, const float& a8) {
+    self[0] = a0;
+    self[1] = a1;
+    self[2] = a2;
+    self[3] = a3;
+    self[4] = a4;
+    self[5] = a5;
+    self[6] = a6;
+    self[7] = a7;
+    self[8] = a8;
+    return self;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/mendererdata", func_00151DF8);
+float* func_00151DF8(float* self, const float& a0, const float& a1, const float& a2, const float& a3) asm("func_00151DF8");
+float* func_00151DF8(float* self, const float& a0, const float& a1, const float& a2, const float& a3) {
+    self[0] = a0;
+    self[1] = a1;
+    self[2] = a2;
+    self[3] = a3;
+    return self;
+}
