@@ -14,7 +14,11 @@
 #include <stdio.h>
 
 void GlobalInit(void) {
+#ifdef VERSION_PAL
+    WorkClear(&game_status, 0xd8);
+#else
     WorkClear(&game_status, sizeof(game_status));
+#endif
     WorkClear(&global_data, sizeof(global_data));
 
     game_status.play_modeG       = PLAY_MODE_SINGLE;
@@ -25,7 +29,11 @@ void GlobalInit(void) {
     game_status.play_stageG      = P3_STAGE_1;
     game_status.demo_flagG       = DEMOF_OFF;
 
+#ifdef VERSION_PAL
+    game_status.language_type    = LANG_ENGLISH;
+#else
     game_status.language_type    = LANG_JAPANESE;
+#endif
     game_status.vibration        = VIBRATION_ON;
     game_status.subtitle         = SUBTITLE_ON;
 
@@ -77,7 +85,11 @@ void GlobalTimeJob(void) {
         gl_pp->vsyncTime = TimeCallbackTimeGet();
 
         gl_pp->currentTime = gl_pp->vsyncTime;
+#ifdef VERSION_PAL
+        gl_pp->Snd_vsyncTime = (((gl_pp->currentTime * 96.0f * gl_pp->tempo) + 1500.0f) / 3000.0f);
+#else
         gl_pp->Snd_vsyncTime = (((gl_pp->currentTime * 96.0f * gl_pp->tempo) + 1800.0f) / 3600.0f);
+#endif
         gl_pp->Snd_currentTime = gl_pp->Snd_vsyncTime;
 
         gl_pp->Snd_cdSampleCnt = CdctrlSndTime2WP2sample(gl_pp->tempo, gl_pp->Snd_vsyncTime);
@@ -87,7 +99,11 @@ void GlobalTimeJob(void) {
         gl_pp->Snd_cdTime = CdctrlWp2GetSndTimeTmp(gl_pp->tempo);
 
         gl_pp->Snd_currentTime = gl_pp->Snd_cdTime;
+#ifdef VERSION_PAL
+        gl_pp->cdTime = ((gl_pp->Snd_currentTime * 3000.0f + gl_pp->tempo * 96.0f * 0.5f) / (gl_pp->tempo * 96.0f));
+#else
         gl_pp->cdTime = ((gl_pp->Snd_currentTime * 3600.0f + gl_pp->tempo * 96.0f * 0.5f) / (gl_pp->tempo * 96.0f));
+#endif
         gl_pp->currentTime = gl_pp->cdTime;
 
         gl_pp->Snd_cdSampleCnt = CdctrlWp2GetSampleTmp();
@@ -399,6 +415,9 @@ static int TimeCallback(int x) {
         (*time)++;
     }
 
+#ifdef VERSION_PAL
+    ExitHandler();
+#endif
     return 1;
 }
 
@@ -436,10 +455,17 @@ void TimeCallbackTimeSetChanTempo(int chan, u_int time, float tempo) {
         return;
     }
 
+#ifdef VERSION_PAL
+    vsync_time[chan] = (int)
+    (
+        ((time * 3000.0f) + (tempo * 96.0f * 0.5f)) / (tempo * 96.0f)
+    );
+#else
     vsync_time[chan] = (int)
     (
         ((time * 3600.0f) + (tempo * 96.0f * 0.5f)) / (tempo * 96.0f)
     );
+#endif
 }
 
 u_int TimeCallbackTimeGet(void) {
@@ -560,7 +586,11 @@ void UsrPrQuitScene(void) {
 }
 
 void UsrPrSetScene(void) {
+#ifdef VERSION_PAL
+    usrSceneHandle = PrInitializeScene(&DBufDc.draw01, "safe scene", 240);
+#else
     usrSceneHandle = PrInitializeScene(&DBufDc.draw01, "safe scene", FBP_VRAM_DRAW2);
+#endif
 
     PrPreprocessSceneModel(usrSceneHandle);
     PrSetSceneEnv(usrSceneHandle, DrawGetDrawEnvP(DNUM_DRAW));

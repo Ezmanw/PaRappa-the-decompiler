@@ -225,4 +225,13 @@ void PrModelObject::GetScreenPosition(NaVECTOR<float, 4> *position) {
 }
 
 /* nalib/navector.h */
-INCLUDE_ASM("asm/nonmatchings/prlib/model", func_00140E38);
+NaVECTOR<float, 4>& func_00140E38(NaVECTOR<float, 4> *self, const float& x, const float& y, const float& z, const float& w) asm("func_00140E38");
+NaVECTOR<float, 4>& func_00140E38(NaVECTOR<float, 4> *self, const float& x, const float& y, const float& z, const float& w) {
+    float *v = (float*)self;
+    v[0] = x;
+    v[1] = y;
+    v[2] = z;
+    v[3] = w;
+    return *self;
+}
+

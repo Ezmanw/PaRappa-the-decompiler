@@ -203,9 +203,37 @@ void PrSceneObject::PreprocessModel() {
 }
 
 /* nalib/navector.h */
-INCLUDE_ASM("asm/nonmatchings/prlib/scene", func_0014B988);
+float* func_0014B988(
+    float* self,
+    const float& a0, const float& a1, const float& a2, const float& a3
+) asm("func_0014B988");
 
-INCLUDE_ASM("asm/nonmatchings/prlib/scene", func_0014B9B0);
+float* func_0014B988(
+    float* self,
+    const float& a0, const float& a1, const float& a2, const float& a3
+) {
+    self[0] = a0;
+    self[1] = a1;
+    self[2] = a2;
+    self[3] = a3;
+    return self;
+}
+
+float* func_0014B9B0(
+    float* self,
+    const float& a0, const float& a1, const float& a2, const float& a3
+) asm("func_0014B9B0");
+
+float* func_0014B9B0(
+    float* self,
+    const float& a0, const float& a1, const float& a2, const float& a3
+) {
+    self[0] = a0;
+    self[1] = a1;
+    self[2] = a2;
+    self[3] = a3;
+    return self;
+}
 
 /* prlib/objectset.h */
 /* _$_t11PrObjectSet1Z13PrModelObject is emitted here by the compiler */
