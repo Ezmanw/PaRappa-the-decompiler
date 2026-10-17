@@ -120,4 +120,14 @@ INCLUDE_ASM("asm/nonmatchings/prlib/renderee", RenderNodeEECore__13PrRenderStuff
 INCLUDE_ASM("asm/nonmatchings/prlib/renderee", RenderChunkEECore__13PrRenderStuffP25PrVuDataChunkPacketHeaderf);
 
 /* prlib/renderstuff.h */
-INCLUDE_ASM("asm/nonmatchings/prlib/renderee", func_00146A08);
+asm("
+.text
+.globl func_00146A08
+.ent func_00146A08
+func_00146A08:
+    .set noreorder
+    j Append__10PrDmaQueuePv
+    nop
+    .set reorder
+.end func_00146A08
+");
