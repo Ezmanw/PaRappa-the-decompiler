@@ -2528,7 +2528,72 @@ static void MpCityHallFPHSSoundMask(int flg) {
     TSSNDMASK_CHAN(3, flg);
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", MpCityHallFPHSMove);
+/* data 199c08 */ extern short D_00199C08[]; /* static */
+/* data 199c10 */ extern short D_00199C10[]; /* static */
+/* data 199c18 */ extern short D_00199C18[]; /* static */
+/* data 199c20 */ extern short D_00199C20[]; /* static */
+
+/* static */ int MpCityHallFPHSMove(int pos, int fpos) {
+    short *anmTbl = NULL;
+    int    n;
+
+    if (pos == fpos) {
+        if (!TsAnimeWait_withKeySkip(0, &MNS_CityHall, 0, 6)) {
+            if (TSSND_CHANISSTOP(3)) {
+                TSSNDPLAY(0x8002);
+            }
+        }
+        return fpos;
+    }
+
+    if (TsAnimeWait_withKeySkip(0, &MNS_CityHall, 2, 6)) {
+        return fpos;
+    }
+
+    if (pos > 0 && fpos > 0) {
+        pos = 0;
+    }
+
+    switch (fpos) {
+    case 0:
+        switch (pos) {
+        case 1:
+            anmTbl = D_00199C10;
+            break;
+        case 2:
+            anmTbl = D_00199C20;
+            break;
+        }
+        break;
+    case 1:
+        if (pos == 0) {
+            anmTbl = D_00199C08;
+        }
+        break;
+    case 2:
+        if (pos == 0) {
+            anmTbl = D_00199C18;
+        }
+        break;
+    }
+
+    if (anmTbl == NULL) {
+        return fpos;
+    }
+
+    TSSNDPLAY(53);
+
+    while ((n = *anmTbl) != -1) {
+        if (n & 0x1000) {
+            MNScene_ContinueAnime(&MNS_CityHall, -1, &CityHallAnime[n & ~0x1000]);
+        } else {
+            MNScene_StartAnime(&MNS_CityHall, -1, &CityHallAnime[n]);
+        }
+        anmTbl++;
+    }
+
+    return pos;
+}
 
 static void MpCityHallFPHOK(int flg) {
     int n;
