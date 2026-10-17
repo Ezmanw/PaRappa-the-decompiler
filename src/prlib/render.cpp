@@ -9,6 +9,9 @@
 #include "vu0mat.h"
 
 #include <nalib/namatrix.h>
+#include "animation.h"
+#include "spadata.h"
+#include <math.h>
 
 /* float D_FLT_003998E4; */
 
@@ -61,7 +64,69 @@ void PrSceneObject::PrepareScreenModelRender() {
     prRenderStuff.MergeRender();
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/render", CalculateCurrentMatrix__13PrModelObject);
+static inline void MulVec(NaVECTOR<float, 4>& out, const NaMATRIX<float, 4, 4>& m, const NaVECTOR<float, 4>& v) {
+    asm volatile("
+        lqc2 $vf4, 0x0(%1)
+        lqc2 $vf5, 0x10(%1)
+        lqc2 $vf6, 0x20(%1)
+        lqc2 $vf7, 0x30(%1)
+        lqc2 $vf8, 0x0(%2)
+        vmulax.xyzw ACC, $vf4, $vf8
+        vmadday.xyzw ACC, $vf5, $vf8
+        vmaddaz.xyzw ACC, $vf6, $vf8
+        vmaddw.xyzw $vf9, $vf7, $vf8
+        sqc2 $vf9, 0x0(%0)
+    " : : "r"(&out), "r"(&m), "r"(&v) : "memory");
+}
+
+void PrModelObject::CalculateCurrentMatrix() {
+    const NaMATRIX<float, 4, 4> *mat;
+    SpmFileHeader *spm;
+    SpaFileHeader *anim;
+
+    PrSPRAM_DATA *spram = prSpramData;
+    spram->unk660 = m_animation_time;
+    *(PrModelObject**)spram->unk664 = this;
+    anim = m_animation;
+    spram->unk668 = anim;
+    unkA4 = 1.0f;
+    spm = m_spm_image;
+    mat = &unk10;
+
+    if (m_position_animation != NULL) {
+        float time = m_position_animation_time;
+        NaMATRIX<float, 4, 4> m;
+        m = *m_position_animation->unk50[0]->GetMatrix(time);
+        mat = &m;
+    }
+
+    if (anim != NULL) {
+        if (spm->m_flags & 0x20) {
+            spm->CalculateClusterMatrixAnimation(this, *mat);
+            const NaMATRIX<float, 4, 4>& nm = spm->m_nodes[0]->unk40;
+            NaVECTOR<float, 4> r;
+            NaVECTOR<float, 4> v;
+            v.Set(1.0f, 1.0f, 1.0f, 0.0f);
+            NaVECTOR<float, 4> t;
+            MulVec(t, nm, v);
+            r = t;
+            float d = m_disturbance;
+            float sum = 0.0f;
+            for (int i = 0; i < 4; i++) {
+                sum += r[i] * r[i];
+            }
+            unkA4 = d * sqrtf(sum);
+        } else {
+            spm->CalculateCurrentMatrixAnimation(this, *mat);
+        }
+    } else {
+        if (spm->m_flags & 0x20) {
+            spm->CalculateClusterMatrix(this, *mat);
+        } else {
+            spm->CalculateCurrentMatrix(this, *mat);
+        }
+    }
+}
 
 void SpmFileHeader::CalculateCurrentMatrix(PrModelObject *model, const NaMATRIX<float, 4, 4>& arg1) {
     m_nodes[0]->ComposeGlobalMatrix(model, arg1);
