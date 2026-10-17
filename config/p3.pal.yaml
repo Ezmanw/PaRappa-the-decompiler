@@ -54,77 +54,83 @@ segments:
         - [0x0,      asm, sdk/crt0]
         - [0xC8,     asm, sdk/libgcc]
 
-        - [0x130,   asm, dbug/dbgmsg]
-        - [0x838,   asm, dbug/syori]
-        - [0x858,   asm, dbug/vramsave]
+        - [0x130, c, dbug/dbgmsg]
+        - [0x838, asm, dbug/syori]
+        - [0x858, asm, dbug/vramsave]
 
-        - [0x14A0,  asm, os/mtc]
-        - [0x19D0,  asm, os/syssub]
-        - [0x3098,  asm, os/system]
-        - [0x3808,  asm, os/cmngifpk]
-        - [0x3F20,  asm, os/usrmem]
-        - [0x4218,  asm, os/tim2]
+        - [0x14a0, asm, os/mtc]
+        - [0x19d0, asm, os/syssub]
+        - [0x3098, asm, os/system]
+        - [0x3808, asm, os/cmngifpk]
+        - [0x3f20, asm, os/usrmem]
+        - [0x4218, asm, os/tim2]
 
-        - [0x5008,  asm, main/cdctrl]
-        - [0x6AB8,  asm, main/stdat]
-        - [0x6C78,  asm, main/scrctrl]
-        - [0xE8F0,  asm, main/sprite]
-        - [0xF248,  asm, main/fadectrl]
-        - [0xF358,  asm, main/subt]
-        - [0xFEB0,  asm, main/drawctrl]
+        - [0x5008, asm, main/cdctrl]
+        - [0x6ab8, asm, main/stdat]
+        - [0x6c78, asm, main/scrctrl]
+        - [0xe8f0, asm, main/sprite]
+        - [0xf248, asm, main/fadectrl]
+        - [0xf358, asm, main/subt]
+        - [0xfeb0, asm, main/drawctrl]
         - [0x16278, asm, main/effect]
         - [0x17950, asm, main/mbar]
-        - [0x1B3C0, asm, main/pack]
-        - [0x1B5B8, asm, main/etc]
-        - [0x1C338, asm, main/wipe]
-        - [0x1E460, asm, main/mcctrl]
-        - [0x1ED50, asm, main/main]
+        - [0x1b3c0, asm, main/pack]
+        - [0x1b5b8, asm, main/etc]
+        - [0x1c338, asm, main/wipe]
+        - [0x1e460, asm, main/mcctrl]
+        - [0x1ed50, asm, main/main]
         - [0x21068, asm, main/cmnfile]
         - [0x21260, asm, main/p3str]
-        - [0x21F40, asm, main/commake]
+        - [0x21f40, asm, main/commake]
 
-        - [0x22D10, asm, menu/menu]
-        - [0x230B8, asm, menu/menudata]
-        - [0x238A8, asm, menu/menu_mdl]
+        - [0x22d10, asm, menu/menu]
+        - [0x230b8, asm, menu/menudata]
+        - [0x238a8, asm, menu/menu_mdl]
         - [0x25268, asm, menu/menusub]
-        - [0x377D8, asm, menu/p3mc]
-        - [0x3A608, asm, menu/memc]
-        - [0x3C478, asm, menu/mntm2hed]
-        - [0x3C490, asm, menu/menufont]
-        - [0x3D3D8, asm, menu/pksprite]
+        - [0x377d8, asm, menu/p3mc]
+        - [0x3a608, asm, menu/memc]
+        - [0x3c478, asm, menu/mntm2hed]
+        - [0x3c490, asm, menu/menufont]
+        - [0x3d3d8, asm, menu/pksprite]
 
-        - [0x3F570, asm, iop_mdl/wp2cd_rpc]
-        - [0x3F7A0, asm, iop_mdl/tapctrl_rpc]
+        - [0x3f570, asm, iop_mdl/wp2cd_rpc]
+        - [0x3f7a0, asm, iop_mdl/tapctrl_rpc]
 
         # PAL-only: MPEG movie playback (not in the prototype)
-        - [0x3F8C0,  asm, pal/movie]
+        - [0x3f8c0, asm, pal/movie]
 
         # TODO: split prlib/nalib/SDK per file
-        - [0x43200,  asm, pal/prlib]
+        - [0x43200, asm, pal/prlib]
 
         # .vutext
         - { start: 0x85960, type: vutext, use_src_path: True, name: prlib/vu1/vump_common }
 
         # .data
-        - [0x88200,  data, pal/data]
+        - [0x88200, data, pal/data_188200]
+        - [0x88270, .data, dbug/dbgmsg]
+        - [0x892e0, data, pal/data_1892e0]
 
         # .rodata
-        - [0x277280, rodata, pal/rodata]
+        - [0x277280, .rodata, dbug/dbgmsg]
+        - [0x2772a0, rodata, pal/rodata_3772a0]
 
         # .gcc_except_table
-        - [0x282B80, rodata, gcc_except_table]
+        - [0x282b80, rodata, gcc_except_table]
 
         # .lit4
-        - [0x282D00, lit4, pal/lit4]
+        - [0x282d00, lit4, pal/lit4_382d00]
 
         # .sdata
-        - [0x283100, sdata, pal/sdata]
+        - [0x283100, sdata, pal/sdata_383100]
 
         # .sbss
-        - { type: sbss, vram: 0x00383700, name: pal/sbss }
+        - { type: .sbss, vram: 0x00383700, name: dbug/dbgmsg }
+        - { type: sbss, vram: 0x00383718, name: pal/sbss_383718 }
 
         # .bss
-        - { type: bss,  vram: 0x00383980, name: pal/bss }
+        - { type: bss, vram: 0x00383980, name: pal/bss_383980 }
+        - { type: .bss, vram: 0x00383ae0, name: dbug/dbgmsg }
+        - { type: bss, vram: 0x00393b10, name: pal/bss_393b10 }
 
     - name: mfifo
       type: code

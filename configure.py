@@ -235,6 +235,39 @@ def write_slinky_config(linker_entries: List[LinkerEntry], out_path: str):
     with open(out_path, "w") as f:
         f.write("\n".join(lines))
 
+def write_fallback_syms(linker_entries: List[LinkerEntry], out_path: str):
+    """
+    Define every auto-named label (D_XXXXXXXX, func_XXXXXXXX, ...) that the
+    disassembly references but no object defines, at the address its name
+    encodes. Needed when a C file takes over a region whose labels other
+    asm still points at.
+    """
+    label_re = re.compile(r"\b((?:D|func|jtbl|L)_([0-9A-F]{8}))\b")
+    defined: Set[str] = set()
+    referenced: Dict[str, int] = {}
+    asm_files: Set[Path] = set()
+    for entry in linker_entries:
+        for src in entry.src_paths:
+            if src.suffix == ".s":
+                asm_files.add(src)
+    asm_files |= set(Path("asm/nonmatchings").rglob("*.s")) if Path("asm/nonmatchings").exists() else set()
+    for p in sorted(asm_files):
+        if not p.exists():
+            continue
+        for line in p.read_text(encoding="utf-8", errors="ignore").splitlines():
+            s = line.strip()
+            for kw in ("glabel ", "dlabel ", "jlabel ", "alabel "):
+                if s.startswith(kw):
+                    defined.add(s.split()[1].rstrip(","))
+            if s.startswith("/*") or "*/" in s:
+                s = s.split("*/", 1)[-1]
+            for m in label_re.finditer(s):
+                referenced[m.group(1)] = int(m.group(2), 16)
+    with open(out_path, "w") as f:
+        for name, addr in sorted(referenced.items(), key=lambda x: x[1]):
+            if name not in defined:
+                f.write(f"{name} = 0x{addr:08X};\n")
+
 def build_stuff(linker_entries: List[LinkerEntry], is_irx: bool = False, append: bool = False):
     built_objects: Set[Path] = set()
 
@@ -269,7 +302,7 @@ def build_stuff(linker_entries: List[LinkerEntry], is_irx: bool = False, append:
     common_ld_args = "-EL -Map $mapfile -T $in -o $out"
     ee_ld_args = f"{common_ld_args} -T {P3_MISC_FILE} -T {P3_UNDEF_SYMS_FILE}"
     if VERSION != "jul12":
-        ee_ld_args += f" -T config/p3.{VERSION}.undefined_syms_auto.txt -T config/p3.{VERSION}.undefined_funcs_auto.txt"
+        ee_ld_args += f" -T config/p3.{VERSION}.undefined_syms_auto.txt -T config/p3.{VERSION}.undefined_funcs_auto.txt -T build/fallback_syms.ld"
     wp2_ld_args = f"{common_ld_args} -T config/irx.wave2ps2.jul12.undefined_syms_auto.txt -T config/irx.wave2ps2.jul12.undefined_funcs_auto.txt -T config/irx.wave2ps2.jul12.undefined_syms.txt"
 
     if not append:
@@ -723,6 +756,8 @@ if __name__ == "__main__":
     p3_config = split.config
     if VERSION != "jul12":
         write_slinky_config(linker_entries, P3_SLINKY_FILE)
+        os.makedirs("build", exist_ok=True)
+        write_fallback_syms(linker_entries, "build/fallback_syms.ld")
     build_stuff(linker_entries)
 
     #
