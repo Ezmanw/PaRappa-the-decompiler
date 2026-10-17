@@ -7,6 +7,11 @@
 
 A work-in-progress decompilation of [*PaRappa the Rapper 2*](https://en.wikipedia.org/wiki/PaRappa_the_Rapper_2) (パラッパラッパー2) for the PlayStation 2.<br>
 We are currently targeting the July 12th NTSC-J prototype, but we aim to target the final NTSC-J/NTSC/PAL builds in the foreseeable future.<br><br>
+> **This fork (`PaRappa-the-decompiler`)** is a downstream fork of [parappadev/parappa2](https://github.com/parappadev/parappa2) that adds a **PAL retail (`SCES_504.08`) port** on the `pal` branch.
+> PAL-specific code is guarded with `#ifdef VERSION_PAL ... #else ... #endif`, so the July 12 prototype build is unchanged.
+> Status: ~91% of functions are decompiled to C/C++ (roughly 137 `INCLUDE_ASM` functions remain), and the PAL-only MPEG movie module (`src/pal/movie.c`) is still in progress.
+> PAL tooling lives in `tools/pal/` (`refresh.sh`, `check.py`, `func_asm.py`, `align.py`). Run `.venv/bin/python tools/pal/check.py <file>` to see how many functions match PAL.
+> You must supply your own legally obtained game files; no game assets are included in this repository.<br><br>
 For any questions, we have a home at the [PS1/PS2 Decompilation Discord server](https://discord.gg/VwCPdfbxgm) and the [PaRappa the Rapper Modding Community Discord server](https://discord.gg/xpvVnYd).
 
 ### Progress
