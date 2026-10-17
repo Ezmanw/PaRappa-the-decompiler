@@ -1006,6 +1006,56 @@ int selPlayDispSetPlay(int sel_stage) {
     return ret;
 }
 
+#ifdef VERSION_PAL
+extern int selPlayDispType4(int, int, CANCEL_TYPE_ENUM, int) __asm__("selPlayDispType");
+#define SEL_TYPE4 selPlayDispType4
+int selPlayDispSetPlayOne(int sel_stage) {
+    int        i;
+    STDAT_DAT *stdat_dat_pp;
+    int        fsize;
+    int        ret;
+    int        decp;
+    int        mem;
+
+    ret = 0;
+
+    CdctrlRead(&stdat_rec[sel_stage].ovlfile, overlay_loadaddr, NULL);
+    CdctrlReadWait();
+
+    i = stdat_rec[sel_stage].stdat_dat_num - 1;
+    stdat_dat_pp = &stdat_rec[sel_stage].stdat_dat_pp[i];
+
+    fsize = CdctrlGetFileSize(&stdat_dat_pp->intfile);
+    fsize = ((fsize + 2047) / 2048) * 2048;
+
+    mem = UsrMemEndAlloc(fsize);
+    CdctrlReadOne(&stdat_dat_pp->intfile, mem, NULL);
+    CdctrlReadWait();
+
+    decp = UsrMemAllocEndNext();
+    UsrMemEndFree();
+
+    while (1) {
+        UsrMemClearTop();
+        if (!((int (*)(u_int, u_int))CdctrlMemIntgDecode)(decp, UsrMemAllocNext())) {
+            break;
+        }
+        CdctrlReadOne(&stdat_dat_pp->intfile, mem, NULL);
+        CdctrlReadWait();
+    }
+
+    cmnfTim2Trans();
+
+    if (stdat_dat_pp->play_step == PSTEP_HOOK) {
+        ret = SEL_TYPE4(sel_stage, i, CBE_HOOK, 2048);
+    } else if (global_data.play_modeL == PLAY_MODE_SINGLE) {
+        ret = SEL_TYPE4(sel_stage, i, CBE_SINGLE, 2048);
+    } else if (global_data.play_modeL == PLAY_MODE_VS_MAN) {
+        ret = SEL_TYPE4(sel_stage, i, CBE_VS_MAN, 2048);
+    } else if (global_data.play_modeL == PLAY_MODE_VS_COM) {
+        ret = SEL_TYPE4(sel_stage, i, CBE_VS_COM, 2048);
+    }
+#else
 int selPlayDispSetPlayOne(int sel_stage) {
     int        i;
     STDAT_DAT *stdat_dat_pp;
@@ -1046,6 +1096,7 @@ int selPlayDispSetPlayOne(int sel_stage) {
         ret = selPlayDispType(sel_stage, i, CBE_VS_COM);
     }
 
+#endif
     UsrMemClearTop();
     return ret;
 }
