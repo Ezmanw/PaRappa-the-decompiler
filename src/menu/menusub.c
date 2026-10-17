@@ -1360,7 +1360,27 @@ void TsMenu_Draw(void) {
     TsCmnPkClose(&FPacket, pkt, 0xf);
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsSetRankingName);
+/* static */ void TsSetRankingName(P3MC_STAGERANK *pRankTop, u_char *name) {
+    P3MC_STAGERANK *pRank;
+    int             i, j, k;
+
+    pRank = pRankTop;
+    for (i = 0; i < 8; i++, pRank++) {
+        for (j = 0; j < pRank->nSplay; j++) {
+            if (pRank->splay[j].name[0] == 0) {
+                memcpy(pRank->splay[j].name, name, sizeof(pRank->splay[j].name));
+            }
+        }
+
+        for (k = 0; k < 4; k++) {
+            for (j = 0; j < pRank->nVplay[k]; j++) {
+                if (pRank->vplay[k][j].name[0] == 0) {
+                    memcpy(pRank->vplay[k][j].name, name, sizeof(pRank->vplay[k][j].name));
+                }
+            }
+        }
+    }
+}
 
 static void TsSetRanking2UData(USER_DATA *puser, P3MC_STAGERANK *wkRank) {
     int i;
