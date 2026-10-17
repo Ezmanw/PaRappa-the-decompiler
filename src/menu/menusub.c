@@ -3137,9 +3137,77 @@ static int TsJukeIsObjAnime(int isComp) {
     return FALSE;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsJukeObjAnime);
+/* static */ int TsJukeObjAnime(int isOut) {
+    int        i;
+    JUKE_MENU *pfw;
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsJukeObjAnime2);
+    pfw = &JukeMenu;
+
+    for (i = 0; i < PR_ARRAYSIZE(pfw->cusObj); i++) {
+        if (i < 5) {
+            pfw->cusObj[i].dir2 = i & 1;
+            pfw->cusObj[i].dir  = 1;
+            if (!isOut) {
+                pfw->cusObj[i].state = 1;
+                pfw->cusObj[i].anime = TSJKANM_IN;
+                pfw->cusObj[i].atime = (5 - i) * 6 + 1;
+            } else {
+                pfw->cusObj[i].anime = TSJKANM_OUT;
+                pfw->cusObj[i].atime = (5 - i) * 6 + 1;
+            }
+        } else {
+            pfw->cusObj[i].dir2 = (i + 1) & 1;
+            pfw->cusObj[i].dir  = 0;
+            if (!isOut) {
+                pfw->cusObj[i].state = 1;
+                pfw->cusObj[i].anime = TSJKANM_IN;
+                pfw->cusObj[i].atime = (i - 5) * 6 + 19;
+            } else {
+                pfw->cusObj[i].anime = TSJKANM_OUT;
+                pfw->cusObj[i].atime = (i - 5) * 6 + 19;
+            }
+        }
+    }
+
+    return 0;
+}
+
+/* static */ int TsJukeObjAnime2(int isOut) {
+    int        i;
+    JUKE_MENU *pfw;
+
+    pfw = &JukeMenu;
+
+    for (i = 0; i < PR_ARRAYSIZE(pfw->cusObj); i++) {
+        if (i == pfw->selno) {
+            switch (isOut) {
+            case 0:
+                pfw->cusObj[i].atime = 1;
+                pfw->cusObj[i].state = 2;
+                pfw->cusObj[i].anime = TSJKANM_PLAY1;
+                break;
+            case 2:
+                pfw->cusObj[i].atime = 0;
+                pfw->cusObj[i].state = isOut;
+                pfw->cusObj[i].anime = TSJKANM_ROTSTOP;
+                break;
+            }
+        } else {
+            pfw->cusObj[i].atime = (rand() % 3) * 3 + 1;
+            switch (isOut) {
+            case 0:
+                pfw->cusObj[i].anime = TSJKANM_PLAY2;
+                break;
+            case 1:
+                pfw->cusObj[i].state = isOut;
+                pfw->cusObj[i].anime = TSJKANM_RETURN2;
+                break;
+            }
+        }
+    }
+
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", _TsJKMoveCus);
 #if 0
