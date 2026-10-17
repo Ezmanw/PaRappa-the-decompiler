@@ -626,12 +626,21 @@ static void ExamDispOn(void) {
         lev_tmp -= -1.0;
         lev_tmp = (lev_tmp / 2.0) * 280.0;
         metFrameCnt[i] = lev_tmp;
+#ifdef VERSION_PAL
+        if (exam_disp_cursor_timer < 25) {
+            if (exam_global_ply_current->exam_score[i] > 0) {
+                metFrameCntLight[i] = exam_disp_cursor_timer;
+            } else {
+                metFrameCntLight[i] = exam_disp_cursor_timer + 50;
+            }
+#else
         if (exam_disp_cursor_timer < 30) {
             if (exam_global_ply_current->exam_score[i] > 0) {
                 metFrameCntLight[i] = exam_disp_cursor_timer;
             } else {
                 metFrameCntLight[i] = exam_disp_cursor_timer + 60;
             }
+#endif
         } else {
             metFrameCntLight[i] = 0;
         }

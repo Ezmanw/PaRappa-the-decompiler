@@ -1,6 +1,6 @@
 #include "camera.h"
 
-#include "common.h"
+#include "camera.h"
 
 void SpcFileHeader::Initialize() {
     ChangePointer();
