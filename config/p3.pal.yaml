@@ -56,7 +56,7 @@ segments:
 
         - [0x130, c, dbug/dbgmsg]
         - [0x838, c, dbug/syori]
-        - [0x858, asm, dbug/vramsave]
+        - [0x858, c, dbug/vramsave]
 
         - [0x14a0, asm, os/mtc]
         - [0x19d0, asm, os/syssub]
@@ -69,7 +69,7 @@ segments:
         - [0x6ab8, asm, main/stdat]
         - [0x6c78, asm, main/scrctrl]
         - [0xe8f0, asm, main/sprite]
-        - [0xf248, asm, main/fadectrl]
+        - [0xf248, c, main/fadectrl]
         - [0xf358, asm, main/subt]
         - [0xfeb0, asm, main/drawctrl]
         - [0x16278, asm, main/effect]
@@ -89,7 +89,7 @@ segments:
         - [0x25268, asm, menu/menusub]
         - [0x377d8, asm, menu/p3mc]
         - [0x3a608, asm, menu/memc]
-        - [0x3c478, asm, menu/mntm2hed]
+        - [0x3c478, c, menu/mntm2hed]
         - [0x3c490, asm, menu/menufont]
         - [0x3d3d8, asm, menu/pksprite]
 
@@ -108,13 +108,17 @@ segments:
         # .data
         - [0x88200, data, pal/data_188200]
         - [0x88270, .data, dbug/dbgmsg]
-        - [0x892e0, data, pal/data_1892e0]
+        - [0x892e0, .data, dbug/vramsave]
+        - [0x89390, data, pal/data_189390]
         - [0x8e1e0, .data, os/tim2]
         - [0x8e1f8, data, pal/data_18e1f8]
+        - [0x92898, .data, main/fadectrl]
+        - [0x928b0, data, pal/data_1928b0]
 
         # .rodata
         - [0x277280, .rodata, dbug/dbgmsg]
-        - [0x2772a0, rodata, pal/rodata_3772a0]
+        - [0x2772a0, .rodata, dbug/vramsave]
+        - [0x277320, rodata, pal/rodata_377320]
         - [0x277ac0, .rodata, os/tim2]
         - [0x277b10, rodata, pal/rodata_377b10]
 
@@ -126,6 +130,8 @@ segments:
 
         # .sdata
         - [0x283100, sdata, pal/sdata_383100]
+        - [0x283108, .sdata, dbug/vramsave]
+        - [0x283110, sdata, pal/sdata_383110]
         - [0x283150, .sdata, os/tim2]
         - [0x283160, sdata, pal/sdata_383160]
 
@@ -139,6 +145,8 @@ segments:
         - { type: bss, vram: 0x00393b10, name: pal/bss_393b10 }
         - { type: .bss, vram: 0x01c48100, name: os/tim2 }
         - { type: bss, vram: 0x01c48d80, name: pal/bss_1c48d80 }
+        - { type: .bss, vram: 0x01c59b90, name: main/fadectrl }
+        - { type: bss, vram: 0x01c59ba0, name: pal/bss_1c59ba0 }
 
     - name: mfifo
       type: code

@@ -69,7 +69,9 @@ def blob_start(sec, end):
         return min(nb)
     # otherwise skip zero padding up to the next 16-byte boundary
     up = (end + 15) & ~15
-    if sec in ('.bss', '.sbss'):
+    if sec == '.sbss':
+        return (end + 3) & ~3
+    if sec == '.bss':
         return up
     if up != end:
         lo, t = secmatch._target(sec)

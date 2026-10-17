@@ -1,3 +1,6 @@
 dbug/dbgmsg
 dbug/syori
 os/tim2
+dbug/vramsave
+main/fadectrl
+menu/mntm2hed
