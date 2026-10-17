@@ -21,11 +21,12 @@ public:
     u_short m_flags;
     PR_PADDING(unk8, 0xc);
     float unk14;
-    PR_PADDING(unk18, 0x24);
+    PR_PADDING(unk18, 0x20);
+    int *unk38;
     PrLinkedList<SpaFileHeader> m_list;
     PrObjectSet<SpaFileHeader> *m_obj_set;
     void *m_user_data;
-    PR_PADDING(unk4C, 0x4);
+    u_int unk4C;
     SpaNodeAnimation **unk50;
 
 public:
@@ -34,6 +35,14 @@ public:
     bool IsNodeVisible(SpmNode *arg0, float arg1) const;
 
     void ChangePointer();
+
+    template <typename T>
+    T* CalculatePointer(T *offset) {
+        if (!offset) {
+            return NULL;
+        }
+        return reinterpret_cast<T*>(reinterpret_cast<int>(this) + reinterpret_cast<int>(offset));
+    }
 };
 
 #endif /* PRLIB_ANIMATION_H */

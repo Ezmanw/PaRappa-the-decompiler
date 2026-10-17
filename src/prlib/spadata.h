@@ -56,7 +56,12 @@ public:
     NaMATRIX<float, 4, 4>* GetMatrix(float time) const;
     bool IsEverIdentical();
 
-private:
+    template <typename T>
+    SpaTrack<T>* GetTrack() {
+        return (SpaTrack<T>*)((u_char*)this + 0x10);
+    }
+
+public:
     u_char unk0;
     PR_PADDING(unk1, 0x13);
     int unk14;
@@ -77,6 +82,12 @@ public:
     SpaTrack<int> *unk4;
     u_int unk8;
     SpaTransform **unkC;
+    int *unk10;
+    u_int unk14;
+    SpaTransform **unk18;
+    PR_PADDING(unk1C, 0x10);
+    u_int unk2C;
+    SpaTrack<float> *unk30[1];
 };
 
 #endif /* PRLIB_SPADATA_H */
