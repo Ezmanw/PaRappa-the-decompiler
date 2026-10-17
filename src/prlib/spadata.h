@@ -53,6 +53,7 @@ private:
 
 class SpaTransform {
 public:
+    NaMATRIX<float, 4, 4>* GetMatrix(float time) const;
     bool IsEverIdentical();
 
 private:

@@ -79,7 +79,51 @@ int* SpaTrack<int>::GetValue(float arg0) const {
 
 INCLUDE_ASM("asm/nonmatchings/prlib/spadata", GetMatrix__C12SpaTransformf);
 
-INCLUDE_ASM("asm/nonmatchings/prlib/spadata", GetMatrix__C16SpaNodeAnimationf);
+NaMATRIX<float, 4, 4>* SpaNodeAnimation::GetMatrix(float time) const {
+    static NaMATRIX<float, 4, 4> return_buffer;
+
+    asm volatile(
+        "vmove      $vf16,  $vf00          \n\t"
+        "vmr32      $vf15,  $vf00          \n\t"
+        "vmr32      $vf14,  $vf15          \n\t"
+        "vmr32      $vf13,  $vf14          \n\t"
+    );
+
+    for (u_int i = 0; i < this->unk8; i++) {
+        NaMATRIX<float, 4, 4> *matrix = this->unkC[i]->GetMatrix(time);
+        asm volatile(
+            "lqc2       $vf04,  0x0(%0)        \n\t"
+            "lqc2       $vf05, 0x10(%0)        \n\t"
+            "lqc2       $vf06, 0x20(%0)        \n\t"
+            "lqc2       $vf07, 0x30(%0)        \n\t"
+            "vmulax     ACC,    $vf04,  $vf13  \n\t"
+            "vmadday    ACC,    $vf05,  $vf13  \n\t"
+            "vmaddaz    ACC,    $vf06,  $vf13  \n\t"
+            "vmaddw     $vf13,  $vf07,  $vf13  \n\t"
+            "vmulax     ACC,    $vf04,  $vf14  \n\t"
+            "vmadday    ACC,    $vf05,  $vf14  \n\t"
+            "vmaddaz    ACC,    $vf06,  $vf14  \n\t"
+            "vmaddw     $vf14,  $vf07,  $vf14  \n\t"
+            "vmulax     ACC,    $vf04,  $vf15  \n\t"
+            "vmadday    ACC,    $vf05,  $vf15  \n\t"
+            "vmaddaz    ACC,    $vf06,  $vf15  \n\t"
+            "vmaddw     $vf15,  $vf07,  $vf15  \n\t"
+            "vmulax     ACC,    $vf04,  $vf16  \n\t"
+            "vmadday    ACC,    $vf05,  $vf16  \n\t"
+            "vmaddaz    ACC,    $vf06,  $vf16  \n\t"
+            "vmaddw     $vf16,  $vf07,  $vf16  \n\t"
+        : : "r"(matrix));
+    }
+
+    asm volatile(
+        "sqc2       $vf13,  0x0(%0)        \n\t"
+        "sqc2       $vf14, 0x10(%0)        \n\t"
+        "sqc2       $vf15, 0x20(%0)        \n\t"
+        "sqc2       $vf16, 0x30(%0)        \n\t"
+    : : "r"(&return_buffer) : "memory");
+
+    return &return_buffer;
+}
 
 bool SpaNodeAnimation::IsVisible(float arg0) const {
     if (this->unk4 == NULL) {
@@ -222,6 +266,57 @@ int SpaNodeAnimation::Optimize() {
 }
 
 INCLUDE_ASM("asm/nonmatchings/prlib/spadata", GetLinearValue__Ct8SpaTrack1Zt8NaVECTOR2Zfi4Uif);
+#if 0
+// TODO: nonmatching (regalloc only: a0/a1/a2 swaps in the address computations).
+// Requires NaVECTOR to have a copy constructor that copies with lq/sq.
+static inline NaVECTOR<float, 4> operator*(const NaVECTOR<float, 4>& v, float f) {
+    NaVECTOR<float, 4> ret;
+    asm volatile(
+        "lqc2       $vf04,  0x0(%1)        \n\t"
+        "mfc1       $8,     %2             \n\t"
+        "qmtc2      $8,     $vf05          \n\t"
+        "vmulx.xyzw $vf06,  $vf04,  $vf05  \n\t"
+        "sqc2       $vf06,  0x0(%0)        \n\t"
+    : : "r"(&ret), "r"(&v), "f"(f) : "$8", "memory");
+    return ret;
+}
+
+static inline NaVECTOR<float, 4> operator+(const NaVECTOR<float, 4>& a, const NaVECTOR<float, 4>& b) {
+    NaVECTOR<float, 4> ret;
+    asm volatile(
+        "lqc2       $vf04,  0x0(%1)        \n\t"
+        "lqc2       $vf05,  0x0(%2)        \n\t"
+        "vadd.xyzw  $vf06,  $vf04,  $vf05  \n\t"
+        "sqc2       $vf06,  0x0(%0)        \n\t"
+    : : "r"(&ret), "r"(&a), "r"(&b) : "memory");
+    return ret;
+}
+
+static inline NaVECTOR<float, 4> operator/(const NaVECTOR<float, 4>& v, float f) {
+    NaVECTOR<float, 4> ret;
+    asm volatile(
+        "lqc2       $vf04,  0x0(%1)        \n\t"
+        "mfc1       $8,     %2             \n\t"
+        "qmtc2      $8,     $vf05          \n\t"
+        "vdiv       Q,      $vf00w, $vf05x \n\t"
+        "vwaitq                            \n\t"
+        "vmulq.xyzw $vf04,  $vf04,  Q      \n\t"
+        "sqc2       $vf04,  0x0(%0)        \n\t"
+    : : "r"(&ret), "r"(&v), "f"(f) : "$8", "memory");
+    return ret;
+}
+
+template <>
+NaVECTOR<float, 4>* SpaTrack<NaVECTOR<float, 4> >::GetLinearValue(u_int seg, float arg1) const {
+    static NaVECTOR<float, 4> return_buffer;
+
+    float f0 = this->unkC[seg + 1] - arg1;
+    float f1 = arg1 - this->unkC[seg];
+    NaVECTOR<float, 4> ret = (((NaVECTOR<float, 4>*)&this->unk10)[seg] * f0 + ((NaVECTOR<float, 4>*)&this->unk10)[seg + 1] * f1) / (f0 + f1);
+    return_buffer = ret;
+    return &return_buffer;
+}
+#endif
 
 template <>
 NaVECTOR<float, 4>* SpaTrack<NaVECTOR<float, 4> >::GetValue(float arg0) const {
@@ -268,11 +363,77 @@ INCLUDE_ASM("asm/nonmatchings/prlib/spadata", func_001491C0);
 INCLUDE_ASM("asm/nonmatchings/prlib/spadata", func_00149270);
 
 /* prlib/spadata.cpp */
-INCLUDE_ASM("asm/nonmatchings/prlib/spadata", GetSprineValue__Ct8SpaTrack1ZfUif);
+template <>
+float* SpaTrack<float>::GetSprineValue(u_int seg, float arg1) const {
+    static float return_buffer;
 
-INCLUDE_ASM("asm/nonmatchings/prlib/spadata", GetLinearValue__Ct8SpaTrack1ZfUif);
+    float f2 = this->unkC[seg + 1] - this->unkC[seg];
+    float *a0 = (float*)&this->unk10 + (seg * 3);
+    const float& p2 = ((float*)&this->unk10)[seg * 3 + 2];
+    const float& p4 = ((float*)&this->unk10)[seg * 3 + 4];
+    const float& p3 = ((float*)&this->unk10)[seg * 3 + 3];
+    if (f2 == 0.0f) {
+        return a0;
+    }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/spadata", GetValue__Ct8SpaTrack1Zff);
+    float f0 = (arg1 - this->unkC[seg]) / f2;
+    float d = a0[0] - p3;
+
+    return_buffer = f0 * (f0 * (f0 * ((p2 + p4) * f2 + (d + d)) - (p2 + p2 + p4) * f2 - d * 3.0f) + p2 * f2) + a0[0];
+    return &return_buffer;
+}
+
+template <>
+float* SpaTrack<float>::GetLinearValue(u_int seg, float arg1) const {
+    static float return_buffer;
+
+    float f2 = this->unkC[seg + 1] - arg1;
+    arg1 -= this->unkC[seg];
+    u_int next = seg + 1;
+    float *values = (float*)&this->unk10;
+    float *a = &values[seg];
+    float *b = &values[next];
+
+    return_buffer = (f2 * *a + arg1 * *b) / (f2 + arg1);
+    return &return_buffer;
+}
+
+template <>
+float* SpaTrack<float>::GetValue(float arg0) const {
+    if (this->unk2 & 0x1) {
+        float f13 = this->unkC[this->unk4 - 1];
+        if (arg0 < 0.0f || arg0 >= f13) {
+            arg0 = fmodf(arg0, f13);
+        }
+    }
+
+    u_int seg = this->SearchSegment(arg0);
+
+    if (seg == (u_int)-1) {
+        return (float*)&this->unk10;
+    }
+
+    if (seg == this->unk4) {
+        if (this->unk0 == 0) {
+            return (float*)&this->unk10 + ((seg - 1) * 3);
+        } else {
+            return (float*)&this->unkC + seg;
+        }
+    }
+
+    switch (this->unk0) {
+    case 0:
+        return this->GetSprineValue(seg, arg0);
+    case 1:
+        return this->GetLinearValue(seg, arg0);
+    case 2:
+        return (float*)&this->unk10 + seg;
+    default:
+        break;
+    }
+
+    return NULL;
+}
 
 INCLUDE_ASM("asm/nonmatchings/prlib/spadata", GetSprineValue__Ct8SpaTrack1Zt8NaMATRIX3Zfi4i4Uif);
 
