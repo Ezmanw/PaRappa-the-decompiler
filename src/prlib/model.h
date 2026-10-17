@@ -67,7 +67,7 @@ public:
     u_int unk188;
     PR_PADDING(unk18C, 0xc);
     int *unk198;
-    PR_PADDING(unk19C, 0x4);
+    u_int unk19C;
     int *unk1A0;
     PrVuNodeHeaderDmaPacket *unk1A4;
     PR_PADDING(unk1A8, 0xc);
