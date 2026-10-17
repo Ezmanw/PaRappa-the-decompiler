@@ -131,9 +131,6 @@ extern char D_00399850[]; /* "REP???"  */
 extern char D_00399858[]; /* "REP%03d" */
 extern char D_00399860[]; /* "??????"  */
 
-#ifndef NON_MATCHING /* Requires sdata split to match */
-INCLUDE_ASM("asm/nonmatchings/menu/p3mc", _P3MC_GetFilePath);
-#else
 static char* _P3MC_GetFilePath(int mode, int fileNo) {
     char *addName;
 
@@ -163,7 +160,6 @@ static char* _P3MC_GetFilePath(int mode, int fileNo) {
 
     return filePath;
 }
-#endif
 
 static void _P3MC_EUC2SJIS(char *des, char *src) {
     u_char c1, c2;

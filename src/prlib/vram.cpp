@@ -4,7 +4,11 @@ INCLUDE_ASM("asm/nonmatchings/prlib/vram", PrAddDrawAreaDefinition__FP11NaGifPac
 
 INCLUDE_ASM("asm/nonmatchings/prlib/vram", PrAddTextureAreaDefinition__FP11NaGifPacketRC11PrVRAM_RECTb);
 
-INCLUDE_ASM("asm/nonmatchings/prlib/vram", PrSetSpriteDefinitionZ__FUi);
+static unsigned int g_SpriteDefinitionZ;
+
+void PrSetSpriteDefinitionZ(unsigned int z) {
+    g_SpriteDefinitionZ = z;
+}
 
 INCLUDE_ASM("asm/nonmatchings/prlib/vram", PrAddSpriteDefinition__FP11NaGifPacketRC11PrVRAM_RECTT1b);
 

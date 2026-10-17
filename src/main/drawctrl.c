@@ -2099,9 +2099,6 @@ void MendererCtrlTitleDera(void) {
 
 INCLUDE_RODATA("asm/nonmatchings/main/drawctrl", D_00393300);
 
-#ifndef NON_MATCHING
-INCLUDE_ASM("asm/nonmatchings/main/drawctrl", MendererCtrl);
-#else /* Requires .lit4 migration */
 static void MendererCtrl(void) {
     float Mmax = 0.0f;
     float Mmin = 0.0f;
@@ -2161,7 +2158,6 @@ static void MendererCtrl(void) {
         PrRenderMenderer();
     }
 }
-#endif
 
 static float mendRatioTitleGet(int frame, int dera_f) {
     int           i;
