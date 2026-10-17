@@ -310,7 +310,71 @@ static void _P3MC_SetBrowsInfo(int mode, int fileNo, char *name, int stageNo, in
     memc_setSaveIcon(2, NULL, 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/p3mc", _P3MC_mainfile_chk);
+static int _P3MC_mainfile_chk(int no, int data_csize, int mode, int *need) {
+    int   i, end;
+    int   ret;
+    int   flg;
+    int   noFile;
+    char *name;
+
+    flg = 0;
+
+    if (need != NULL) {
+        *need = 0;
+    }
+
+    if (no > 0) {
+        return -1;
+    }
+
+    ret = _P3MC_file_chk(memc_getfilename(-1), 964, need);
+    if (ret == -2) {
+        ret = 0;
+    }
+
+    name = memc_getfilename(-2);
+    if (name != NULL) {
+        flg = _P3MC_file_chk(name, P3MC_GetIconSize(mode), need) != 0;
+    }
+
+    name = memc_getfilename(-3);
+    if (name != NULL) {
+        if (_P3MC_file_chk(name, P3MC_GetIconSize(mode), need)) {
+            flg = 1;
+        }
+    }
+
+    name = memc_getfilename(-4);
+    if (name != NULL) {
+        if (_P3MC_file_chk(name, P3MC_GetIconSize(mode), need)) {
+            flg = 1;
+        }
+    }
+
+    noFile = (ret == 0 && flg == 0);
+
+    if (no < 0) {
+        no = 0;
+        end = 1;
+    } else {
+        end = no + 1;
+    }
+
+    for (i = no; i < end; i++) {
+        ret = _P3MC_file_chk(memc_getfilename(i), data_csize, need);
+        if (ret == -2) {
+            return -2;
+        }
+        if (ret == -1 && noFile) {
+            return -3;
+        }
+        if (ret == 0 && !noFile) {
+            return -1;
+        }
+    }
+
+    return noFile ? 0 : -1;
+}
 
 static int _P3MC_file_chk(char *name, int size, int *need) {
     int             i, j;
