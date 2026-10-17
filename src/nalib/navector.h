@@ -6,6 +6,8 @@ class NaVECTOR {
 public:
     NaVECTOR() {}
 
+    NaVECTOR<T, t0>& Set(const T& x, const T& y, const T& z, const T& w);
+
 public:
     T operator[](int arg0) const {
         return v[arg0];
