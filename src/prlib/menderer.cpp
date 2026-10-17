@@ -194,9 +194,32 @@ INCLUDE_ASM("asm/nonmatchings/prlib/menderer", UpdateNoodleRotation__Fv);
 
 INCLUDE_ASM("asm/nonmatchings/prlib/menderer", PrUpdateMendererSpeed__Fv);
 
-INCLUDE_ASM("asm/nonmatchings/prlib/menderer", PrDecelerateMenderer);
+extern float g_NoodleStepB;
+extern int g_NoodleDecelerating;
+extern float g_NoodleDecel;
 
-INCLUDE_ASM("asm/nonmatchings/prlib/menderer", PrRestartMenderer);
+PR_EXTERN
+void PrDecelerateMenderer(u_int frames) {
+    if (prCurrentStage == 6 || prCurrentStage == 16) {
+        frames = 120;
+    }
+    float d;
+    if (prCurrentStage == 6 || prCurrentStage == 16) {
+        d = g_NoodleStepB / (float)frames;
+    } else {
+        d = g_NoodleStep / (float)frames;
+    }
+    g_NoodleDecelerating = 1;
+    d *= 1.2f;
+    g_NoodleDecel = d;
+}
+
+PR_EXTERN
+void PrRestartMenderer() {
+    g_NoodleStep = 1.2f;
+    g_NoodleStepB = 1.0f;
+    g_NoodleDecelerating = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/prlib/menderer", DrawMenderer__Fv);
 void DrawMenderer();
