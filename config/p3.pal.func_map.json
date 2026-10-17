@@ -716,8 +716,8 @@
   "proto": 1061320,
   "pal": null,
   "proto_size": 304,
-  "est": 1061304,
-  "conf": "estimate?"
+  "est": 1061312,
+  "conf": "estimate"
  },
  {
   "name": "initSystem",
@@ -725,8 +725,8 @@
   "proto": 1061624,
   "pal": null,
   "proto_size": 688,
-  "est": 1061608,
-  "conf": "estimate?"
+  "est": 1061616,
+  "conf": "estimate"
  },
  {
   "name": "exitSystem",
@@ -1202,8 +1202,8 @@
   "proto": 1070560,
   "pal": null,
   "proto_size": 472,
-  "est": 1070216,
-  "conf": "estimate?"
+  "est": 1070152,
+  "conf": "estimate"
  },
  {
   "name": "intReadSub",
@@ -1211,8 +1211,8 @@
   "proto": 1071032,
   "pal": null,
   "proto_size": 1256,
-  "est": 1070688,
-  "conf": "estimate?"
+  "est": 1070464,
+  "conf": "estimate"
  },
  {
   "name": "cdctrlReadData",
@@ -1508,8 +1508,8 @@
   "proto": 1075552,
   "pal": null,
   "proto_size": 760,
-  "est": 1074872,
-  "conf": "estimate?"
+  "est": 1074864,
+  "conf": "estimate"
  },
  {
   "name": "GetIntAdrsCurrent",
@@ -1733,8 +1733,8 @@
   "proto": 1079288,
   "pal": null,
   "proto_size": 152,
-  "est": 1078600,
-  "conf": "estimate?"
+  "est": 1078616,
+  "conf": "estimate"
  },
  {
   "name": "vsTapdatSet",
@@ -1742,8 +1742,8 @@
   "proto": 1079440,
   "pal": null,
   "proto_size": 552,
-  "est": 1078752,
-  "conf": "estimate?"
+  "est": 1078800,
+  "conf": "estimate"
  },
  {
   "name": "vsTapdatSetMoto",
@@ -2390,8 +2390,8 @@
   "proto": 1095112,
   "pal": null,
   "proto_size": 4328,
-  "est": 1094016,
-  "conf": "estimate?"
+  "est": 1094008,
+  "conf": "estimate"
  },
  {
   "name": "subjobEvent",
@@ -2399,8 +2399,8 @@
   "proto": 1099440,
   "pal": null,
   "proto_size": 1256,
-  "est": 1098344,
-  "conf": "estimate?"
+  "est": 1098208,
+  "conf": "estimate"
  },
  {
   "name": "ScrCtrlIndvJob",
@@ -2408,8 +2408,8 @@
   "proto": 1100696,
   "pal": null,
   "proto_size": 888,
-  "est": 1099600,
-  "conf": "estimate?"
+  "est": 1099448,
+  "conf": "estimate"
  },
  {
   "name": "ScrTimeRenew",
@@ -2417,8 +2417,8 @@
   "proto": 1101584,
   "pal": null,
   "proto_size": 544,
-  "est": 1100488,
-  "conf": "estimate?"
+  "est": 1100304,
+  "conf": "estimate"
  },
  {
   "name": "ScrMbarReq",
@@ -2426,8 +2426,8 @@
   "proto": 1102128,
   "pal": null,
   "proto_size": 416,
-  "est": 1101032,
-  "conf": "estimate?"
+  "est": 1100848,
+  "conf": "estimate"
  },
  {
   "name": "allTimeCallbackTimeSetChanTempo",
@@ -2435,8 +2435,8 @@
   "proto": 1102544,
   "pal": null,
   "proto_size": 272,
-  "est": 1101448,
-  "conf": "estimate?"
+  "est": 1101264,
+  "conf": "estimate"
  },
  {
   "name": "SetIndvDrawTblLine",
@@ -2686,17 +2686,8 @@
   "file": "main/scrctrl.c",
   "proto": 1107488,
   "pal": 1105576,
-  "proto_size": 672,
+  "proto_size": 800,
   "est": 1105576,
-  "conf": "anchored"
- },
- {
-  "name": "hex2dec",
-  "file": "main/scrctrl.c",
-  "proto": 1108160,
-  "pal": 1106248,
-  "proto_size": 128,
-  "est": 1106248,
   "conf": "anchored"
  },
  {
@@ -2705,7 +2696,7 @@
   "proto": 1108288,
   "pal": null,
   "proto_size": 560,
-  "est": 1106376,
+  "est": 1106248,
   "conf": "estimate"
  },
  {
@@ -2938,26 +2929,8 @@
   "file": "main/subt.c",
   "proto": 1112920,
   "pal": 1111072,
-  "proto_size": 104,
+  "proto_size": 296,
   "est": 1111072,
-  "conf": "anchored"
- },
- {
-  "name": "codeKanjiCheck",
-  "file": "main/subt.c",
-  "proto": 1113024,
-  "pal": null,
-  "proto_size": 80,
-  "est": 1111176,
-  "conf": "estimate?"
- },
- {
-  "name": "euc2sjis",
-  "file": "main/subt.c",
-  "proto": 1113104,
-  "pal": 1111256,
-  "proto_size": 112,
-  "est": 1111256,
   "conf": "anchored"
  },
  {
@@ -3461,8 +3434,8 @@
   "proto": 1127328,
   "pal": null,
   "proto_size": 1696,
-  "est": 1125336,
-  "conf": "estimate?"
+  "est": 1125136,
+  "conf": "estimate"
  },
  {
   "name": "DrawObjStrTapTimeNext",
@@ -3587,8 +3560,8 @@
   "proto": 1134592,
   "pal": null,
   "proto_size": 200,
-  "est": 1132360,
-  "conf": "estimate?"
+  "est": 1132344,
+  "conf": "estimate"
  },
  {
   "name": "drawUseDrDispCheckInit",
@@ -4199,8 +4172,8 @@
   "proto": 1148808,
   "pal": null,
   "proto_size": 832,
-  "est": 1146744,
-  "conf": "estimate?"
+  "est": 1146688,
+  "conf": "estimate"
  },
  {
   "name": "MbarHookUseInit",
@@ -4289,8 +4262,8 @@
   "proto": 1150160,
   "pal": null,
   "proto_size": 296,
-  "est": 1148040,
-  "conf": "estimate?"
+  "est": 1148080,
+  "conf": "estimate"
  },
  {
   "name": "metColorInit",
@@ -4883,8 +4856,8 @@
   "proto": 1163200,
   "pal": null,
   "proto_size": 296,
-  "est": 1160888,
-  "conf": "estimate?"
+  "est": 1160880,
+  "conf": "estimate"
  },
  {
   "name": "GlobalTimeGet",
@@ -5000,8 +4973,8 @@
   "proto": 1165320,
   "pal": null,
   "proto_size": 152,
-  "est": 1162864,
-  "conf": "estimate?"
+  "est": 1162856,
+  "conf": "estimate"
  },
  {
   "name": "TimeCallbackTimeGet",
@@ -5180,8 +5153,8 @@
   "proto": 1166680,
   "pal": null,
   "proto_size": 144,
-  "est": 1164136,
-  "conf": "estimate?"
+  "est": 1164088,
+  "conf": "estimate"
  },
  {
   "name": "wipeSndStop",
@@ -5234,8 +5207,8 @@
   "proto": 1167848,
   "pal": null,
   "proto_size": 232,
-  "est": 1165280,
-  "conf": "estimate?"
+  "est": 1165328,
+  "conf": "estimate"
  },
  {
   "name": "lddisp_draw_on",
@@ -5666,8 +5639,8 @@
   "proto": 1177376,
   "pal": null,
   "proto_size": 560,
-  "est": 1172528,
-  "conf": "estimate?"
+  "est": 1174864,
+  "conf": "estimate"
  },
  {
   "name": "dummyPlay",
@@ -5675,7 +5648,7 @@
   "proto": 1177936,
   "pal": null,
   "proto_size": 1744,
-  "est": 1173088,
+  "est": 1175160,
   "conf": "estimate"
  },
  {
@@ -5684,7 +5657,7 @@
   "proto": 1179680,
   "pal": null,
   "proto_size": 768,
-  "est": 1174832,
+  "est": 1175168,
   "conf": "estimate"
  },
  {
@@ -5765,8 +5738,8 @@
   "proto": 1182416,
   "pal": null,
   "proto_size": 840,
-  "est": 1178664,
-  "conf": "estimate?"
+  "est": 1178760,
+  "conf": "estimate"
  },
  {
   "name": "selPlayDispSetPlay",
@@ -5774,8 +5747,8 @@
   "proto": 1183256,
   "pal": null,
   "proto_size": 800,
-  "est": 1179504,
-  "conf": "estimate?"
+  "est": 1179616,
+  "conf": "estimate"
  },
  {
   "name": "selPlayDispSetPlayOne",
@@ -5783,8 +5756,8 @@
   "proto": 1184056,
   "pal": null,
   "proto_size": 408,
-  "est": 1180304,
-  "conf": "estimate?"
+  "est": 1180448,
+  "conf": "estimate"
  },
  {
   "name": "gamePlayDisp",
@@ -5792,8 +5765,8 @@
   "proto": 1184464,
   "pal": null,
   "proto_size": 896,
-  "est": 1180712,
-  "conf": "estimate?"
+  "est": 1180856,
+  "conf": "estimate"
  },
  {
   "name": "titleDisp",
@@ -5801,8 +5774,8 @@
   "proto": 1185360,
   "pal": null,
   "proto_size": 416,
-  "est": 1181608,
-  "conf": "estimate?"
+  "est": 1181824,
+  "conf": "estimate"
  },
  {
   "name": "urawazaKeyCheck",
@@ -6314,8 +6287,8 @@
   "proto": 1195400,
   "pal": null,
   "proto_size": 16,
-  "est": 1192072,
-  "conf": "estimate?"
+  "est": 1192096,
+  "conf": "estimate"
  },
  {
   "name": "MenuDataGetIconSysHed",
@@ -6530,8 +6503,8 @@
   "proto": 1196840,
   "pal": null,
   "proto_size": 32,
-  "est": 1193544,
-  "conf": "estimate?"
+  "est": 1193552,
+  "conf": "estimate"
  },
  {
   "name": "MenuMsgGetMessageMc",
@@ -6539,8 +6512,8 @@
   "proto": 1196872,
   "pal": null,
   "proto_size": 32,
-  "est": 1193576,
-  "conf": "estimate?"
+  "est": 1193592,
+  "conf": "estimate"
  },
  {
   "name": "MenuMsgGetMessageSub",
@@ -6548,8 +6521,8 @@
   "proto": 1196904,
   "pal": null,
   "proto_size": 32,
-  "est": 1193608,
-  "conf": "estimate?"
+  "est": 1193624,
+  "conf": "estimate"
  },
  {
   "name": "MenuRoundTim2Trans",
@@ -7133,8 +7106,8 @@
   "proto": 1209072,
   "pal": null,
   "proto_size": 920,
-  "est": 1205944,
-  "conf": "estimate?"
+  "est": 1205952,
+  "conf": "estimate"
  },
  {
   "name": "TsSet_ParappaCapColor",
@@ -7205,8 +7178,8 @@
   "proto": 1212376,
   "pal": null,
   "proto_size": 248,
-  "est": 1209256,
-  "conf": "estimate?"
+  "est": 1209280,
+  "conf": "estimate"
  },
  {
   "name": "TsMenu_InitFlow",
@@ -7277,8 +7250,8 @@
   "proto": 1215272,
   "pal": null,
   "proto_size": 1128,
-  "est": 1212144,
-  "conf": "estimate?"
+  "est": 1212160,
+  "conf": "estimate"
  },
  {
   "name": "DateChgInt",
@@ -7394,8 +7367,8 @@
   "proto": 1227752,
   "pal": null,
   "proto_size": 264,
-  "est": 1224672,
-  "conf": "estimate?"
+  "est": 1224688,
+  "conf": "estimate"
  },
  {
   "name": "MpCityHallFPHSSoundMask",
@@ -7439,8 +7412,8 @@
   "proto": 1228912,
   "pal": null,
   "proto_size": 224,
-  "est": 1225856,
-  "conf": "estimate?"
+  "est": 1225752,
+  "conf": "estimate"
  },
  {
   "name": "MpMapMenu_Flow",
@@ -7781,8 +7754,8 @@
   "proto": 1248240,
   "pal": null,
   "proto_size": 304,
-  "est": 1245184,
-  "conf": "estimate?"
+  "est": 1245296,
+  "conf": "estimate"
  },
  {
   "name": "TSJukeCDObj_Draw",
@@ -7925,8 +7898,8 @@
   "proto": 1259408,
   "pal": null,
   "proto_size": 632,
-  "est": 1256352,
-  "conf": "estimate?"
+  "est": 1257008,
+  "conf": "estimate"
  },
  {
   "name": "TsUserList_GetCurFileNo",
@@ -8051,8 +8024,8 @@
   "proto": 1267592,
   "pal": null,
   "proto_size": 256,
-  "est": 1265328,
-  "conf": "estimate?"
+  "est": 1265632,
+  "conf": "estimate"
  },
  {
   "name": "TsNAMEINBox_GetName",
@@ -8123,8 +8096,8 @@
   "proto": 1271424,
   "pal": null,
   "proto_size": 72,
-  "est": 1269472,
-  "conf": "estimate?"
+  "est": 1269544,
+  "conf": "estimate"
  },
  {
   "name": "_PkSubMsgPut",
@@ -8132,7 +8105,7 @@
   "proto": 1271496,
   "pal": null,
   "proto_size": 160,
-  "est": 1269544,
+  "est": 1269552,
   "conf": "estimate"
  },
  {
@@ -9140,8 +9113,8 @@
   "proto": 1300920,
   "pal": null,
   "proto_size": 352,
-  "est": 1299008,
-  "conf": "estimate?"
+  "est": 1298960,
+  "conf": "estimate"
  },
  {
   "name": "codeKanjiCheck",
@@ -9832,9 +9805,18 @@
   "file": "prlib/model.cpp",
   "proto": 1314240,
   "pal": 1326736,
-  "proto_size": 160,
+  "proto_size": 120,
   "est": 1326736,
   "conf": "anchored"
+ },
+ {
+  "name": "func_00140E38",
+  "file": "prlib/model.cpp",
+  "proto": 1314360,
+  "pal": null,
+  "proto_size": 40,
+  "est": 1326856,
+  "conf": "estimate"
  },
  {
   "name": "__16PrObjectDatabase",
@@ -11029,8 +11011,17 @@
   "file": "prlib/render.cpp",
   "proto": 1333984,
   "pal": null,
-  "proto_size": 760,
+  "proto_size": 720,
   "est": 1347272,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_00145DB0",
+  "file": "prlib/render.cpp",
+  "proto": 1334704,
+  "pal": null,
+  "proto_size": 40,
+  "est": 1347992,
   "conf": "estimate"
  },
  {
@@ -11038,9 +11029,18 @@
   "file": "prlib/render.cpp",
   "proto": 1334744,
   "pal": null,
-  "proto_size": 128,
-  "est": 1348032,
-  "conf": "estimate?"
+  "proto_size": 120,
+  "est": 1348160,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_00145E50",
+  "file": "prlib/render.cpp",
+  "proto": 1334864,
+  "pal": null,
+  "proto_size": 8,
+  "est": 1348352,
+  "conf": "estimate"
  },
  {
   "name": "ComposeGlobalMatrixWithoutVisibility__7SpmNodeP13PrModelObjectRCt8NaMATRIX3Zfi4i4",
@@ -11048,7 +11048,7 @@
   "proto": 1334872,
   "pal": null,
   "proto_size": 888,
-  "est": 1348160,
+  "est": 1348360,
   "conf": "estimate"
  },
  {
@@ -11057,8 +11057,8 @@
   "proto": 1335760,
   "pal": null,
   "proto_size": 136,
-  "est": 1349308,
-  "conf": "estimate?"
+  "est": 1349240,
+  "conf": "estimate"
  },
  {
   "name": "RenderVertexEECoreBothface__13PrRenderStuff",
@@ -11066,8 +11066,8 @@
   "proto": 1335896,
   "pal": null,
   "proto_size": 160,
-  "est": 1349444,
-  "conf": "estimate?"
+  "est": 1349376,
+  "conf": "estimate"
  },
  {
   "name": "RenderVertexEECoreNormal__13PrRenderStuff",
@@ -11075,8 +11075,8 @@
   "proto": 1336056,
   "pal": null,
   "proto_size": 192,
-  "est": 1349604,
-  "conf": "estimate?"
+  "est": 1349512,
+  "conf": "estimate"
  },
  {
   "name": "RenderVertexEECoreRefmap__13PrRenderStuff",
@@ -11102,7 +11102,7 @@
   "proto": 1336264,
   "pal": null,
   "proto_size": 816,
-  "est": 1349804,
+  "est": 1349808,
   "conf": "estimate"
  },
  {
@@ -11110,9 +11110,18 @@
   "file": "prlib/renderee.cpp",
   "proto": 1337080,
   "pal": null,
-  "proto_size": 792,
-  "est": 1350620,
-  "conf": "estimate?"
+  "proto_size": 784,
+  "est": 1350824,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_00146A08",
+  "file": "prlib/renderee.cpp",
+  "proto": 1337864,
+  "pal": null,
+  "proto_size": 8,
+  "est": 1351608,
+  "conf": "estimate"
  },
  {
   "name": "SavePosture__13PrModelObject",
@@ -11254,8 +11263,26 @@
   "file": "prlib/spram.cpp",
   "proto": 1342224,
   "pal": null,
-  "proto_size": 728,
+  "proto_size": 464,
   "est": 1355976,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_00147CE0",
+  "file": "prlib/spram.cpp",
+  "proto": 1342688,
+  "pal": null,
+  "proto_size": 176,
+  "est": 1356464,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_00147D90",
+  "file": "prlib/spram.cpp",
+  "proto": 1342864,
+  "pal": null,
+  "proto_size": 88,
+  "est": 1356640,
   "conf": "estimate"
  },
  {
@@ -11263,9 +11290,45 @@
   "file": "prlib/spram.cpp",
   "proto": 1342952,
   "pal": null,
-  "proto_size": 1384,
-  "est": 1356704,
-  "conf": "estimate?"
+  "proto_size": 80,
+  "est": 1356728,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_00147E38",
+  "file": "prlib/spram.cpp",
+  "proto": 1343032,
+  "pal": null,
+  "proto_size": 384,
+  "est": 1356808,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_00147FB8",
+  "file": "prlib/spram.cpp",
+  "proto": 1343416,
+  "pal": null,
+  "proto_size": 392,
+  "est": 1357192,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_00148140",
+  "file": "prlib/spram.cpp",
+  "proto": 1343808,
+  "pal": null,
+  "proto_size": 264,
+  "est": 1357584,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_00148248",
+  "file": "prlib/spram.cpp",
+  "proto": 1344072,
+  "pal": null,
+  "proto_size": 264,
+  "est": 1357848,
+  "conf": "estimate"
  },
  {
   "name": "PrInitializeMfifo__Fv",
@@ -11416,9 +11479,36 @@
   "file": "prlib/spadata.cpp",
   "proto": 1347640,
   "pal": 1361416,
-  "proto_size": 1248,
+  "proto_size": 304,
   "est": 1361416,
   "conf": "anchored"
+ },
+ {
+  "name": "func_00149168",
+  "file": "prlib/spadata.cpp",
+  "proto": 1347944,
+  "pal": null,
+  "proto_size": 88,
+  "est": 1361720,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_001491C0",
+  "file": "prlib/spadata.cpp",
+  "proto": 1348032,
+  "pal": null,
+  "proto_size": 176,
+  "est": 1361808,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_00149270",
+  "file": "prlib/spadata.cpp",
+  "proto": 1348208,
+  "pal": null,
+  "proto_size": 680,
+  "est": 1361984,
+  "conf": "estimate"
  },
  {
   "name": "GetSprineValue__Ct8SpaTrack1ZfUif",
@@ -11470,8 +11560,35 @@
   "file": "prlib/spadata.cpp",
   "proto": 1354416,
   "pal": null,
-  "proto_size": 1536,
+  "proto_size": 304,
   "est": 1368192,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014ABE0",
+  "file": "prlib/spadata.cpp",
+  "proto": 1354720,
+  "pal": null,
+  "proto_size": 264,
+  "est": 1368496,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014ACE8",
+  "file": "prlib/spadata.cpp",
+  "proto": 1354984,
+  "pal": null,
+  "proto_size": 760,
+  "est": 1368760,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014AFE0",
+  "file": "prlib/spadata.cpp",
+  "proto": 1355744,
+  "pal": null,
+  "proto_size": 208,
+  "est": 1369520,
   "conf": "estimate"
  },
  {
@@ -11560,9 +11677,27 @@
   "file": "prlib/scene.cpp",
   "proto": 1357776,
   "pal": 1371552,
-  "proto_size": 520,
+  "proto_size": 440,
   "est": 1371552,
   "conf": "anchored"
+ },
+ {
+  "name": "func_0014B988",
+  "file": "prlib/scene.cpp",
+  "proto": 1358216,
+  "pal": null,
+  "proto_size": 40,
+  "est": 1371992,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014B9B0",
+  "file": "prlib/scene.cpp",
+  "proto": 1358256,
+  "pal": null,
+  "proto_size": 40,
+  "est": 1372032,
+  "conf": "estimate"
  },
  {
   "name": "_$_t11PrObjectSet1Z13PrModelObject",
@@ -11580,7 +11715,7 @@
   "pal": null,
   "proto_size": 800,
   "est": 1372104,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
  },
  {
   "name": "AddShapePosition__12SpmShapeNodeUif",
@@ -11589,7 +11724,7 @@
   "pal": null,
   "proto_size": 168,
   "est": 1372904,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
  },
  {
   "name": "RenderShapeNode__12SpmShapeNodeP13PrModelObject",
@@ -11598,7 +11733,7 @@
   "pal": null,
   "proto_size": 1088,
   "est": 1373072,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
  },
  {
   "name": "CreateBillboardMatrix__FRCt8NaMATRIX3Zfi4i4",
@@ -11607,25 +11742,124 @@
   "pal": null,
   "proto_size": 440,
   "est": 1374160,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
  },
  {
   "name": "ApplyBillboardMatrix__7SpmNode",
   "file": "prlib/billboard.cpp",
   "proto": 1360824,
   "pal": null,
-  "proto_size": 1328,
+  "proto_size": 304,
   "est": 1374600,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014C4E8",
+  "file": "prlib/billboard.cpp",
+  "proto": 1361128,
+  "pal": null,
+  "proto_size": 88,
+  "est": 1374904,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014C540",
+  "file": "prlib/billboard.cpp",
+  "proto": 1361216,
+  "pal": null,
+  "proto_size": 176,
+  "est": 1374992,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014C5F0",
+  "file": "prlib/billboard.cpp",
+  "proto": 1361392,
+  "pal": null,
+  "proto_size": 760,
+  "est": 1375168,
+  "conf": "estimate"
  },
  {
   "name": "ApplyDepthOfField__13PrSceneObject",
   "file": "prlib/depthfield.cpp",
   "proto": 1362152,
   "pal": null,
-  "proto_size": 1256,
+  "proto_size": 1104,
   "est": 1375928,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014CD38",
+  "file": "prlib/depthfield.cpp",
+  "proto": 1363256,
+  "pal": null,
+  "proto_size": 16,
+  "est": 1377032,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014CD48",
+  "file": "prlib/depthfield.cpp",
+  "proto": 1363272,
+  "pal": null,
+  "proto_size": 88,
+  "est": 1377048,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014CDA0",
+  "file": "prlib/depthfield.cpp",
+  "proto": 1363360,
+  "pal": null,
+  "proto_size": 8,
+  "est": 1377144,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014CDA8",
+  "file": "prlib/depthfield.cpp",
+  "proto": 1363368,
+  "pal": null,
+  "proto_size": 8,
+  "est": 1377152,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014CDB0",
+  "file": "prlib/depthfield.cpp",
+  "proto": 1363376,
+  "pal": null,
+  "proto_size": 8,
+  "est": 1377160,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014CDB8",
+  "file": "prlib/depthfield.cpp",
+  "proto": 1363384,
+  "pal": null,
+  "proto_size": 8,
+  "est": 1377168,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014CDC0",
+  "file": "prlib/depthfield.cpp",
+  "proto": 1363392,
+  "pal": null,
+  "proto_size": 8,
+  "est": 1377176,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014CDC8",
+  "file": "prlib/depthfield.cpp",
+  "proto": 1363400,
+  "pal": null,
+  "proto_size": 8,
+  "est": 1377184,
+  "conf": "estimate"
  },
  {
   "name": "PrAddDrawAreaDefinition__FP11NaGifPacketRC11PrVRAM_RECTbbUl",
@@ -11633,7 +11867,7 @@
   "proto": 1363408,
   "pal": null,
   "proto_size": 424,
-  "est": 1377184,
+  "est": 1377608,
   "conf": "estimate"
  },
  {
@@ -11642,7 +11876,7 @@
   "proto": 1363832,
   "pal": null,
   "proto_size": 256,
-  "est": 1377608,
+  "est": 1377856,
   "conf": "estimate"
  },
  {
@@ -11668,9 +11902,99 @@
   "file": "prlib/vram.cpp",
   "proto": 1364536,
   "pal": null,
-  "proto_size": 1704,
+  "proto_size": 1072,
   "est": 1378312,
   "conf": "estimate"
+ },
+ {
+  "name": "func_0014D668",
+  "file": "prlib/vram.cpp",
+  "proto": 1365608,
+  "pal": null,
+  "proto_size": 24,
+  "est": 1379384,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014D680",
+  "file": "prlib/vram.cpp",
+  "proto": 1365632,
+  "pal": null,
+  "proto_size": 64,
+  "est": 1379408,
+  "conf": "estimate?"
+ },
+ {
+  "name": "func_0014D6C0",
+  "file": "prlib/vram.cpp",
+  "proto": 1365696,
+  "pal": null,
+  "proto_size": 136,
+  "est": 1379472,
+  "conf": "estimate?"
+ },
+ {
+  "name": "func_0014D748",
+  "file": "prlib/vram.cpp",
+  "proto": 1365832,
+  "pal": null,
+  "proto_size": 88,
+  "est": 1379608,
+  "conf": "estimate?"
+ },
+ {
+  "name": "func_0014D7A0",
+  "file": "prlib/vram.cpp",
+  "proto": 1365920,
+  "pal": null,
+  "proto_size": 48,
+  "est": 1379696,
+  "conf": "estimate?"
+ },
+ {
+  "name": "func_0014D7D0",
+  "file": "prlib/vram.cpp",
+  "proto": 1365968,
+  "pal": null,
+  "proto_size": 104,
+  "est": 1379744,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014D838",
+  "file": "prlib/vram.cpp",
+  "proto": 1366072,
+  "pal": null,
+  "proto_size": 48,
+  "est": 1379848,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014D868",
+  "file": "prlib/vram.cpp",
+  "proto": 1366120,
+  "pal": null,
+  "proto_size": 64,
+  "est": 1379896,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014D8A8",
+  "file": "prlib/vram.cpp",
+  "proto": 1366184,
+  "pal": null,
+  "proto_size": 48,
+  "est": 1379960,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014D8D8",
+  "file": "prlib/vram.cpp",
+  "proto": 1366232,
+  "pal": null,
+  "proto_size": 8,
+  "est": 1380008,
+  "conf": "estimate?"
  },
  {
   "name": "RawRandom__Fv",
@@ -11714,8 +12038,8 @@
   "proto": 1366592,
   "pal": null,
   "proto_size": 88,
-  "est": 1380432,
-  "conf": "estimate?"
+  "est": 1380368,
+  "conf": "estimate"
  },
  {
   "name": "GetRandom__Fv",
@@ -11723,8 +12047,8 @@
   "proto": 1366680,
   "pal": null,
   "proto_size": 104,
-  "est": 1380520,
-  "conf": "estimate?"
+  "est": 1380456,
+  "conf": "estimate"
  },
  {
   "name": "StageIndexForColor__Fv",
@@ -11732,8 +12056,8 @@
   "proto": 1366784,
   "pal": null,
   "proto_size": 48,
-  "est": 1380624,
-  "conf": "estimate?"
+  "est": 1380560,
+  "conf": "estimate"
  },
  {
   "name": "PushNoodleColor__FPUl",
@@ -11741,7 +12065,7 @@
   "proto": 1366832,
   "pal": null,
   "proto_size": 944,
-  "est": 1380672,
+  "est": 1380608,
   "conf": "estimate"
  },
  {
@@ -11750,8 +12074,8 @@
   "proto": 1367776,
   "pal": null,
   "proto_size": 1472,
-  "est": 1381616,
-  "conf": "estimate?"
+  "est": 1381552,
+  "conf": "estimate"
  },
  {
   "name": "SetNoodleRotationMatrix__FRt8NaMATRIX3Zfi4i4f",
@@ -11759,8 +12083,8 @@
   "proto": 1369248,
   "pal": null,
   "proto_size": 1072,
-  "est": 1383088,
-  "conf": "estimate?"
+  "est": 1383040,
+  "conf": "estimate"
  },
  {
   "name": "PreDrawNoodleStrip__Fv",
@@ -11768,8 +12092,8 @@
   "proto": 1370320,
   "pal": null,
   "proto_size": 160,
-  "est": 1384160,
-  "conf": "estimate?"
+  "est": 1384120,
+  "conf": "estimate"
  },
  {
   "name": "DrawNoodleStrip__Fff",
@@ -11786,8 +12110,8 @@
   "proto": 1370784,
   "pal": null,
   "proto_size": 32,
-  "est": 1384624,
-  "conf": "estimate?"
+  "est": 1384584,
+  "conf": "estimate"
  },
  {
   "name": "UpdateNoodleRotation__Fv",
@@ -11795,8 +12119,8 @@
   "proto": 1370816,
   "pal": null,
   "proto_size": 248,
-  "est": 1384656,
-  "conf": "estimate?"
+  "est": 1384616,
+  "conf": "estimate"
  },
  {
   "name": "PrUpdateMendererSpeed__Fv",
@@ -11804,8 +12128,8 @@
   "proto": 1371064,
   "pal": null,
   "proto_size": 120,
-  "est": 1384904,
-  "conf": "estimate?"
+  "est": 1384872,
+  "conf": "estimate"
  },
  {
   "name": "PrDecelerateMenderer",
@@ -11813,8 +12137,8 @@
   "proto": 1371184,
   "pal": null,
   "proto_size": 184,
-  "est": 1385024,
-  "conf": "estimate?"
+  "est": 1384992,
+  "conf": "estimate"
  },
  {
   "name": "PrRestartMenderer",
@@ -11822,8 +12146,8 @@
   "proto": 1371368,
   "pal": null,
   "proto_size": 24,
-  "est": 1385208,
-  "conf": "estimate?"
+  "est": 1385192,
+  "conf": "estimate"
  },
  {
   "name": "DrawMenderer__Fv",
@@ -11831,7 +12155,7 @@
   "proto": 1371392,
   "pal": null,
   "proto_size": 1400,
-  "est": 1385232,
+  "est": 1385224,
   "conf": "estimate"
  },
  {
@@ -11902,18 +12226,63 @@
   "file": "prlib/menderer.cpp",
   "proto": 1373064,
   "pal": 1386904,
-  "proto_size": 312,
+  "proto_size": 48,
   "est": 1386904,
   "conf": "anchored"
+ },
+ {
+  "name": "func_0014F3B8",
+  "file": "prlib/menderer.cpp",
+  "proto": 1373112,
+  "pal": null,
+  "proto_size": 88,
+  "est": 1386952,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014F410",
+  "file": "prlib/menderer.cpp",
+  "proto": 1373200,
+  "pal": null,
+  "proto_size": 176,
+  "est": 1387040,
+  "conf": "estimate"
  },
  {
   "name": "_GLOBAL_$I$prMendererRatio",
   "file": "prlib/menderer.cpp",
   "proto": 1373376,
   "pal": 1387216,
-  "proto_size": 1296,
+  "proto_size": 8,
   "est": 1387216,
   "conf": "anchored"
+ },
+ {
+  "name": "func_0014F4C8",
+  "file": "prlib/menderer.cpp",
+  "proto": 1373384,
+  "pal": null,
+  "proto_size": 264,
+  "est": 1387224,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014F5D0",
+  "file": "prlib/menderer.cpp",
+  "proto": 1373648,
+  "pal": null,
+  "proto_size": 264,
+  "est": 1387488,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_0014F6D8",
+  "file": "prlib/menderer.cpp",
+  "proto": 1373912,
+  "pal": null,
+  "proto_size": 760,
+  "est": 1387752,
+  "conf": "estimate"
  },
  {
   "name": "PrSynchronizeMendererParameter__Ff",
@@ -11922,7 +12291,7 @@
   "pal": null,
   "proto_size": 488,
   "est": 1388512,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
  },
  {
   "name": "PrInitializeTextureCreation__FUiUiUiUi",
@@ -11931,7 +12300,7 @@
   "pal": null,
   "proto_size": 1336,
   "est": 1389000,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
  },
  {
   "name": "CreateMendererTexture__Ff",
@@ -11940,7 +12309,7 @@
   "pal": null,
   "proto_size": 576,
   "est": 1390336,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
  },
  {
   "name": "PrCreateMendererTexture",
@@ -11948,8 +12317,8 @@
   "proto": 1377072,
   "pal": null,
   "proto_size": 232,
-  "est": 1390912,
-  "conf": "estimate?-xfile"
+  "est": 1390928,
+  "conf": "estimate"
  },
  {
   "name": "PrWaitMendererTexture__FP13sceGsDrawEnv1RC10sceGsFrameRC13sceGsXyoffset",
@@ -11957,8 +12326,8 @@
   "proto": 1377304,
   "pal": null,
   "proto_size": 176,
-  "est": 1391144,
-  "conf": "estimate?-xfile"
+  "est": 1391168,
+  "conf": "estimate"
  },
  {
   "name": "SetNextSwitchRotationTimer__Fv",
@@ -12019,8 +12388,26 @@
   "file": "prlib/mendererawful.cpp",
   "proto": 1379456,
   "pal": null,
-  "proto_size": 232,
+  "proto_size": 104,
   "est": 1393320,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_00150CE8",
+  "file": "prlib/mendererawful.cpp",
+  "proto": 1379560,
+  "pal": null,
+  "proto_size": 40,
+  "est": 1393440,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_00150D10",
+  "file": "prlib/mendererawful.cpp",
+  "proto": 1379600,
+  "pal": null,
+  "proto_size": 88,
+  "est": 1393488,
   "conf": "estimate"
  },
  {
@@ -12029,8 +12416,8 @@
   "proto": 1379688,
   "pal": null,
   "proto_size": 544,
-  "est": 1393552,
-  "conf": "estimate?-xfile"
+  "est": 1393576,
+  "conf": "estimate"
  },
  {
   "name": "PrCreateAlphaModulation__Ff",
@@ -12038,8 +12425,8 @@
   "proto": 1380232,
   "pal": null,
   "proto_size": 336,
-  "est": 1394096,
-  "conf": "estimate?-xfile"
+  "est": 1394120,
+  "conf": "estimate"
  },
  {
   "name": "PrBlendNoodleImage__Fb",
@@ -12047,8 +12434,8 @@
   "proto": 1380568,
   "pal": null,
   "proto_size": 408,
-  "est": 1394432,
-  "conf": "estimate?-xfile"
+  "est": 1394528,
+  "conf": "estimate"
  },
  {
   "name": "SetNextTarget__FP20PrNoodlePositionData",
@@ -12056,8 +12443,8 @@
   "proto": 1380976,
   "pal": null,
   "proto_size": 544,
-  "est": 1394936,
-  "conf": "estimate?"
+  "est": 1395056,
+  "conf": "estimate"
  },
  {
   "name": "InitializeNoodlePositionData__Fv",
@@ -12083,8 +12470,8 @@
   "proto": 1381936,
   "pal": null,
   "proto_size": 248,
-  "est": 1395896,
-  "conf": "estimate?"
+  "est": 1395904,
+  "conf": "estimate"
  },
  {
   "name": "PrInitializeNoodlePolygonPosition__Fv",
@@ -12092,7 +12479,7 @@
   "proto": 1382184,
   "pal": null,
   "proto_size": 192,
-  "est": 1396144,
+  "est": 1396152,
   "conf": "estimate"
  },
  {
@@ -12100,9 +12487,36 @@
   "file": "prlib/mendererdata.cpp",
   "proto": 1382376,
   "pal": null,
-  "proto_size": 1592,
-  "est": 1396336,
-  "conf": "estimate?"
+  "proto_size": 1424,
+  "est": 1396344,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_00151D78",
+  "file": "prlib/mendererdata.cpp",
+  "proto": 1383800,
+  "pal": null,
+  "proto_size": 40,
+  "est": 1397768,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_00151DA0",
+  "file": "prlib/mendererdata.cpp",
+  "proto": 1383840,
+  "pal": null,
+  "proto_size": 88,
+  "est": 1397808,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_00151DF8",
+  "file": "prlib/mendererdata.cpp",
+  "proto": 1383928,
+  "pal": null,
+  "proto_size": 40,
+  "est": 1397896,
+  "conf": "estimate"
  },
  {
   "name": "CG_WaveInit__FP8WAVE_STR",
@@ -12388,8 +12802,35 @@
   "file": "prlib/camera.cpp",
   "proto": 1390736,
   "pal": null,
-  "proto_size": 1520,
+  "proto_size": 576,
   "est": 1404704,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_00153AD0",
+  "file": "prlib/camera.cpp",
+  "proto": 1391312,
+  "pal": null,
+  "proto_size": 88,
+  "est": 1405280,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_00153B28",
+  "file": "prlib/camera.cpp",
+  "proto": 1391400,
+  "pal": null,
+  "proto_size": 176,
+  "est": 1405368,
+  "conf": "estimate"
+ },
+ {
+  "name": "func_00153BD8",
+  "file": "prlib/camera.cpp",
+  "proto": 1391576,
+  "pal": null,
+  "proto_size": 680,
+  "est": 1405544,
   "conf": "estimate"
  },
  {
@@ -12433,9 +12874,45 @@
   "file": "prlib/dma.cpp",
   "proto": 1393640,
   "pal": 1407608,
-  "proto_size": 1904,
+  "proto_size": 192,
   "est": 1407608,
   "conf": "anchored"
+ },
+ {
+  "name": "func_001544A8",
+  "file": "nalib/navector.cpp",
+  "proto": 1393832,
+  "pal": null,
+  "proto_size": 176,
+  "est": 1407800,
+  "conf": "estimate-xfile"
+ },
+ {
+  "name": "func_00154558",
+  "file": "nalib/navector.cpp",
+  "proto": 1394008,
+  "pal": null,
+  "proto_size": 40,
+  "est": 1407976,
+  "conf": "estimate-xfile"
+ },
+ {
+  "name": "func_00154580",
+  "file": "nalib/navector.cpp",
+  "proto": 1394048,
+  "pal": null,
+  "proto_size": 88,
+  "est": 1408016,
+  "conf": "estimate-xfile"
+ },
+ {
+  "name": "func_001545D8",
+  "file": "nalib/navector.cpp",
+  "proto": 1394136,
+  "pal": null,
+  "proto_size": 1408,
+  "est": 1408104,
+  "conf": "estimate-xfile"
  },
  {
   "name": "sceGsResetGraph",
