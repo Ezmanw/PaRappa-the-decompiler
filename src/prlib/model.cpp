@@ -42,7 +42,7 @@ PrModelObject::PrModelObject(SpmFileHeader *spm) {
     m_linked_scene = NULL;
     unk10 = NaMATRIX<float, 4, 4>::IDENT;
     unk50 = 0x55668899;
-    unk54 = 0;
+    m_user_data = NULL;
     m_spm_image = spm;
     m_flags = 0;
     m_animation_time = 0.0f;

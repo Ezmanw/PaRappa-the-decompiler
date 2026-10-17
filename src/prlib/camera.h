@@ -1,8 +1,13 @@
 #ifndef PRLIB_CAMERA_H
 #define PRLIB_CAMERA_H
 
+#define SPC_MAGIC   (0x09463ad8)
+#define SPC_VERSION (1)
+
 #include "prpriv.h"
 #include "spadata.h"
+#include "linkedlist.h"
+#include "objectset.h"
 
 #include <eetypes.h>
 
@@ -28,11 +33,14 @@ public:
     u_short m_version;
     u_short m_flags;
 
-    PR_PADDING(unk8, 0x10);
+    PR_PADDING(unk8, 0xc);
+    float m_end_frame;
     char m_name[32];
     PR_PADDING(unk38, 0x3c);
     int *unk74;
-    PR_PADDING(unk78, 0x10);
+    PrLinkedList<SpcFileHeader> m_list;
+    PrObjectSet<SpcFileHeader> *m_obj_set;
+    void *m_user_data;
     SpaTrack<NaVECTOR<float, 4> > *unk88;
     SpaTrack<NaVECTOR<float, 4> > *unk8C;
     SpaTrack<float> *unk90;

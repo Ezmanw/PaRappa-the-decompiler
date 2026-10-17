@@ -162,7 +162,7 @@ public:
     PrSceneObject *m_linked_scene;
     NaMATRIX<float, 4, 4> unk10;
     u_int unk50;
-    int unk54;
+    void *m_user_data;
     SpmFileHeader *m_spm_image;
     u_int m_flags;
     float m_animation_time;

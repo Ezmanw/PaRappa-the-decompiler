@@ -24,6 +24,19 @@ public:
     PrSceneObject* CreateScene(sceGsDrawEnv1 *draw_env, const char *name, u_int fbp);
     void DeleteScene(PrSceneObject *scene);
 
+    void InsertAnimation(SpaFileHeader *animation) {
+        m_animation_set.Insert(animation);
+    }
+    void RemoveAnimation(SpaFileHeader *animation) {
+        m_animation_set.Remove(animation);
+    }
+    void InsertCamera(SpcFileHeader *camera) {
+        m_camera_set.Insert(camera);
+    }
+    void RemoveCamera(SpcFileHeader *camera) {
+        m_camera_set.Remove(camera);
+    }
+
 public:
     PrObjectSet<PrSceneObject> m_scene_set;
     PrObjectSet<SpaFileHeader> m_animation_set;
