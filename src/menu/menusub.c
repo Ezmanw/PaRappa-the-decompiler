@@ -3143,7 +3143,40 @@ INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsJukeObjAnime2);
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", _TsJKMoveCus);
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", _TsJKSetPadArrow);
+/* static */ void _TsJKSetPadArrow(int sel, JUKECDOBJ *cobj) {
+    int cx, cy;
+    int x, y;
+    int flg = 0;
+
+    x = sel % 5;
+    y = sel / 5;
+
+    cx = x;
+    cy = y;
+    if (_TsJKMoveCus(&cx, &cy, -1, 0, cobj)) {
+        flg |= 1;
+    }
+
+    cx = x;
+    cy = y;
+    if (_TsJKMoveCus(&cx, &cy, 1, 0, cobj)) {
+        flg |= 2;
+    }
+
+    cx = x;
+    cy = y;
+    if (_TsJKMoveCus(&cx, &cy, 0, -1, cobj)) {
+        flg |= 4;
+    }
+
+    cx = x;
+    cy = y;
+    if (_TsJKMoveCus(&cx, &cy, 0, 1, cobj)) {
+        flg |= 8;
+    }
+
+    MENUSubt_PadFontArrowSet(flg);
+}
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsJukeMenu_Flow);
 
