@@ -1253,7 +1253,54 @@ void P3MC_SetUserWorkTime(USER_DATA *puser) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/p3mc", P3MC_SaveUser);
+int P3MC_SaveUser(MCRWDATA_HDL *pdhdl, int flg) {
+    P3MC_WORK *pw = &P3MC_Work;
+    USER_HEADER *hed = (USER_HEADER*)pdhdl->pMemTop;
+    int        mode = hed->user.mode;
+    int        stageNo = hed->user.stageNo;
+    int        roundNo = hed->user.roundNo;
+    int        fileNo = hed->user.fileNo;
+    int        isVs = hed->user.isVs;
+    char      *name;
+    int        paraCol;
+
+    paraCol = 0;
+    if (mode == 1) {
+        name = hed->user.name;
+    } else {
+        name = hed->user.name1;
+    }
+
+    if (mode == 1) {
+        paraCol = *(int*)pdhdl->pData;
+        if (paraCol < 0) {
+            paraCol = 0;
+        }
+        if (paraCol > 4) {
+            paraCol = 4;
+        }
+    }
+
+    _P3MC_SetUserDirName(mode, fileNo);
+    _P3MC_SetBrowsInfo(mode, fileNo, name, stageNo, roundNo, isVs, paraCol);
+
+    isFileFlgCash = 0;
+    P3MC_SetUserWorkTime(&pdhdl->pHead->user);
+
+    *(USER_FOOTER*)pdhdl->pHead->header = *(USER_FOOTER*)HedderID;
+    *(USER_FOOTER*)pdhdl->pHead->footer = *(USER_FOOTER*)FooterID;
+    *pdhdl->pFoot = *(USER_FOOTER*)FooterID;
+
+    pw->prg = 0;
+    pw->data_no = fileNo;
+    pw->data_mode = mode;
+    pw->data_stage = (mode == 1) ? 0 : stageNo;
+    pw->prgflag = flg;
+    pw->dhdl = pdhdl;
+    pw->dstat = 0;
+    _P3MC_CheckUserDataHead(pw);
+    return 0;
+}
 
 int P3MC_SaveCheck(void) {
     int        re;
