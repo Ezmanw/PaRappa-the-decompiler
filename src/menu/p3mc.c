@@ -310,7 +310,71 @@ static void _P3MC_SetBrowsInfo(int mode, int fileNo, char *name, int stageNo, in
     memc_setSaveIcon(2, NULL, 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/p3mc", _P3MC_mainfile_chk);
+static int _P3MC_mainfile_chk(int no, int data_csize, int mode, int *need) {
+    int   i, end;
+    int   ret;
+    int   flg;
+    int   noFile;
+    char *name;
+
+    flg = 0;
+
+    if (need != NULL) {
+        *need = 0;
+    }
+
+    if (no > 0) {
+        return -1;
+    }
+
+    ret = _P3MC_file_chk(memc_getfilename(-1), 964, need);
+    if (ret == -2) {
+        ret = 0;
+    }
+
+    name = memc_getfilename(-2);
+    if (name != NULL) {
+        flg = _P3MC_file_chk(name, P3MC_GetIconSize(mode), need) != 0;
+    }
+
+    name = memc_getfilename(-3);
+    if (name != NULL) {
+        if (_P3MC_file_chk(name, P3MC_GetIconSize(mode), need)) {
+            flg = 1;
+        }
+    }
+
+    name = memc_getfilename(-4);
+    if (name != NULL) {
+        if (_P3MC_file_chk(name, P3MC_GetIconSize(mode), need)) {
+            flg = 1;
+        }
+    }
+
+    noFile = (ret == 0 && flg == 0);
+
+    if (no < 0) {
+        no = 0;
+        end = 1;
+    } else {
+        end = no + 1;
+    }
+
+    for (i = no; i < end; i++) {
+        ret = _P3MC_file_chk(memc_getfilename(i), data_csize, need);
+        if (ret == -2) {
+            return -2;
+        }
+        if (ret == -1 && noFile) {
+            return -3;
+        }
+        if (ret == 0 && !noFile) {
+            return -1;
+        }
+    }
+
+    return noFile ? 0 : -1;
+}
 
 static int _P3MC_file_chk(char *name, int size, int *need) {
     int             i, j;
@@ -735,7 +799,214 @@ void P3MC_GetUserEnd(void) {
     pUChkWork = NULL;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/p3mc", P3MC_GetUserCheck);
+int P3MC_GetUserCheck(void) {
+    GETUSER_WORK *pWork;
+    P3MC_WORK    *pw = &P3MC_Work;
+    P3MC_USRLST  *pUser;
+    int           ret;
+    int           clr;
+
+    pWork = pUChkWork;
+    clr = 0;
+
+    if (pWork == NULL) {
+        return 1;
+    }
+
+    pUser = pWork->pUserLst;
+
+    if (pWork->curState == 0) {
+        ret = _P3MC_MemcCheck(pWork->curUserMode, pWork->dirTable);
+        if (ret < 0) {
+            return -2;
+        }
+        if (ret == 3) {
+            return 3;
+        }
+
+        if (memc_getChangeState()) {
+            pUser->logPage_flg = 0;
+            pUser->repPage_flg = 0;
+            pUser->nGetUser = 0;
+            pUser->nLogGet = 0;
+            pUser->nRepGet = 0;
+            memset(pUser->plog_user, 0, sizeof(pUser->plog_user));
+            memset(pUser->prep_user, 0, sizeof(pUser->prep_user));
+            clr = 1;
+        }
+
+        P3MC_CheckChangeClear();
+        pWork->curState = 1;
+
+        if (clr) {
+            return -1;
+        }
+    }
+
+    if (pWork->curState == 1) {
+        int i;
+        int logFlg;
+        int repFlg;
+
+        logFlg = 0;
+        if (pWork->curUserMode & 1) {
+            for (i = 0; i < 80; i++) {
+                if (McLogFileFlg[i]) {
+                    logFlg |= 1;
+                }
+            }
+            if (!logFlg) {
+                pUser->logPage_flg = 1;
+                pUser->nLogGet = 0;
+            }
+        }
+
+        repFlg = 0;
+        if (pWork->curUserMode & 2) {
+            for (i = 0; i < 80; i++) {
+                if (McReplayFileFlg[i]) {
+                    repFlg |= 1;
+                }
+            }
+            if (!repFlg) {
+                pUser->repPage_flg = 1;
+                pUser->nRepGet = 0;
+            }
+        }
+
+        if (!(logFlg | repFlg)) {
+            return 4;
+        }
+
+        pWork->curState = 2;
+        return -2;
+    }
+
+next:
+    if (pWork->curFno > 0 && pWork->curFno <= 80) {
+        ret = _P3MC_loadCheck(pw, 0);
+        if (ret < 0) {
+            return -1;
+        }
+
+        if ((ret >= 1 && ret <= 3) || ret == 5) {
+            if (pWork->curFno != 1) {
+                ret = 1;
+            }
+            if (ret == 2) {
+                return 4;
+            }
+            return ret;
+        }
+
+        if (ret == 0) {
+            P3MC_AddUser(pUser, pWork->curMode, (USER_DATA *)&pWork->UserHeadTmp[16]);
+        } else if (ret == 6 || ret == 4 || ret == 11) {
+            _P3MC_AddUserBroken(pUser, pWork->curMode, pWork->curFno - 1);
+        }
+    }
+
+    goto test;
+    for (;;) {
+        if (pWork->curFno < 80) {
+        body:
+            {
+            int    flg = 0;
+            int    size;
+            u_char fflg;
+
+            switch (pWork->curMode) {
+            case 1:
+                flg = pUser->logPage_flg;
+                break;
+            case 2:
+                flg = pUser->repPage_flg;
+                break;
+            }
+
+            if (flg) {
+                pWork->curFno++;
+                goto test;
+            }
+
+            fflg = 0;
+            size = 0;
+            switch (pWork->curMode) {
+            case 1:
+                size = UChkSize[0];
+                fflg = McLogFileFlg[pWork->curFno];
+                break;
+            case 2:
+                size = UChkSize[1];
+                fflg = McReplayFileFlg[pWork->curFno];
+                break;
+            }
+
+            if (fflg) {
+                pWork->chkData.pMemTop = pWork->UserHeadTmp;
+                pWork->chkData.rwsize = sizeof(pWork->UserHeadTmp);
+                pWork->chkData.datasize = size;
+                P3MC_LoadUser(pWork->curMode, pWork->curFno, &pWork->chkData, 0);
+                _P3MC_dataCheckFunc(pw, _P3MC_CheckUserDataHead);
+                if (pWork->bFirst) {
+                    P3MC_Work.prg = 0x1001;
+                } else {
+                    P3MC_Work.prg = 0x1002;
+                }
+                pWork->curFno++;
+                if (pWork->curFno > 80) {
+                    goto test;
+                }
+                goto next;
+            } else {
+                pWork->curFno++;
+            }
+            }
+        test:
+            if (pWork->curFno < 80) {
+                goto body;
+            }
+        }
+
+        switch (pWork->curMode) {
+        case 1:
+            pUser->logPage_flg = 1;
+            break;
+        case 2:
+            pUser->repPage_flg = 1;
+            break;
+        }
+
+    again:
+        pWork->curMode <<= 1;
+        if (pWork->curMode < 3) {
+            if (!(pWork->curMode & pWork->curUserMode)) {
+                goto again;
+            }
+            pWork->curFno = 0;
+        }
+
+        if (pWork->curFno > 0) {
+            break;
+        }
+    }
+
+    {
+        int chk = 0;
+        if (pUser->nGetUser) {
+            if (pWork->curUserMode & 1) {
+                chk = pUser->nLogGet != 0;
+            }
+            if (pWork->curUserMode & 2) {
+                if (pUser->nRepGet) {
+                    chk = 1;
+                }
+            }
+        }
+
+        return chk ? 0 : 4;
+    }
+}
 
 void P3MC_AddUser(P3MC_USRLST *pUser, int mode, USER_DATA *puser) {
     USER_DATA *newUser = &pUser->getUser[pUser->nGetUser];
@@ -1097,7 +1368,7 @@ int P3MC_LoadUser(int mode, int fileNo, MCRWDATA_HDL *pdhdl, int flg) {
     _P3MC_SetUserDirName(mode, fileNo);
     _P3MC_dataCheckFunc(pw, _P3MC_CheckUserData);
 
-    pw->prg = 0x1000;
+    P3MC_Work.prg = 0x1000;
     pw->dstat = 0;
 
     pw->data_mode = mode;
@@ -1113,7 +1384,7 @@ int P3MC_LoadCheck(void) {
     int        re;
     P3MC_WORK *pw = &P3MC_Work;
 
-    re = _P3MC_loadCheck(pw, 0);
+    re = _P3MC_loadCheck(&P3MC_Work, 0);
     if (re < 0) {
         if (pw->dstat == 0) {
             return -1;
