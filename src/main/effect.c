@@ -12,7 +12,13 @@ static sceGsStoreImage gs_simage;
 static sceGsLoadImage gs_loadimg;
 
 #define WV_SCREEN_W (640)
+#ifdef VERSION_PAL
+#define WV_SCREEN_H (256)
+#undef GS_Y_COORD
+#define GS_Y_COORD(y) ((2048 - (WV_SCREEN_H / 2) + y) << 4)
+#else
 #define WV_SCREEN_H (224)
+#endif
 
 void CG_WaveInit(WAVE_STR *wstr) {
     wstr->currentAng = 0.0f;
@@ -126,7 +132,7 @@ void UG_AlpDisp(PLH_STR *plh_pp, sceGsFrame *frame_pp, sceGifPacket *alpPkSpr) {
                                                                /*FIX*/plh_pp->alp));
 
     sceGifPkAddGsAD(alpPkSpr, SCE_GS_CLAMP_1, SCE_GS_SET_CLAMP(/*WMS*/SCE_GS_REGION_CLAMP, /*WMT*/SCE_GS_REGION_CLAMP,
-                                                               /*MINU*/0, /*MAXU*/(640-1), /*MINV*/0, /*MAXV*/(224-1)));
+                                                               /*MINU*/0, /*MAXU*/(640-1), /*MINV*/0, /*MAXV*/(WV_SCREEN_H-1)));
     sceGifPkAddGsAD(alpPkSpr, SCE_GS_COLCLAMP, SCE_GS_SET_COLCLAMP(1));
 
     sceGifPkAddGsAD(alpPkSpr, SCE_GS_PABE, SCE_GS_SET_PABE(FALSE));
@@ -150,8 +156,8 @@ void UG_AlpDisp(PLH_STR *plh_pp, sceGsFrame *frame_pp, sceGifPacket *alpPkSpr) {
         short ofs_tbl[4][2] = {
             { 0,   0   },
             { 640, 0   },
-            { 0,   224 },
-            { 640, 224 }
+            { 0,   WV_SCREEN_H },
+            { 640, WV_SCREEN_H }
         };
         int   tmp0, tmp1;
 
@@ -195,8 +201,8 @@ void UG_MozaikuDisp(MOZAIKU_STR *moz_pp, sceGsFrame *frame_pp, sceGifPacket *moz
     sceGifPkAddGsAD(mozPkSpr, SCE_GS_TEX1_1, SCE_GS_SET_TEX1(0, 0, 0, 0, 0, 0, 0));
     sceGifPkAddGsAD(mozPkSpr, SCE_GS_PRIM, SCE_GS_SET_PRIM(6, 0, 1, 0, 0, 0, 1, 0, 0));
 
-    sceGifPkAddGsAD(mozPkSpr, SCE_GS_UV, 0xe002800);
-    sceGifPkAddGsAD(mozPkSpr, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(GS_X_COORD(640), GS_Y_COORD(224), 0));
+    sceGifPkAddGsAD(mozPkSpr, SCE_GS_UV, (WV_SCREEN_H << 20) | 0x2800);
+    sceGifPkAddGsAD(mozPkSpr, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(GS_X_COORD(640), GS_Y_COORD(WV_SCREEN_H), 0));
 
     sceGifPkAddGsAD(mozPkSpr, SCE_GS_UV, SCE_GS_SET_UV(0, 0));
     sceGifPkAddGsAD(mozPkSpr, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(GS_X_COORD(0), GS_Y_COORD(0), 1));
@@ -227,7 +233,7 @@ void UG_FadeDisp(FADE_MAKE_STR *fade_pp, sceGifPacket *fadePkSpr, sceGsFrame *te
         sceGifPkAddGsAD(fadePkSpr, SCE_GS_RGBAQ, SCE_GS_SET_RGBAQ(fade_pp->r, fade_pp->g, fade_pp->b, fade_pp->alp, 0));
         sceGifPkAddGsAD(fadePkSpr, SCE_GS_PRIM, SCE_GS_SET_PRIM(SCE_GS_PRIM_SPRITE, 0, 0, 0, 1, 0, 1, 0, 0));
         sceGifPkAddGsAD(fadePkSpr, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(GS_X_COORD(0), GS_Y_COORD(0), 1));
-        sceGifPkAddGsAD(fadePkSpr, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(GS_X_COORD(640), GS_Y_COORD(224), 1));
+        sceGifPkAddGsAD(fadePkSpr, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(GS_X_COORD(640), GS_Y_COORD(WV_SCREEN_H), 1));
         return;
     }
 
@@ -240,8 +246,8 @@ void UG_FadeDisp(FADE_MAKE_STR *fade_pp, sceGifPacket *fadePkSpr, sceGsFrame *te
     sceGifPkAddGsAD(fadePkSpr, SCE_GS_UV, SCE_GS_SET_UV(0, 0));
     sceGifPkAddGsAD(fadePkSpr, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(GS_X_COORD(0), GS_Y_COORD(0), 1));
 
-    sceGifPkAddGsAD(fadePkSpr, SCE_GS_UV, 0xe002800);
-    sceGifPkAddGsAD(fadePkSpr, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(GS_X_COORD(640), GS_Y_COORD(224), 1));
+    sceGifPkAddGsAD(fadePkSpr, SCE_GS_UV, (WV_SCREEN_H << 20) | 0x2800);
+    sceGifPkAddGsAD(fadePkSpr, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(GS_X_COORD(640), GS_Y_COORD(WV_SCREEN_H), 1));
 }
 
 void UG_FadeDisp2(FADE_MAKE_STR *fade_pp, sceGifPacket *fadePkSpr, sceGsFrame *texFr_pp, float scale) {
@@ -259,7 +265,7 @@ void UG_FadeDisp2(FADE_MAKE_STR *fade_pp, sceGifPacket *fadePkSpr, sceGsFrame *t
         sceGifPkAddGsAD(fadePkSpr, SCE_GS_RGBAQ, SCE_GS_SET_RGBAQ(fade_pp->r, fade_pp->g, fade_pp->b, fade_pp->alp, 0));
         sceGifPkAddGsAD(fadePkSpr, SCE_GS_PRIM, SCE_GS_SET_PRIM(6, 0, 0, 0, 1, 0, 1, 0, 0));
         sceGifPkAddGsAD(fadePkSpr, SCE_GS_XYZ2, SCE_GS_SET_XYZ(GS_X_COORD(0), GS_Y_COORD(0), 1));
-        sceGifPkAddGsAD(fadePkSpr, SCE_GS_XYZ2, SCE_GS_SET_XYZ(GS_X_COORD(640), GS_Y_COORD(224), 1));
+        sceGifPkAddGsAD(fadePkSpr, SCE_GS_XYZ2, SCE_GS_SET_XYZ(GS_X_COORD(640), GS_Y_COORD(WV_SCREEN_H), 1));
         return;
     }
 

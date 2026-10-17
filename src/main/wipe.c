@@ -17,6 +17,24 @@
 
 #include <stdio.h>
 
+#ifdef VERSION_PAL
+#define WIPE_SCREEN_H (256)
+#define WIPE_TBP_DRAW2 (7680)
+#define WIPE_MOVE_MAX (400)
+#define WIPE_LOGO_PERIOD (300)
+#define WIPE_OUT_FRAMES (24)
+#define WIPE_FRAMERATE (50.0f)
+#define WIPE_YESNO_FILE (25)
+#else
+#define WIPE_SCREEN_H (224)
+#define WIPE_TBP_DRAW2 TBP_VRAM_DRAW2
+#define WIPE_MOVE_MAX (480)
+#define WIPE_LOGO_PERIOD (360)
+#define WIPE_OUT_FRAMES (28)
+#define WIPE_FRAMERATE (60.0f)
+#define WIPE_YESNO_FILE (47)
+#endif
+
 static SNDTAP sndtap_wipe[] = {
     /* STW_TURN_IN */
     { .prg = 0, .key = 0xc,  .volume = 80 },
@@ -264,7 +282,7 @@ static void LocalBufCopy(int disp) {
         break;
     }
 
-    GGsSetLocalMoveImage(&mi, dbp, 10, 0, 0, 0, sbp, 10, 0, 0, 0, 640, 224, 0);
+    GGsSetLocalMoveImage(&mi, dbp, 10, 0, 0, 0, sbp, 10, 0, 0, 0, 640, WIPE_SCREEN_H, 0);
     FlushCache(WRITEBACK_DCACHE);
 
     GGsExecLocalMoveImage(&mi);
@@ -323,7 +341,7 @@ static void lddisp_init_pr(void) {
     LDMAP *ldmap_pp;
     int    i;
 
-    PrSetFrameRate(60.0f);
+    PrSetFrameRate(WIPE_FRAMERATE);
     ldmap_hdl = PrInitializeScene(&DBufDc.draw01, "wipe recode\0", -1);
 
     ldmap_pp = ldmap;
@@ -410,10 +428,10 @@ void WipeLoadInDisp(void *x) {
         }
 
         if (!loading_wipe_switch) {
-            ldmove_rate = 480 - ldmove_rate;
+            ldmove_rate = WIPE_MOVE_MAX - ldmove_rate;
         }
 
-        ldlogo_rate = timer % 360;
+        ldlogo_rate = timer % WIPE_LOGO_PERIOD;
 
         lddisp_init_pr();
         lddisp_draw_on(LDMAP_TURN);
@@ -465,7 +483,7 @@ void WipeLoadInDispNR(void) {
         ldmove_rate = 0;
         ldrecode_rate = 0;
         if (!loading_wipe_switch) {
-            ldmove_rate = 480;
+            ldmove_rate = WIPE_MOVE_MAX;
         }
 
         lddisp_init_pr();
@@ -549,10 +567,10 @@ static void WipeLoadOutDisp(void *x) {
         ldrecode_rate = wipeTimeGetInWait(timer, WSHC_OUT);
 
         if (!loading_wipe_switch) {
-            ldmove_rate = 480 - ldmove_rate;
+            ldmove_rate = WIPE_MOVE_MAX - ldmove_rate;
         }
 
-        ldlogo_rate = timer % 360;
+        ldlogo_rate = timer % WIPE_LOGO_PERIOD;
 
         lddisp_init_pr();
         lddisp_draw_on(LDMAP_TURN);
@@ -564,7 +582,7 @@ static void WipeLoadOutDisp(void *x) {
 
         MtcWait(1);
         timer++;
-    } while (timer < 28);
+    } while (timer < WIPE_OUT_FRAMES);
 
     WipeLoadOutDispNR();
     wipe_end_flag = TRUE;
@@ -589,11 +607,11 @@ void WipeLoadInDispSame(void *x) {
         .x = 2048, .y = 2048,
         .scalex = 256, .scaley = 256,
         .u = 0, .v = 0,
-        .w = 640, .h = 224,
+        .w = 640, .h = WIPE_SCREEN_H,
     };
     SPR_DAT  spr_dat  = {};
 
-    spr_dat.GsTex0 = SCE_GS_SET_TEX0(TBP_VRAM_DRAW2, 10, 0, 10, 8, 0, 0, 0, 0, 0, 0, 0);
+    spr_dat.GsTex0 = SCE_GS_SET_TEX0(WIPE_TBP_DRAW2, 10, 0, 10, 8, 0, 0, 0, 0, 0, 0, 0);
 
     wipe_end_flag = TRUE;
     SprInit();
@@ -654,12 +672,12 @@ void WipeYesNoDispTask(void *x) {
         .x = 2048, .y = 2048,
         .scalex = 256, .scaley = 256,
         .u = 0, .v = 0,
-        .w = 640, .h = 224,
+        .w = 640, .h = WIPE_SCREEN_H,
     };
 
     SPR_DAT spr_dat = {};
 
-    spr_dat.GsTex0 = SCE_GS_SET_TEX0(TBP_VRAM_DRAW2, 10, 0, 10, 8, 0, 0, 0, 0, 0, 0, 0);;
+    spr_dat.GsTex0 = SCE_GS_SET_TEX0(WIPE_TBP_DRAW2, 10, 0, 10, 8, 0, 0, 0, 0, 0, 0, 0);;
 
     SprInit();
 
@@ -676,10 +694,10 @@ void WipeYesNoDispTask(void *x) {
         men_tmp = PrGetMendererRatio();
 
         PrSetMendererRatio(0.0f);
-        PrSetFrameRate(60.0f);
+        PrSetFrameRate(WIPE_FRAMERATE);
 
         scn_hdl = PrInitializeScene(&DBufDc.draw01, "wipe", -1);
-        spm_hdl = PrInitializeModel(cmnfGetFileAdrs(47), scn_hdl);
+        spm_hdl = PrInitializeModel(cmnfGetFileAdrs(WIPE_YESNO_FILE), scn_hdl);
         PrShowModel(spm_hdl, NULL);
         PrSetSceneEnv(scn_hdl, DrawGetDrawEnvP(DNUM_DRAW));
 
@@ -716,7 +734,7 @@ static VCLR_PARA vclr_para_disp = { 255, 255, 255, 0 };
 static void WipeInitPrDataPara(sceGsFrame *fr_pp) {
     int fbp;
 
-    PrSetFrameRate(60.0f);
+    PrSetFrameRate(WIPE_FRAMERATE);
     
     fbp = DrawGetFbpPos(DNUM_VRAM2);
     wipe_para_str.scene_hdl = PrInitializeScene(&DBufDc.draw01, "wipe para", fbp);
@@ -785,12 +803,12 @@ static void WipeParaInDisp(void *x) {
         .x = 2048, .y = 2048,
         .scalex = 256, .scaley = 256,
         .u = 0, .v = 0,
-        .w = 640, .h = 224,
+        .w = 640, .h = WIPE_SCREEN_H,
     };
     SPR_DAT      spr_dat   = {};
     int          timer;
 
-    spr_dat.GsTex0 = SCE_GS_SET_TEX0(TBP_VRAM_DRAW2, 10, 0, 10, 8, 1, 1, 0, 0, 0, 0, 0);
+    spr_dat.GsTex0 = SCE_GS_SET_TEX0(WIPE_TBP_DRAW2, 10, 0, 10, 8, 1, 1, 0, 0, 0, 0, 0);
 
     SprInit();
     TimeCallbackTimeSetChan(TCBK_CHANNEL_WIPE, 0);
@@ -852,12 +870,12 @@ static void WipeParaInDispMove(void *x) {
         .x = 2048, .y = 2048,
         .scalex = 256, .scaley = 256,
         .u = 0, .v = 0,
-        .w = 640, .h = 224,
+        .w = 640, .h = WIPE_SCREEN_H,
     };
     SPR_DAT   spr_dat   = {};
     int       timer;
 
-    spr_dat.GsTex0 = SCE_GS_SET_TEX0(TBP_VRAM_DRAW2, 10, 0, 10, 8, 1, 1, 0, 0, 0, 0, 0);
+    spr_dat.GsTex0 = SCE_GS_SET_TEX0(WIPE_TBP_DRAW2, 10, 0, 10, 8, 1, 1, 0, 0, 0, 0, 0);
 
     SprInit();
     TimeCallbackTimeSetChan(TCBK_CHANNEL_WIPE, 0);
@@ -907,12 +925,12 @@ static void WipeParaOutDisp(void *x) {
         .x = 2048, .y = 2048,
         .scalex = 256, .scaley = 256,
         .u = 0, .v = 0,
-        .w = 640, .h = 224,
+        .w = 640, .h = WIPE_SCREEN_H,
     };
     SPR_DAT   spr_dat   = {};
     int       timer     = 0;
 
-    spr_dat.GsTex0 = SCE_GS_SET_TEX0(TBP_VRAM_DRAW2, 10, 0, 10, 8, 1, 1, 0, 0, 0, 0, 0);
+    spr_dat.GsTex0 = SCE_GS_SET_TEX0(WIPE_TBP_DRAW2, 10, 0, 10, 8, 1, 1, 0, 0, 0, 0, 0);
 
     SprInit();
 
@@ -1039,22 +1057,22 @@ static void WipeBoxyInDisp(void *x) {
         .x = 2048, .y = 2048,
         .scalex = 256, .scaley = 256,
         .u = 0, .v = 0,
-        .w = 640, .h = 224,
+        .w = 640, .h = WIPE_SCREEN_H,
     };
     SPR_DAT  spr_dat  = {};
 
-    spr_dat.GsTex0 = SCE_GS_SET_TEX0(TBP_VRAM_DRAW2, 10, 0, 10, 8, 0, 0, 0, 0, 0, 0, 0);
+    spr_dat.GsTex0 = SCE_GS_SET_TEX0(WIPE_TBP_DRAW2, 10, 0, 10, 8, 0, 0, 0, 0, 0, 0, 0);
 
     Tim2Trans(cmnfGetFileAdrs(79));
     SprInit();
 
-    PrSetFrameRate(60.0f);
+    PrSetFrameRate(WIPE_FRAMERATE);
 
     while (1) {
         men_tmp = PrGetMendererRatio();
 
         PrSetMendererRatio(0.0f);
-        PrSetFrameRate(60.0f);
+        PrSetFrameRate(WIPE_FRAMERATE);
 
         scn2_hdl = PrInitializeScene(&DBufDc.draw01, "wipe boxy 2", -1);
         spm2_hdl = PrInitializeModel(cmnfGetFileAdrs(40), scn2_hdl);
@@ -1165,12 +1183,12 @@ static void WipeBoxyWaitDisp(void *x) {
     int   animate_frame;
 
     animate_frame = 0;
-    PrSetFrameRate(60.0f);
+    PrSetFrameRate(WIPE_FRAMERATE);
 
     while (1) {
         men_tmp = PrGetMendererRatio();
         PrSetMendererRatio(0.0f);
-        PrSetFrameRate(60.0f);
+        PrSetFrameRate(WIPE_FRAMERATE);
 
         scn_hdl = PrInitializeScene(&DBufDc.draw01, "wipe boxy wait", -1);
         spm_hdl = PrInitializeModel(cmnfGetFileAdrs(15), scn_hdl);
