@@ -479,11 +479,20 @@ float PrGetModelDisturbance(PrModelObject *model) {
     return model->m_disturbance;
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetVertexNum);
+PR_EXTERN
+int PrGetVertexNum(PrModelObject *model) {
+    return *reinterpret_cast<int*>(reinterpret_cast<char*>(model->m_spm_image) + 0x5C);
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetModelName);
+PR_EXTERN
+char* PrGetModelName(PrModelObject *model) {
+    return reinterpret_cast<char*>(model->m_spm_image) + 0x10;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetAnimationName);
+PR_EXTERN
+char* PrGetAnimationName(SpaFileHeader *animation) {
+    return reinterpret_cast<char*>(animation) + 0x18;
+}
 
 PR_EXTERN
 char* PrGetCameraName(SpcFileHeader *camera) {

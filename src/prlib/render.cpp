@@ -63,7 +63,14 @@ void PrSceneObject::PrepareScreenModelRender() {
 
 INCLUDE_ASM("asm/nonmatchings/prlib/render", CalculateCurrentMatrix__13PrModelObject);
 
-INCLUDE_ASM("asm/nonmatchings/prlib/render", CalculateCurrentMatrix__13SpmFileHeaderP13PrModelObjectRCt8NaMATRIX3Zfi4i4);
+void SpmFileHeader::CalculateCurrentMatrix(PrModelObject *model, const NaMATRIX<float, 4, 4>& arg1) {
+    m_nodes[0]->ComposeGlobalMatrix(model, arg1);
+
+    for (u_int i = 1; i < m_node_num; i++) {
+        SpmNode *node = m_nodes[i];
+        node->ComposeGlobalMatrix(model, node->unk164->unk40);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/prlib/render", CalculateCurrentMatrixAnimation__13SpmFileHeaderP13PrModelObjectRCt8NaMATRIX3Zfi4i4);
 
@@ -226,7 +233,19 @@ INCLUDE_ASM("asm/nonmatchings/prlib/render", RenderContext2Node__7SpmNodeP13PrMo
 INCLUDE_ASM("asm/nonmatchings/prlib/render", func_00145DB0);
 
 /* prlib/render.cpp */
-INCLUDE_ASM("asm/nonmatchings/prlib/render", ComposeGlobalMatrix__7SpmNodeP13PrModelObjectRCt8NaMATRIX3Zfi4i4);
+void SpmNode::ComposeGlobalMatrix(PrModelObject *model, const NaMATRIX<float, 4, 4>& arg1) {
+    if (unk164 != NULL && !(unk164->m_flags & 0x4000)) {
+        m_flags &= ~0x4000;
+    } else if ((((int)m_flags >> 17) ^ 1) & 1) {
+        m_flags |= 0x4000;
+    } else {
+        m_flags &= ~0x4000;
+    }
+
+    if (m_flags & 0x4000) {
+        ComposeGlobalMatrixWithoutVisibility(model, arg1);
+    }
+}
 
 /* prlib/renderstuff.h */
 INCLUDE_ASM("asm/nonmatchings/prlib/render", func_00145E50);
