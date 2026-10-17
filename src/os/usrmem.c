@@ -30,7 +30,7 @@ void UsrMemClearEnd(void) {
 
 u_int UsrMemGetAdr(int id) {
     if (id >= usrMemPosCnt) {
-        printf("UsrMemGetAdr ID over[%d]\n", id);
+        DPRINTF("UsrMemGetAdr ID over[%d]\n", id);
         return 0;
     }
 
@@ -39,7 +39,7 @@ u_int UsrMemGetAdr(int id) {
 
 u_int UsrMemGetSize(int id) {
     if (id >= usrMemPosCnt) {
-        printf("UsrMemGetSize ID over[%d]\n", id);
+        DPRINTF("UsrMemGetSize ID over[%d]\n", id);
         return 0;
     }
 
@@ -48,7 +48,7 @@ u_int UsrMemGetSize(int id) {
 
 u_int UsrMemGetEndAdr(int id) {
     if (id >= usrMemPosEndCnt) {
-        printf("UsrMemGetEndAdr ID over[%d]\n", id);
+        DPRINTF("UsrMemGetEndAdr ID over[%d]\n", id);
         return 0;
     }
 
@@ -57,7 +57,7 @@ u_int UsrMemGetEndAdr(int id) {
 
 u_int UsrMemGetEndSize(int id) {
     if (id >= usrMemPosEndCnt) {
-        printf("UsrMemGetEndSize ID over[%d]\n", id);
+        DPRINTF("UsrMemGetEndSize ID over[%d]\n", id);
         return 0;
     }
 
@@ -79,7 +79,7 @@ u_int UsrMemAlloc(int size) {
     usrMemPos[usrMemPosCnt] = ret + ((size + 15) / 16) * 16;
 
     if (usrMemPos[usrMemPosCnt] > UsrMemAllocEndNext()) {
-        printf("UsrMemAlloc size over [0x%08x]\n", usrMemPos[usrMemPosCnt] - UsrMemAllocEndNext());
+        DPRINTF("UsrMemAlloc size over [0x%08x]\n", usrMemPos[usrMemPosCnt] - UsrMemAllocEndNext());
         usrMemPosCnt--;
         return NULL;
     }
@@ -91,7 +91,7 @@ u_int UsrMemEndAlloc(int size) {
     u_int ret = UsrMemAllocEndNext() - ((size + 15) / 16) * 16;
 
     if (ret < UsrMemAllocNext()) {
-        printf("UsrMemEndAlloc size over [0x%08x]\n", UsrMemAllocNext() - ret);
+        DPRINTF("UsrMemEndAlloc size over [0x%08x]\n", UsrMemAllocNext() - ret);
         return NULL;
     }
 

@@ -145,7 +145,7 @@ int outsideDrawSceneReq(OVL_FUNC prg_pp, u_char pri, u_int useF, u_int drawF, vo
     SCENECTRL *scenectrl_pp;
 
     if (scenectrl_outside_cnt >= PR_ARRAYSIZE(scenectrl_outside)) {
-        printf("outside draw over!!\n");
+        DPRINTF("outside draw over!!\n");
         return 1;
     }
 
@@ -634,7 +634,7 @@ void DrawObjdatInit(int size, OBJDAT *od_pp, PR_SCENEHANDLE prf) {
             od_pp->handle = tmp_adr;
             break;
         default:
-            printf("Objdat Error!! type[%d]\n", od_pp->objdat_type);
+            DPRINTF("Objdat Error!! type[%d]\n", od_pp->objdat_type);
             break;
         }
     }
@@ -673,7 +673,7 @@ void DrawObjdatReset(int size, OBJDAT *od_pp) {
         case ODAT_CL2:
             break;
         default:
-            printf("Objdat Error!! type[%d]\n", od_pp->objdat_type);
+            DPRINTF("Objdat Error!! type[%d]\n", od_pp->objdat_type);
             break;
         }
     }
@@ -1303,12 +1303,12 @@ void Cl2MixTrans(int now_T, int max_T, u_char *cl2_0_pp, u_char *cl2_1_pp) {
     int             trTbw;
 
     if (!GetTim2Info(cl2_0_pp, &tim2info0, 1)) {
-        printf("This data isn't TIM2 file\n");
+        DPRINTF("This data isn't TIM2 file\n");
         return;
     }
 
     if (!GetTim2Info(cl2_1_pp, &tim2info1, 1)) {
-        printf("This data isn't TIM2 file\n");
+        DPRINTF("This data isn't TIM2 file\n");
         return;
     }
 
@@ -1317,7 +1317,7 @@ void Cl2MixTrans(int now_T, int max_T, u_char *cl2_0_pp, u_char *cl2_1_pp) {
     }
 
     if (tim2info0.fileH->FileId[0] != tim2info1.fileH->FileId[0]) {
-        printf("file type is difference\n");
+        DPRINTF("file type is difference\n");
         return;
     }
 
@@ -1363,7 +1363,7 @@ void Cl2MixTrans(int now_T, int max_T, u_char *cl2_0_pp, u_char *cl2_1_pp) {
     }
 
     if (trSize0 != trSize1 || trType0 != trType1 || trTbp0 != trTbp1) {
-        printf("Clut (Image) type is difference\n");
+        DPRINTF("Clut (Image) type is difference\n");
         return;
     }
 
@@ -1478,7 +1478,7 @@ void DrawObjTapCtrl(SCENE_OBJDATA *sod_pp, DR_TAP_REQ *tap_pp, int tap_num) {
     for (i = 0; i < tap_num; i++) {
         if (tap_pp[i].tap_id == 0xfe || sod_pp->tap_id == tap_pp[i].tap_id) {
             if (tap_pp[i].req_no >= sod_pp->objtapstr_size) {
-                printf(" TAP REQ Table over!! ID:%d num:%d\n", tap_pp[i].tap_id, tap_pp[i].req_no);
+                DPRINTF(" TAP REQ Table over!! ID:%d num:%d\n", tap_pp[i].tap_id, tap_pp[i].req_no);
                 continue;
             }
 
@@ -2625,7 +2625,7 @@ void DrawCtrlTblChange(int ctrlTbl) {
 
 int DrawTapReqTbl(int atap, PLAYER_INDEX pindx, u_char *prs_pp) {
     if (dr_tap_req_num >= 16) {
-        printf("TAP REQ OVER ERROR!!\n");
+        DPRINTF("TAP REQ OVER ERROR!!\n");
         return 1;
     }
 

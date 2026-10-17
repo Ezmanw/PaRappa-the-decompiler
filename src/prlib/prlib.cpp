@@ -100,13 +100,13 @@ PR_EXTERN
 PrModelObject* PrInitializeModel(SpmFileHeader *spm, PrSceneObject *scene) {
     if (spm->m_magic != SPM_MAGIC) {
     #if 0 /* (poly): Only present on McDonald's Demo build */
-        printf("PRLIB(FATAL): not a SPM file (illegal magic number)\n");
+        DPRINTF("PRLIB(FATAL): not a SPM file (illegal magic number)\n");
     #endif
         exit(0);
     }
     if (spm->m_version != SPM_VERSION) {
     #if 0 /* (poly): Only present on McDonald's Demo build */
-        printf("PRLIB(FATAL): not supported SPM file version %d:%d\n", spm->version, SPM_VERSION);
+        DPRINTF("PRLIB(FATAL): not supported SPM file version %d:%d\n", spm->version, SPM_VERSION);
     #endif
         exit(0);
     }

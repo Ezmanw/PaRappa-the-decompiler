@@ -152,7 +152,7 @@ void mccReqCtrlClr(void) {
 
 void mccReqScrSet(MC_REP_SCR *mcr_scr_pp) {
     if (mc_rep_str_local.scoreN_cnt >= 256) {
-        printf("score save over!!\n");
+        DPRINTF("score save over!!\n");
         return;
     }
 
@@ -165,7 +165,7 @@ MC_REP_SCR* mccReqScrGet(void) {
 
     if (mc_rep_ctrl.cl_scoreN_cnt >= 256 ||
         mc_rep_ctrl.cl_scoreN_cnt >= mc_rep_str_local.scoreN_cnt) {
-        printf("score load over!!\n");
+        DPRINTF("score load over!!\n");
         return NULL;
     }
 
@@ -176,7 +176,7 @@ MC_REP_SCR* mccReqScrGet(void) {
 
 void mccReqLvlSet(u_int lvl) {
     if (mc_rep_str_local.levelN_cnt >= 256) {
-        printf("level save over!!\n");
+        DPRINTF("level save over!!\n");
         return;
     }
 
@@ -189,7 +189,7 @@ u_int mccReqLvlGet(void) {
 
     if (mc_rep_ctrl.cl_levelN_cnt >= 256 ||
         mc_rep_ctrl.cl_levelN_cnt >= mc_rep_str_local.levelN_cnt) {
-        printf("level load over!!\n");
+        DPRINTF("level load over!!\n");
         return 0;
     }
 
@@ -202,7 +202,7 @@ void mccReqTapSet(u_int time, u_int useLine, u_int id, PLAYER_ENUM ply) {
     MC_REP_DAT *mcrd_pp;
 
     if (mc_rep_str_local.mc_rep_dat_cnt >= 2560) {
-        printf("tap save over!!\n");
+        DPRINTF("tap save over!!\n");
         return;
     }
 
@@ -241,7 +241,7 @@ void mccReqVSOTHSAVEset(VSOTHSAVE *sv) {
     int i;
 
     if (mc_rep_str_local.mc_vsoth_cnt >= 100) {
-        printf("vs oth save over!!\n");
+        DPRINTF("vs oth save over!!\n");
         return;
     }
 
@@ -257,7 +257,7 @@ int mccReqVSOTHSAVEget(VSOTHSAVE *sv) {
 
     if (mc_rep_ctrl.cl_vsoth_cnt >= 100 ||
         mc_rep_ctrl.cl_vsoth_cnt >= mc_rep_str_local.mc_vsoth_cnt) {
-        printf("vs oth load over!!\n");
+        DPRINTF("vs oth load over!!\n");
         return 0;
     }
     
@@ -333,7 +333,7 @@ void mccReqTapForward(u_int time, u_int useLine) {
             if (mcrd_pp->ply != i) break;
 
             (*rep_cnt)++;
-            printf("TAP forward!!\n");
+            DPRINTF("TAP forward!!\n");
         }
     }
 }
@@ -357,7 +357,7 @@ void mccReqTapForwardOwn(u_int time, u_int useLine, int ply) {
         if (mcrd_pp->ply != ply) break;
 
         (*rep_cnt)++;
-        printf("TAP forward!!\n");
+        DPRINTF("TAP forward!!\n");
     }
 }
 

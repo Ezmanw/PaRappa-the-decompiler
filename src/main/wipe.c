@@ -211,7 +211,7 @@ void wipeSndReq(SNDTAP_WIPE_ENUM req) {
     SNDTAP *sndtap_pp;
 
     if (req >= STW_MAX) {
-        printf("WIPE SND REQ OVER!![%d]\n", req);
+        DPRINTF("WIPE SND REQ OVER!![%d]\n", req);
         return;
     }
 
@@ -260,7 +260,7 @@ static void LocalBufCopy(int disp) {
         dbp = DrawGetTbpPos(DNUM_DRAW);
         break;
     default:
-        printf(" local copy error!!\n");
+        DPRINTF(" local copy error!!\n");
         break;
     }
 
@@ -696,7 +696,7 @@ void WipeYesNoDispTask(void *x) {
 }
 
 void wipeYesNoDispReq(void) {
-    printf("wipe yes/no req\n");
+    DPRINTF("wipe yes/no req\n");
 
     wipe_type = WIPE_TYPE_YES_NO;
     wipe_end_flag = TRUE;

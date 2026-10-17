@@ -746,7 +746,7 @@ void vsTapdatSetMemorySave(void) {
     for (i = 0; i < vs_tapdat_tmp_cnt; i++, tapdat_pp++) {
         int time = tapdat_pp->time / 24;
         if (time >= 32) {
-            printf("OTH SAVE OVER\n");
+            DPRINTF("OTH SAVE OVER\n");
         } else {
             vsothsave_tmp[time] = *(u_char*)&tapdat_pp->KeyIndex;
         }
@@ -787,7 +787,7 @@ void vsTapdatSet(SCORE_INDV_STR *sindv_pp) {
     int             KeyCodeAll;
     int             KeyCodeAllCk;
 
-    printf("new vs tap!!\n");
+    DPRINTF("new vs tap!!\n");
 
     KeyCodeAll = 0;
     KeyCodeAllCk = 0;
@@ -874,7 +874,7 @@ void vsTapdatSetMoto(SCORE_INDV_STR *sindv_pp) {
     TAPDAT *tapdat_pp;
 
     vs_tapdat_tmp_cnt = 0;
-    printf("reset moto!!\n");
+    DPRINTF("reset moto!!\n");
 
     tapset_pp = IndvGetTapSetAdrs(sindv_pp);
     tapdat_pp = tapset_pp->tapdat_pp;
@@ -986,13 +986,13 @@ SCRREC* ScrCtrlCurrentSearch(SCORE_INDV_STR *sindv_pp, int index, int frame) {
     SCRREC *scrrec_pp;
 
     if (score_str.stdat_dat_pp->scr_pp->scr_ctrl_num <= index) {
-        printf("ScrCtrlCurrentSearch index[%d] is over!!\n", index);
+        DPRINTF("ScrCtrlCurrentSearch index[%d] is over!!\n", index);
         return NULL;
     }
 
     scrrec_pp = sindv_pp->top_scr_ctrlpp[index].scrrec_pp;
     if (scrrec_pp == NULL) {
-        printf("ScrCtrlCurrentSearch index[%d] is NULL line!!\n", index);
+        DPRINTF("ScrCtrlCurrentSearch index[%d] is NULL line!!\n", index);
         return NULL;
     }
 
@@ -1203,8 +1203,8 @@ void tapLevelChange(SCORE_INDV_STR *sindv_pp) {
 
     exam_tbl_updownInit(sindv_pp);
 
-    printf("----- LEVEL CHANGE ----\n");
-    printf(" CTRL LEVEL before[%d]\n", global_data.tap_ctrl_level);
+    DPRINTF("----- LEVEL CHANGE ----\n");
+    DPRINTF(" CTRL LEVEL before[%d]\n", global_data.tap_ctrl_level);
 
     add_move = tmp_lv + global_data.tap_ctrl_level;
 
@@ -1217,8 +1217,8 @@ void tapLevelChange(SCORE_INDV_STR *sindv_pp) {
 
     global_data.tap_ctrl_level = add_move;
 
-    printf("            after [%d]\n\n", add_move);
-    printf(" PLAY LEVEL before[%d]\n", global_data.tapLevel);
+    DPRINTF("            after [%d]\n\n", add_move);
+    DPRINTF(" PLAY LEVEL before[%d]\n", global_data.tapLevel);
 
     old_num  = global_data.tapLevel;
     add_move = tapLevelChangeSub();
@@ -1240,11 +1240,11 @@ void tapLevelChange(SCORE_INDV_STR *sindv_pp) {
                 if (sindv_pp->scrdat_pp->sndrec_num > 23 &&
                     sindv_pp->scrdat_pp->sndrec_num < 27) {
                     add_move = old_num;
-                    printf("st8 sp same num:%d sndLine:%d\n", old_num, sindv_pp->scrdat_pp->sndrec_num);
+                    DPRINTF("st8 sp same num:%d sndLine:%d\n", old_num, sindv_pp->scrdat_pp->sndrec_num);
                 }
             } else {
                 add_move = old_num;
-                printf("st8 sp same num:%d\n", old_num);
+                DPRINTF("st8 sp same num:%d\n", old_num);
             }
         }
 
@@ -1259,7 +1259,7 @@ void tapLevelChange(SCORE_INDV_STR *sindv_pp) {
         selectIndvTapResetPlay(1);
     }
 
-    printf("            after [%d]\n\n", add_move);
+    DPRINTF("            after [%d]\n\n", add_move);
 }
 
 void ScrCtrlIndvNextRead(SCORE_INDV_STR *sindv_pp, int tap_res_f) {
@@ -1404,7 +1404,7 @@ void ScrCtrlIndvNextRead(SCORE_INDV_STR *sindv_pp, int tap_res_f) {
                 }
 
                 if (!yari_ff) {
-                    printf("ERROR! SUBJOB_NO_ID OVER!\n");
+                    DPRINTF("ERROR! SUBJOB_NO_ID OVER!\n");
                 }
 
                 break;
@@ -1431,7 +1431,7 @@ void ScrCtrlIndvNextRead(SCORE_INDV_STR *sindv_pp, int tap_res_f) {
     }
 
     if (sindv_pp->global_ply == NULL) {
-        printf("global_play is NULL [%d]\n", sindv_pp->plycode);
+        DPRINTF("global_play is NULL [%d]\n", sindv_pp->plycode);
     } else {
         tapLevelChange(sindv_pp);
     }
@@ -1702,7 +1702,7 @@ void tapReqGroupTapClear(PLAYER_INDEX pindex) {
 
 void tapReqGroup(TAPCT *tapct_pp, PLAYER_INDEX pindex, int sndId, u_char *tappress_pp) {
     if (pindex >= PINDEX_MAX) {
-        printf("tap group PINDEX over[%d]\n", pindex);
+        DPRINTF("tap group PINDEX over[%d]\n", pindex);
     }
 
     tap_groupe_str[pindex].timer       = 0;
@@ -1832,7 +1832,7 @@ void tapEventCheck(SCORE_INDV_STR *sindv_pp, int Ttime, int Ctime, int num) {
     PR_SCOPEEND()
 
     if (sindv_pp->tapset_pos >= sindv_pp->scrdat_pp->tapstr[global_data.tapLevel].tapset_size) {
-        printf("TAP !! tap set pos is OVER!!\n");
+        DPRINTF("TAP !! tap set pos is OVER!!\n");
         return;
     }
 
@@ -2148,7 +2148,7 @@ void tapEventCheck(SCORE_INDV_STR *sindv_pp, int Ttime, int Ctime, int num) {
         sindv_pp->scr_tap_memory_cnt++;
         if (sindv_pp->scr_tap_memory_cnt > 255) {
             sindv_pp->scr_tap_memory_cnt = 255;
-            printf(" KEY STACK OVER!!\n");
+            DPRINTF(" KEY STACK OVER!!\n");
         }
 
         if (global_data.play_typeL == PLAY_TYPE_ONE) {
@@ -2282,7 +2282,7 @@ static void on_th_make(EXAM_CHECK *ec_pp, CK_TH_ENUM ckth) {
     ec_pp->end_ofs = thnum_get(ofsTend / 4, ckth);
 
     if (ec_pp->tapset_pp == NULL) {
-        printf("score line over!!\n");
+        DPRINTF("score line over!!\n");
         return;
     }
 
@@ -3021,7 +3021,7 @@ void ScrMoveSetSub(SCORE_INDV_STR *sindv_pp, int Pnum, int sub_job, int sub_time
         }
     } else {
         u_char chantmp[2];
-        printf("file seek\n");
+        DPRINTF("file seek\n");
 
         tmp_cdsample = CdctrlSndTime2WP2sample(GetLineTempo(sub_job), goto_time);
         tmp_cdsample -= (GetTimeOfset(goto_job) * 48) / 256;
@@ -3110,7 +3110,7 @@ int ScrExamSetCheck(SCORE_INDV_STR *sindv_pp, int Pnum, int ctime_next, int indv
                         sindv_pp->global_ply->exam_score[i] = mcr_scr_pp->exam_score[i];
                     }
                 } else {
-                    printf("!!!mccReqScrGet over!!!\n");
+                    DPRINTF("!!!mccReqScrGet over!!!\n");
 
                     sindv_pp->global_ply->now_score = 0;
 
@@ -3259,7 +3259,7 @@ int ScrExamSetCheck(SCORE_INDV_STR *sindv_pp, int Pnum, int ctime_next, int indv
                         break;
                     case EXAM_HOOK: {
                         int nexton = ScrCtrlIndvNextReadLine(sindv_pp, 1);
-                        printf("hook exam!!\n");
+                        DPRINTF("hook exam!!\n");
 
                         MbarNikoSet(sindv_pp->global_ply->exam_tbl_up * 2, 0);
 
@@ -3268,20 +3268,20 @@ int ScrExamSetCheck(SCORE_INDV_STR *sindv_pp, int Pnum, int ctime_next, int indv
                                 scex_pp->exam_do = EXAM_DO_END_GO;
                                 scex_pp->scr_exam_job_pp = &scex_pp->scr_exam_job[0];
 
-                                printf("hook end job\n");
+                                DPRINTF("hook end job\n");
                             }
                         } else {
                             if (sindv_pp->global_ply->exam_tbl_up >= 10) {
                                 scex_pp->exam_do = EXAM_DO_END_GO;
                                 scex_pp->scr_exam_job_pp = &scex_pp->scr_exam_job[0];
 
-                                printf("hook end job\n");
+                                DPRINTF("hook end job\n");
                             } else {
                                 if (scex_pp->scr_exam_job[1].goto_line != -1) {
                                     scex_pp->exam_do = EXAM_DO_END_GO;
                                     scex_pp->scr_exam_job_pp = &scex_pp->scr_exam_job[1];
 
-                                    printf("hook loop job\n");
+                                    DPRINTF("hook loop job\n");
                                 }
                             }
                         }
@@ -3313,13 +3313,13 @@ int ScrExamSetCheck(SCORE_INDV_STR *sindv_pp, int Pnum, int ctime_next, int indv
                         gplay_my    = sindv_pp->global_ply;
                         gplay_enemy = score_indv_str[Pcode2Pindex(scex_pp->vsPlayer)].global_ply;
 
-                        printf("exam vs [%d] index[%d]\n", gplay_enemy, scex_pp->vsPlayer);
+                        DPRINTF("exam vs [%d] index[%d]\n", gplay_enemy, scex_pp->vsPlayer);
 
                         tapset_pp = IndvGetTapSetAdrs(sindv_pp);
                         if (tapset_pp->tapscode == TAPSCODE_ANSWER_F) {
                             int pointx;
 
-                            printf("first !!hantei[%d]\n", hantei_flag);
+                            DPRINTF("first !!hantei[%d]\n", hantei_flag);
 
                             if (sindv_pp->global_ply->now_score > 0) {
                                 pointx = sindv_pp->global_ply->now_score + 500;
@@ -3466,7 +3466,7 @@ int ScrExamSetCheck(SCORE_INDV_STR *sindv_pp, int Pnum, int ctime_next, int indv
                             }
                         }
 
-                        printf("vs cool point:%d  now point:%d\n", scex_pp->exam_coolP, scex_pp->exam_point);
+                        DPRINTF("vs cool point:%d  now point:%d\n", scex_pp->exam_coolP, scex_pp->exam_point);
 
                         if (scex_pp->exam_point > scex_pp->exam_coolP) {
                             if (gplay_my->exam_score[1] != 0) {
@@ -3792,7 +3792,7 @@ void subjobEvent(SCORE_INDV_STR *sindv_pp, int ctime_next) {
             int next_time = ScrCtrlIndvNextTime(sindv_pp, 1) - sindv_pp->current_time;
 
             PrDecelerateMenderer(((next_time * 3600.0f) + (GetLineTempo(sindv_pp->useLine) * 96.0f * 0.5f)) / (GetLineTempo(sindv_pp->useLine) * 96.0f));
-            printf("SCRSUBJ_STOP_MENDERER req\n");
+            DPRINTF("SCRSUBJ_STOP_MENDERER req\n");
             break;
         }
         case SCRSUBJ_BONUS_GAME:
@@ -3892,7 +3892,7 @@ static void ScrCtrlIndvJob(void) {
             if (check_time >= sindv_pp->wakeUpTime) {
                 int ttype; /* note: variable not in STABS (not required, but matches line numbers). */
 
-                printf("wake up now!! ckline[%d] time[%d] cktime[%d]\n", sindv_pp->wakeUpWaitLine, check_time, sindv_pp->wakeUpTime);
+                DPRINTF("wake up now!! ckline[%d] time[%d] cktime[%d]\n", sindv_pp->wakeUpWaitLine, check_time, sindv_pp->wakeUpTime);
 
                 TimeCallbackTimeSetChanTempo(sindv_pp->useLine, sindv_pp->wakeUpGoTime, GetLineTempo(sindv_pp->useLine));
 
@@ -3905,7 +3905,7 @@ static void ScrCtrlIndvJob(void) {
 
                 ttype = GetTimeType(sindv_pp->useLine);
                 if (ttype != GTIME_VSYNC) {
-                    printf("cd job now!!\n");
+                    DPRINTF("cd job now!!\n");
                     SetLineChannel(sindv_pp->useLine);
                     CdctrlWP2Play();
                     GlobalTimeJobChange(FGF_CD);
@@ -4183,7 +4183,7 @@ void ScrCtrlMainLoop(void *x) {
 
     if (GetTimeType(global_data.draw_tbl_top) != GTIME_VSYNC) {
         while (CdctrlWP2CheckBuffer()) {
-            printf("cd buffer wait\n");
+            DPRINTF("cd buffer wait\n");
             MtcWait(1);
         }
     }
@@ -4494,7 +4494,7 @@ void ScrCtrlInit(STDAT_DAT *sdat_pp, void *data_top) {
     for (i = 0; i < PR_ARRAYSIZE(score_str.stdat_dat_pp->sndfile); i++) {
         if (score_str.stdat_dat_pp->sndfile[i].fname != NULL) {
             while (!CdctrlSerch(&score_str.stdat_dat_pp->sndfile[i])) {
-                printf("file serch error![%s]\n", score_str.stdat_dat_pp->sndfile[i].fname);
+                DPRINTF("file serch error![%s]\n", score_str.stdat_dat_pp->sndfile[i].fname);
             }
         }
     }
@@ -4587,7 +4587,7 @@ int ScrEndCheckScore(void) {
             continue;
         }
         if (sindv_pp->status & SCS_END) {
-            printf("end end end[%d] line time[%d]\n", i, sindv_pp->top_scr_ctrlpp[i].lineTime);
+            DPRINTF("end end end[%d] line time[%d]\n", i, sindv_pp->top_scr_ctrlpp[i].lineTime);
             return 1;
         }
     }

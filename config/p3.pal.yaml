@@ -77,7 +77,7 @@ segments:
         - [0x1b3c0, asm, main/pack]
         - [0x1b5b8, asm, main/etc]
         - [0x1c338, asm, main/wipe]
-        - [0x1e460, asm, main/mcctrl]
+        - [0x1e460, c, main/mcctrl]
         - [0x1ed50, asm, main/main]
         - [0x21068, asm, main/cmnfile]
         - [0x21260, asm, main/p3str]
@@ -94,7 +94,7 @@ segments:
         - [0x3d3d8, asm, menu/pksprite]
 
         - [0x3f570, asm, iop_mdl/wp2cd_rpc]
-        - [0x3f7a0, asm, iop_mdl/tapctrl_rpc]
+        - [0x3f7a0, c, iop_mdl/tapctrl_rpc]
 
         # PAL-only: MPEG movie playback (not in the prototype)
         - [0x3f8c0, asm, pal/movie]
@@ -114,6 +114,8 @@ segments:
         - [0x8e1f8, data, pal/data_18e1f8]
         - [0x92898, .data, main/fadectrl]
         - [0x928b0, data, pal/data_1928b0]
+        - [0x95030, .data, main/mcctrl]
+        - [0x950f0, data, pal/data_1950f0]
 
         # .rodata
         - [0x277280, .rodata, dbug/dbgmsg]
@@ -121,6 +123,8 @@ segments:
         - [0x277320, rodata, pal/rodata_377320]
         - [0x277ac0, .rodata, os/tim2]
         - [0x277b10, rodata, pal/rodata_377b10]
+        - [0x279038, .rodata, main/mcctrl]
+        - [0x279044, rodata, pal/rodata_379044]
 
         # .gcc_except_table
         - [0x282b80, rodata, gcc_except_table]
@@ -138,6 +142,8 @@ segments:
         # .sbss
         - { type: .sbss, vram: 0x00383700, name: dbug/dbgmsg }
         - { type: sbss, vram: 0x00383718, name: pal/sbss_383718 }
+        - { type: .sbss, vram: 0x003837a0, name: main/mcctrl }
+        - { type: sbss, vram: 0x003837ac, name: pal/sbss_3837ac }
 
         # .bss
         - { type: bss, vram: 0x00383980, name: pal/bss_383980 }
@@ -147,6 +153,10 @@ segments:
         - { type: bss, vram: 0x01c48d80, name: pal/bss_1c48d80 }
         - { type: .bss, vram: 0x01c59b90, name: main/fadectrl }
         - { type: bss, vram: 0x01c59ba0, name: pal/bss_1c59ba0 }
+        - { type: .bss, vram: 0x01c5f0e8, name: main/mcctrl }
+        - { type: bss, vram: 0x01c63630, name: pal/bss_1c63630 }
+        - { type: .bss, vram: 0x01c6ea40, name: iop_mdl/tapctrl_rpc }
+        - { type: bss, vram: 0x01c6eab0, name: pal/bss_1c6eab0 }
 
     - name: mfifo
       type: code

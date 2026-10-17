@@ -165,7 +165,7 @@ void* cmnfGetFileAdrs(int num) {
     }
 
     if (num >= cfstr_pp->fnum) {
-        printf("CMN FILE NUM OVER[%d]", num);
+        DPRINTF("CMN FILE NUM OVER[%d]", num);
         return NULL;
     }
 
@@ -181,7 +181,7 @@ int cmnfGetFileSize(int num) {
     }
 
     if (num >= cfstr_pp->fnum) {
-        printf("CMN FILE NUM OVER[%d]", num);
+        DPRINTF("CMN FILE NUM OVER[%d]", num);
         return NULL;
     }
     

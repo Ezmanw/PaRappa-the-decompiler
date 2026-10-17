@@ -237,10 +237,10 @@
   "name": "mtcStackErrorCheck",
   "file": "os/mtc.c",
   "proto": 1053856,
-  "pal": null,
+  "pal": 1053856,
   "proto_size": 96,
-  "est": 1053832,
-  "conf": "estimate?"
+  "est": 1053856,
+  "conf": "anchored"
  },
  {
   "name": "MtcChangeThCtrl",
@@ -363,10 +363,10 @@
   "name": "GPadInit",
   "file": "os/syssub.c",
   "proto": 1055192,
-  "pal": null,
+  "pal": 1055240,
   "proto_size": 160,
   "est": 1055240,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "GPadExit",
@@ -615,10 +615,10 @@
   "name": "ReportHeapUsage",
   "file": "os/syssub.c",
   "proto": 1059864,
-  "pal": null,
+  "pal": 1059880,
   "proto_size": 208,
   "est": 1059880,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "usrMallcInit",
@@ -633,28 +633,28 @@
   "name": "usrMalloc",
   "file": "os/syssub.c",
   "proto": 1060088,
-  "pal": null,
+  "pal": 1059928,
   "proto_size": 152,
   "est": 1059928,
-  "conf": "estimate?"
+  "conf": "anchored"
  },
  {
   "name": "usrFree",
   "file": "os/syssub.c",
   "proto": 1060240,
-  "pal": null,
+  "pal": 1060072,
   "proto_size": 144,
-  "est": 1060080,
-  "conf": "estimate?"
+  "est": 1060072,
+  "conf": "anchored"
  },
  {
   "name": "usrMallcReport",
   "file": "os/syssub.c",
   "proto": 1060384,
-  "pal": null,
+  "pal": 1060168,
   "proto_size": 136,
-  "est": 1060224,
-  "conf": "estimate?"
+  "est": 1060168,
+  "conf": "anchored"
  },
  {
   "name": "DrawGetDrawEnvP",
@@ -750,10 +750,10 @@
   "name": "osFunc",
   "file": "os/system.c",
   "proto": 1062368,
-  "pal": null,
+  "pal": 1062376,
   "proto_size": 440,
   "est": 1062376,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "systemCtrlMain",
@@ -912,37 +912,37 @@
   "name": "UsrMemGetAdr",
   "file": "os/usrmem.c",
   "proto": 1064904,
-  "pal": null,
+  "pal": 1064832,
   "proto_size": 80,
   "est": 1064832,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "UsrMemGetSize",
   "file": "os/usrmem.c",
   "proto": 1064984,
-  "pal": null,
+  "pal": 1064880,
   "proto_size": 96,
-  "est": 1064912,
-  "conf": "estimate?"
+  "est": 1064880,
+  "conf": "anchored"
  },
  {
   "name": "UsrMemGetEndAdr",
   "file": "os/usrmem.c",
   "proto": 1065080,
-  "pal": null,
+  "pal": 1064952,
   "proto_size": 88,
-  "est": 1065008,
-  "conf": "estimate"
+  "est": 1064952,
+  "conf": "anchored"
  },
  {
   "name": "UsrMemGetEndSize",
   "file": "os/usrmem.c",
   "proto": 1065168,
-  "pal": null,
+  "pal": 1065008,
   "proto_size": 112,
-  "est": 1065096,
-  "conf": "estimate?"
+  "est": 1065008,
+  "conf": "anchored"
  },
  {
   "name": "UsrMemAllocNext",
@@ -966,19 +966,19 @@
   "name": "UsrMemAlloc",
   "file": "os/usrmem.c",
   "proto": 1065352,
-  "pal": null,
+  "pal": 1065160,
   "proto_size": 208,
   "est": 1065160,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "UsrMemEndAlloc",
   "file": "os/usrmem.c",
   "proto": 1065560,
-  "pal": null,
+  "pal": 1065320,
   "proto_size": 168,
-  "est": 1065368,
-  "conf": "estimate?"
+  "est": 1065320,
+  "conf": "anchored"
  },
  {
   "name": "UsrMemFree",
@@ -1164,10 +1164,10 @@
   "name": "CdctrlInit",
   "file": "main/cdctrl.c",
   "proto": 1070120,
-  "pal": null,
+  "pal": 1069800,
   "proto_size": 120,
-  "est": 1069840,
-  "conf": "estimate?"
+  "est": 1069800,
+  "conf": "anchored"
  },
  {
   "name": "CdctrlQuit",
@@ -1191,10 +1191,10 @@
   "name": "CdctrlSerch",
   "file": "main/cdctrl.c",
   "proto": 1070304,
-  "pal": null,
+  "pal": 1069960,
   "proto_size": 256,
   "est": 1069960,
-  "conf": "estimate?"
+  "conf": "anchored"
  },
  {
   "name": "cdctrlReadSub",
@@ -1299,10 +1299,10 @@
   "name": "CdctrlWP2SetChannel",
   "file": "main/cdctrl.c",
   "proto": 1073792,
-  "pal": null,
+  "pal": 1073216,
   "proto_size": 144,
   "est": 1073216,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "CdctrlWP2Set",
@@ -1317,19 +1317,19 @@
   "name": "CdctrlWP2SetFileSeek",
   "file": "main/cdctrl.c",
   "proto": 1074168,
-  "pal": null,
+  "pal": 1073552,
   "proto_size": 216,
   "est": 1073552,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "CdctrlWP2SetFileSeekChan",
   "file": "main/cdctrl.c",
   "proto": 1074384,
-  "pal": null,
+  "pal": 1073744,
   "proto_size": 240,
-  "est": 1073768,
-  "conf": "estimate?"
+  "est": 1073744,
+  "conf": "anchored"
  },
  {
   "name": "CdctrlWP2Seek",
@@ -1452,10 +1452,10 @@
   "name": "CdctrlWp2GetSampleTmpBuf",
   "file": "main/cdctrl.c",
   "proto": 1075224,
-  "pal": null,
+  "pal": 1074560,
   "proto_size": 104,
   "est": 1074560,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "CdctrlWp2GetSampleTmp",
@@ -1749,10 +1749,10 @@
   "name": "vsTapdatSetMoto",
   "file": "main/scrctrl.c",
   "proto": 1079992,
-  "pal": null,
+  "pal": 1079344,
   "proto_size": 224,
-  "est": 1079304,
-  "conf": "estimate?"
+  "est": 1079344,
+  "conf": "anchored"
  },
  {
   "name": "followTapInit",
@@ -1920,10 +1920,10 @@
   "name": "ScrCtrlIndvNextRead",
   "file": "main/scrctrl.c",
   "proto": 1082688,
-  "pal": null,
+  "pal": 1081808,
   "proto_size": 952,
-  "est": 1081936,
-  "conf": "estimate?"
+  "est": 1081808,
+  "conf": "anchored"
  },
  {
   "name": "intIndvStatusSet",
@@ -2082,10 +2082,10 @@
   "name": "tapReqGroup",
   "file": "main/scrctrl.c",
   "proto": 1085336,
-  "pal": null,
+  "pal": 1084416,
   "proto_size": 136,
   "est": 1084416,
-  "conf": "estimate?"
+  "conf": "anchored"
  },
  {
   "name": "tapReqGroupPoll",
@@ -2145,10 +2145,10 @@
   "name": "on_th_make",
   "file": "main/scrctrl.c",
   "proto": 1088744,
-  "pal": null,
+  "pal": 1087712,
   "proto_size": 640,
   "est": 1087712,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "exh_normal_add",
@@ -2379,10 +2379,10 @@
   "name": "ScrMoveSetSub",
   "file": "main/scrctrl.c",
   "proto": 1094544,
-  "pal": null,
+  "pal": 1093448,
   "proto_size": 568,
   "est": 1093448,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "ScrExamSetCheck",
@@ -2541,10 +2541,10 @@
   "name": "ScrCtrlInit",
   "file": "main/scrctrl.c",
   "proto": 1105704,
-  "pal": null,
+  "pal": 1103904,
   "proto_size": 1056,
   "est": 1103904,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "ScrCtrlQuit",
@@ -3081,10 +3081,10 @@
   "name": "outsideDrawSceneReq",
   "file": "main/drawctrl.c",
   "proto": 1115776,
-  "pal": null,
+  "pal": 1113928,
   "proto_size": 112,
   "est": 1113928,
-  "conf": "estimate?"
+  "conf": "anchored"
  },
  {
   "name": "getOutsideCtrlScene",
@@ -3288,10 +3288,10 @@
   "name": "DrawObjdatReset",
   "file": "main/drawctrl.c",
   "proto": 1119792,
-  "pal": null,
+  "pal": 1117904,
   "proto_size": 264,
-  "est": 1117920,
-  "conf": "estimate?"
+  "est": 1117904,
+  "conf": "anchored"
  },
  {
   "name": "DrawSceneInit",
@@ -3477,10 +3477,10 @@
   "name": "DrawObjTapCtrl",
   "file": "main/drawctrl.c",
   "proto": 1129176,
-  "pal": null,
+  "pal": 1126984,
   "proto_size": 256,
   "est": 1126984,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "DrawSceneObjData",
@@ -3801,10 +3801,10 @@
   "name": "DrawTapReqTbl",
   "file": "main/drawctrl.c",
   "proto": 1138360,
-  "pal": null,
+  "pal": 1136104,
   "proto_size": 136,
   "est": 1136104,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "ddbg_event_sel",
@@ -4188,10 +4188,10 @@
   "name": "MbarNikoSet",
   "file": "main/mbar.c",
   "proto": 1148608,
-  "pal": null,
+  "pal": 1146544,
   "proto_size": 200,
   "est": 1146544,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "MbarNikoDisp",
@@ -4467,10 +4467,10 @@
   "name": "MbarReq",
   "file": "main/mbar.c",
   "proto": 1153840,
-  "pal": null,
+  "pal": 1151760,
   "proto_size": 280,
   "est": 1151760,
-  "conf": "estimate?"
+  "conf": "anchored"
  },
  {
   "name": "MbarSetCtrlTime",
@@ -4872,10 +4872,10 @@
   "name": "GlobalTimeJobChange",
   "file": "main/etc.c",
   "proto": 1163176,
-  "pal": null,
+  "pal": 1160864,
   "proto_size": 24,
   "est": 1160864,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "GlobalTimeJob",
@@ -4944,10 +4944,10 @@
   "name": "GlobalPlySet",
   "file": "main/etc.c",
   "proto": 1163912,
-  "pal": null,
+  "pal": 1161584,
   "proto_size": 1088,
   "est": 1161584,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "GetPcode2PadType",
@@ -4980,19 +4980,19 @@
   "name": "TimeCallbackTimeGetChan",
   "file": "main/etc.c",
   "proto": 1165200,
-  "pal": null,
+  "pal": 1162776,
   "proto_size": 72,
   "est": 1162776,
-  "conf": "estimate?"
+  "conf": "anchored"
  },
  {
   "name": "TimeCallbackTimeSetChan",
   "file": "main/etc.c",
   "proto": 1165272,
-  "pal": null,
+  "pal": 1162816,
   "proto_size": 48,
-  "est": 1162848,
-  "conf": "estimate"
+  "est": 1162816,
+  "conf": "anchored"
  },
  {
   "name": "TimeCallbackTimeSetChanTempo",
@@ -5000,7 +5000,7 @@
   "proto": 1165320,
   "pal": null,
   "proto_size": 152,
-  "est": 1162896,
+  "est": 1162864,
   "conf": "estimate?"
  },
  {
@@ -5151,28 +5151,28 @@
   "name": "inCmnHookSet",
   "file": "main/etc.c",
   "proto": 1166408,
-  "pal": null,
+  "pal": 1163928,
   "proto_size": 136,
   "est": 1163928,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "inCmnHook2GameCheck",
   "file": "main/etc.c",
   "proto": 1166544,
-  "pal": null,
+  "pal": 1164032,
   "proto_size": 96,
-  "est": 1164064,
-  "conf": "estimate"
+  "est": 1164032,
+  "conf": "anchored"
  },
  {
   "name": "inCmnHook2GameSave",
   "file": "main/etc.c",
   "proto": 1166640,
-  "pal": null,
+  "pal": 1164072,
   "proto_size": 40,
-  "est": 1164160,
-  "conf": "estimate?"
+  "est": 1164072,
+  "conf": "anchored"
  },
  {
   "name": "wipeSndReq",
@@ -5340,10 +5340,10 @@
   "name": "wipeYesNoDispReq",
   "file": "main/wipe.c",
   "proto": 1170472,
-  "pal": null,
+  "pal": 1168328,
   "proto_size": 80,
   "est": 1168328,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "wipeYesNoDispEnd",
@@ -5538,54 +5538,54 @@
   "name": "mccReqScrSet",
   "file": "main/mcctrl.c",
   "proto": 1175072,
-  "pal": null,
+  "pal": 1172888,
   "proto_size": 88,
   "est": 1172888,
-  "conf": "estimate?"
+  "conf": "anchored"
  },
  {
   "name": "mccReqScrGet",
   "file": "main/mcctrl.c",
   "proto": 1175160,
-  "pal": null,
+  "pal": 1172968,
   "proto_size": 96,
-  "est": 1172976,
-  "conf": "estimate?"
+  "est": 1172968,
+  "conf": "anchored"
  },
  {
   "name": "mccReqLvlSet",
   "file": "main/mcctrl.c",
   "proto": 1175256,
-  "pal": null,
+  "pal": 1173040,
   "proto_size": 56,
-  "est": 1173072,
-  "conf": "estimate?"
+  "est": 1173040,
+  "conf": "anchored"
  },
  {
   "name": "mccReqLvlGet",
   "file": "main/mcctrl.c",
   "proto": 1175312,
-  "pal": null,
+  "pal": 1173088,
   "proto_size": 96,
-  "est": 1173128,
-  "conf": "estimate?"
+  "est": 1173088,
+  "conf": "anchored"
  },
  {
   "name": "mccReqTapSet",
   "file": "main/mcctrl.c",
   "proto": 1175408,
-  "pal": null,
+  "pal": 1173160,
   "proto_size": 256,
-  "est": 1173224,
-  "conf": "estimate?"
+  "est": 1173160,
+  "conf": "anchored"
  },
  {
   "name": "mccReqTapResetSet",
   "file": "main/mcctrl.c",
   "proto": 1175664,
-  "pal": 1173432,
+  "pal": 1173408,
   "proto_size": 24,
-  "est": 1173432,
+  "est": 1173408,
   "conf": "anchored"
  },
  {
@@ -5601,19 +5601,19 @@
   "name": "mccReqVSOTHSAVEset",
   "file": "main/mcctrl.c",
   "proto": 1175712,
-  "pal": null,
+  "pal": 1173456,
   "proto_size": 112,
   "est": 1173456,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "mccReqVSOTHSAVEget",
   "file": "main/mcctrl.c",
   "proto": 1175824,
-  "pal": null,
+  "pal": 1173560,
   "proto_size": 160,
-  "est": 1173568,
-  "conf": "estimate?"
+  "est": 1173560,
+  "conf": "anchored"
  },
  {
   "name": "mccReqTapGet",
@@ -5628,19 +5628,19 @@
   "name": "mccReqTapForward",
   "file": "main/mcctrl.c",
   "proto": 1176264,
-  "pal": null,
+  "pal": 1173968,
   "proto_size": 344,
   "est": 1173968,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "mccReqTapForwardOwn",
   "file": "main/mcctrl.c",
   "proto": 1176608,
-  "pal": null,
+  "pal": 1174200,
   "proto_size": 312,
-  "est": 1174312,
-  "conf": "estimate?"
+  "est": 1174200,
+  "conf": "anchored"
  },
  {
   "name": "mccLocalGlobalCopy",
@@ -5727,10 +5727,10 @@
   "name": "uramenFileSearchTask",
   "file": "main/main.c",
   "proto": 1182064,
-  "pal": null,
+  "pal": 1178336,
   "proto_size": 56,
-  "est": 1177080,
-  "conf": "estimate"
+  "est": 1178336,
+  "conf": "anchored"
  },
  {
   "name": "uramenFileSearchSet",
@@ -5808,10 +5808,10 @@
   "name": "urawazaKeyCheck",
   "file": "main/main.c",
   "proto": 1185776,
-  "pal": null,
+  "pal": 1182480,
   "proto_size": 472,
-  "est": 1182024,
-  "conf": "estimate?"
+  "est": 1182480,
+  "conf": "anchored"
  },
  {
   "name": "ura_check",
@@ -5853,19 +5853,19 @@
   "name": "cmnfGetFileAdrs",
   "file": "main/cmnfile.c",
   "proto": 1187456,
-  "pal": null,
+  "pal": 1184152,
   "proto_size": 104,
-  "est": 1184032,
-  "conf": "estimate?"
+  "est": 1184152,
+  "conf": "anchored"
  },
  {
   "name": "cmnfGetFileSize",
   "file": "main/cmnfile.c",
   "proto": 1187560,
-  "pal": null,
+  "pal": 1184240,
   "proto_size": 128,
-  "est": 1184136,
-  "conf": "estimate?"
+  "est": 1184240,
+  "conf": "anchored"
  },
  {
   "name": "adrd_common_clr",
@@ -5925,10 +5925,10 @@
   "name": "p3StrInitSd",
   "file": "main/p3str.c",
   "proto": 1188408,
-  "pal": null,
+  "pal": 1185072,
   "proto_size": 528,
   "est": 1185072,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "p3StrQuitSdEach",
@@ -5961,10 +5961,10 @@
   "name": "p3str_sort_set",
   "file": "main/p3str.c",
   "proto": 1190184,
-  "pal": null,
+  "pal": 1186800,
   "proto_size": 88,
   "est": 1186800,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "p3str_sort_disp",
@@ -9642,10 +9642,10 @@
   "name": "WP2Ctrl",
   "file": "iop_mdl/wp2cd_rpc.c",
   "proto": 1310272,
-  "pal": null,
+  "pal": 1308152,
   "proto_size": 464,
   "est": 1308152,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TapCtInit",
@@ -9660,10 +9660,10 @@
   "name": "TapCt",
   "file": "iop_mdl/tapctrl_rpc.c",
   "proto": 1310872,
-  "pal": null,
+  "pal": 1308712,
   "proto_size": 152,
   "est": 1308712,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "Append__27PrDmaStripForSetGifRegisterUiRCUl",

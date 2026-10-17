@@ -250,7 +250,7 @@ void MbarNikoSet(int num, int ofs) {
 
     for (i = 0; i < num / 2; i++) {
         if ((i + ofs) >= niko_chan_str_cnt) {
-            printf("NIKO OVER!!\n");
+            DPRINTF("NIKO OVER!!\n");
             return;
         }
         niko_chan_str_pp[i + ofs].niko_enum = NIKO_MARU;
@@ -258,7 +258,7 @@ void MbarNikoSet(int num, int ofs) {
 
     if ((num % 2) != 0) {
         if (((num / 2) + ofs) >= niko_chan_str_cnt) {
-            printf("NIKO OVER!!\n");
+            DPRINTF("NIKO OVER!!\n");
             return;
         }  
         niko_chan_str_pp[(num / 2) + ofs].niko_enum = NIKO_HALF;
@@ -828,7 +828,7 @@ void MbarReq(MBAR_REQ_ENUM mm_req, TAPSET *ts_pp, int curr_time, SCR_TAP_MEMORY 
     PLAYER_INDEX pidx;
 
     if (ts_pp == NULL) {
-        printf("MbarReq   TAPSET adrs is NULL\n");
+        DPRINTF("MbarReq   TAPSET adrs is NULL\n");
         return;
     }
 

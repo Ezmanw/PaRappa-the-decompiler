@@ -410,13 +410,13 @@ int selPlayDisp(int sel_stage, int sel_disp, int firstf) {
     int        ret = 0;
 
     ReportHeapUsage();
-    printf("=== selPlayDisp stg:%d disp:%d ===\n", sel_stage, sel_disp);
+    DPRINTF("=== selPlayDisp stg:%d disp:%d ===\n", sel_stage, sel_disp);
 
     /* Load stage overlay */
-    printf("overlay module load in\n");
+    DPRINTF("overlay module load in\n");
     CdctrlRead(&stdat_rec[sel_stage].ovlfile, overlay_loadaddr, NULL);
     CdctrlReadWait();
-    printf("overlay module load out\n");
+    DPRINTF("overlay module load out\n");
 
     asm volatile("sync.l");
     FlushCache(WRITEBACK_DCACHE);
@@ -552,13 +552,13 @@ int selPlayDispTitleDisp(int sel_stage, int sel_disp, int ovl_load) {
     int        ret = 0;
 
     ReportHeapUsage();
-    printf("=== selPlayDisp stg:%d disp:%d ===\n", sel_stage, sel_disp);
+    DPRINTF("=== selPlayDisp stg:%d disp:%d ===\n", sel_stage, sel_disp);
 
     if (ovl_load) {
-        printf("overlay module load in\n");
+        DPRINTF("overlay module load in\n");
         CdctrlRead(&stdat_rec[sel_stage].ovlfile, overlay_loadaddr, NULL);
         CdctrlReadWait();
-        printf("overlay module load out\n");
+        DPRINTF("overlay module load out\n");
     }
 
     asm volatile("sync.l");
@@ -715,9 +715,9 @@ void logoDispOne(SPR_PRIM *sprm_pp, TIM2_DAT *tmd_pp) {
 static int uramen_end_flag = FALSE;
 
 static void uramenFileSearchTask(void *x) {
-    printf("file search in\n");
+    DPRINTF("file search in\n");
     stDatFirstFileSearch();
-    printf("file search out\n");
+    DPRINTF("file search out\n");
 
     uramen_end_flag = FALSE;
     MtcExit();
@@ -930,9 +930,9 @@ int selPlayDispSetPlay(int sel_stage) {
 
     ret = 0;
 
-    printf("overlay module load out\n");
+    DPRINTF("overlay module load out\n");
     CdctrlRead(&stdat_rec[sel_stage].ovlfile, overlay_loadaddr, NULL);
-    printf("overlay module load in\n");
+    DPRINTF("overlay module load in\n");
     CdctrlReadWait();
 
     for (i = stdat_rec[sel_stage].stdat_dat_num - 1; i >= 0; i--) {
@@ -974,7 +974,7 @@ int selPlayDispSetPlay(int sel_stage) {
                     ingame_common_str.HookClrCnt = 10;
                 }
 
-                printf("HOOK cnt:%d\n", ingame_common_str.HookClrCnt);
+                DPRINTF("HOOK cnt:%d\n", ingame_common_str.HookClrCnt);
             } else {
                 if (global_data.play_modeL == PLAY_MODE_SINGLE) {
                     ret = selPlayDispType(sel_stage, i, CBE_SINGLE);
@@ -1015,9 +1015,9 @@ int selPlayDispSetPlayOne(int sel_stage) {
 
     ret = 0;
 
-    printf("overlay module load out\n");
+    DPRINTF("overlay module load out\n");
     CdctrlRead(&stdat_rec[sel_stage].ovlfile, overlay_loadaddr, NULL);
-    printf("overlay module load in\n");
+    DPRINTF("overlay module load in\n");
     CdctrlReadWait();
 
     i = stdat_rec[sel_stage].stdat_dat_num - 1;
@@ -1312,7 +1312,7 @@ int urawazaKeyCheck(void) {
         }
 
         ud_d = change_tbl[ud_d];
-        printf("level fix:%d\n", ud_d);
+        DPRINTF("level fix:%d\n", ud_d);
     
         ret = ud_d;
     }
@@ -1374,7 +1374,7 @@ void mainStart(void *xx) {
     wipeSndFileTrans();
 
     CdctrlReadWait();
-    printf("int read end\n");
+    DPRINTF("int read end\n");
 
     startUpDisp();
 

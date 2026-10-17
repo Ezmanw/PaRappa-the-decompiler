@@ -66,7 +66,7 @@ void GlobalSetTempo(GLOBAL_DATA *gl_pp, float tempo) {
 
 void GlobalTimeJobChange(TIME_GET_FLAG tfg) {
     global_data.TimeType = tfg;
-    printf("time job change!!![%x]\n", tfg);
+    DPRINTF("time job change!!![%x]\n", tfg);
 }
 
 void GlobalTimeJob(void) {
@@ -319,17 +319,17 @@ void GlobalPlySet(GLOBAL_DATA *gl_pp, PLAY_STEP stp, int stage_num) {
 
         if (global_data.demo_flagL == DEMOF_REPLAY) {
             gply_pp->pad_type = PAD_REPLAY;
-            printf("2p replay\n");
+            DPRINTF("2p replay\n");
         } else if (global_data.demo_flagL == DEMOF_DEMO) {
             gply_pp->pad_type = PAD_DEMO;
-            printf("2p demo\n");
+            DPRINTF("2p demo\n");
         } else if (global_data.play_modeL == PLAY_MODE_VS_COM) {
             gply_pp->pad_type = PAD_COM;
-            printf("2p com\n");
+            DPRINTF("2p com\n");
             global_data.tap_ctrl_level = global_data.level_vs_enumL + 1;
         } else {
             gply_pp->pad_type = PAD_2CON;
-            printf("2p 2con\n");
+            DPRINTF("2p 2con\n");
             global_data.tap_ctrl_level = TCT_LV00;            
         }
 
@@ -366,7 +366,7 @@ void GlobalPlySet(GLOBAL_DATA *gl_pp, PLAY_STEP stp, int stage_num) {
         ExamDispPlySet(gply_pp, 0);
         break;
     default:
-        printf("error GlobalPlySet PLAY_STEP [%d]\n", stp);
+        DPRINTF("error GlobalPlySet PLAY_STEP [%d]\n", stp);
         break;
     }
 }
@@ -414,7 +414,7 @@ void TimeCallbackSet(void) {
 
 u_int TimeCallbackTimeGetChan(int chan) {
     if (chan >= 51) {
-        printf("Time Callback Channel ERROR!!\n");
+        DPRINTF("Time Callback Channel ERROR!!\n");
         return 0;
     }
 
@@ -423,7 +423,7 @@ u_int TimeCallbackTimeGetChan(int chan) {
 
 void TimeCallbackTimeSetChan(int chan, u_int time) {
     if (chan >= 51) {
-        printf("Time Callback Channel ERROR!!\n");
+        DPRINTF("Time Callback Channel ERROR!!\n");
         return;
     }
 
@@ -432,7 +432,7 @@ void TimeCallbackTimeSetChan(int chan, u_int time) {
 
 void TimeCallbackTimeSetChanTempo(int chan, u_int time, float tempo) {
     if (chan >= 51) {
-        printf("Time Callback Channel ERROR!!\n");
+        DPRINTF("Time Callback Channel ERROR!!\n");
         return;
     }
 
@@ -670,7 +670,7 @@ int inCmnHookSet(int stg) {
         ingame_common_str.HookLine = inCmnHookMaxLinePknum(stg, ret);
     }
 
-    printf("HOOK pack:%d line:%d\n", ingame_common_str.HookLine, ret);
+    DPRINTF("HOOK pack:%d line:%d\n", ingame_common_str.HookLine, ret);
     return ret;
 }
 
@@ -683,7 +683,7 @@ int inCmnHook2GameCheck(int pack_id) {
 
     if (ingame_common_str.HookLine == pack_id) {
         ret = ingame_common_str.HookLevel;
-        printf("HOOK level use:%d  pack:%d\n", ret, pack_id);
+        DPRINTF("HOOK level use:%d  pack:%d\n", ret, pack_id);
     }
 
     return ret;
@@ -691,5 +691,5 @@ int inCmnHook2GameCheck(int pack_id) {
 
 void inCmnHook2GameSave(int level) {
     ingame_common_str.HookLevel = level;
-    printf("HOOK pack:%d level:%d\n", ingame_common_str.HookLine, level);
+    DPRINTF("HOOK pack:%d level:%d\n", ingame_common_str.HookLine, level);
 }

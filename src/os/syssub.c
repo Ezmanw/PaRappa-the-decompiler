@@ -37,7 +37,7 @@ void GPadInit(void) {
 
     for (i = 0; i < PAD_NUM; i++) {
         if (!scePadPortOpen(i, 0, pad_dma_buf[i])) {
-            printf("ERROR: scePadPortOpen[%d]\n", i);
+            DPRINTF("ERROR: scePadPortOpen[%d]\n", i);
         }
     }
 }
@@ -594,14 +594,14 @@ char* ByteString(unsigned int n) {
 u_int ReportHeapUsage(void) {
     struct mallinfo malloc_info = mallinfo();
 
-    printf("_________________________________________\n");
-    printf("total space allocated from system = %s\n", ByteString(malloc_info.arena));
-    printf("total space in mmapped regions = %s\n", ByteString(malloc_info.hblkhd));
-    printf("total allocated space = %s\n", ByteString(malloc_info.uordblks));
-    printf("total non-inuse space = %s\n", ByteString(malloc_info.fordblks));
-    printf("number of non-inuse chunks = %d\n", malloc_info.ordblks);
-    printf("number of mmapped regions = %d\n", malloc_info.hblks);
-    printf("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
+    DPRINTF("_________________________________________\n");
+    DPRINTF("total space allocated from system = %s\n", ByteString(malloc_info.arena));
+    DPRINTF("total space in mmapped regions = %s\n", ByteString(malloc_info.hblkhd));
+    DPRINTF("total allocated space = %s\n", ByteString(malloc_info.uordblks));
+    DPRINTF("total non-inuse space = %s\n", ByteString(malloc_info.fordblks));
+    DPRINTF("number of non-inuse chunks = %d\n", malloc_info.ordblks);
+    DPRINTF("number of mmapped regions = %d\n", malloc_info.hblks);
+    DPRINTF("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
 
     return malloc_info.uordblks;
 }
@@ -616,7 +616,7 @@ void* usrMalloc(u_int size) {
 
     ret = malloc(size);
     if (ret == 0) {
-        printf("malloc is NG\n");
+        DPRINTF("malloc is NG\n");
         return 0;
     }
 
@@ -629,7 +629,7 @@ void* usrMalloc(u_int size) {
     }
 
     free(ret);
-    printf("malloc is NG\n");
+    DPRINTF("malloc is NG\n");
     return 0;
 }
 
@@ -645,23 +645,23 @@ void usrFree(void *adrs) {
         }
     }
 
-    printf("free is NG\n");
+    DPRINTF("free is NG\n");
 }
 
 void usrMallcReport(void) {
     int i;
     int cnt = 0;
 
-    printf("--- usr malloc report ---\n");
+    DPRINTF("--- usr malloc report ---\n");
 
     for (i = 0; i < PR_ARRAYSIZE(usr_malloc_str); i++) {
         if (usr_malloc_str[i].adrs) {
-            printf(" use  adr[%d] size[%d]\n", usr_malloc_str[i].adrs, usr_malloc_str[i].size);
+            DPRINTF(" use  adr[%d] size[%d]\n", usr_malloc_str[i].adrs, usr_malloc_str[i].size);
             cnt++;
         }
     }
 
-    printf("--- use cnt[%d] ---\n", cnt);
+    DPRINTF("--- use cnt[%d] ---\n", cnt);
 }
 
 sceGsDrawEnv1* DrawGetDrawEnvP(DNUM_ENUM dnum) {

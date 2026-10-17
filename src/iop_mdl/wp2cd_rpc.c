@@ -40,21 +40,21 @@ int WP2Ctrl(int command, int data0) {
         FlushCache(WRITEBACK_DCACHE);
 
         while (sceSifCallRpc(&gCd, command, 0, sbuff, DATA_SIZE_STRING, sbuff, 64, NULL, NULL)) {
-            printf("sceSifCallRpc wp2cd miss!\n");
+            DPRINTF("sceSifCallRpc wp2cd miss!\n");
         }
     } else if (command == WP2_OPEN) {
         strcpy((char*)sbuff, (char*)data0);
         FlushCache(WRITEBACK_DCACHE);
 
         while (sceSifCallRpc(&gCd, command, 0, (void*)data0, DATA_SIZE_STRING, sbuff, 64, NULL, NULL)) {
-            printf("sceSifCallRpc wp2cd miss!\n");
+            DPRINTF("sceSifCallRpc wp2cd miss!\n");
         }
     } else {
         sbuff[0] = data0;
         FlushCache(WRITEBACK_DCACHE);
 
         while (sceSifCallRpc(&gCd, command, 0, sbuff, DATA_SIZE_NORMAL, sbuff, 64, NULL, NULL)) {
-            printf("sceSifCallRpc wp2cd miss!\n");
+            DPRINTF("sceSifCallRpc wp2cd miss!\n");
         }
     }
     

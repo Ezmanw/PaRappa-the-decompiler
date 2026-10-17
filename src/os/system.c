@@ -170,7 +170,7 @@ void initSystem(void) {
      */
      if ((*T3_MODE & (T_MODE_CLKS_M|T_MODE_CUE_M)) !=
          (T_MODE_CLKS_M|T_MODE_CUE_M)) {
-        printf("Unexpected TIMER3 mode\n");
+        DPRINTF("Unexpected TIMER3 mode\n");
         PR_BREAK();
      }
 #if 0
@@ -265,10 +265,10 @@ void osFunc(void) {
     while ( *D2_CHCR & D_CHCR_STR_M );
 
     if (sceGsSyncPath(0, 0)) {
-        printf("SyncPath timeout \n");
+        DPRINTF("SyncPath timeout \n");
     }
     if (sceGsSwapDBuffDc(&DBufDc, outbuf_idx)) {
-        printf("swap dma error\n");
+        DPRINTF("swap dma error\n");
     }
 }
 

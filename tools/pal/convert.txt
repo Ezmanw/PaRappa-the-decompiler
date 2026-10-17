@@ -4,3 +4,5 @@ os/tim2
 dbug/vramsave
 main/fadectrl
 menu/mntm2hed
+main/mcctrl
+iop_mdl/tapctrl_rpc

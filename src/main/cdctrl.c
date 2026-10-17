@@ -95,7 +95,7 @@ int PackIntDecodeWait(u_char *fp_r, u_char *fp_w, int wait_hline) {
 
     int          i, c, c1, c2;
     
-    printf("decode moto[%08x] saki[%08x]\n", fp_r, fp_w);
+    DPRINTF("decode moto[%08x] saki[%08x]\n", fp_r, fp_w);
     asm volatile("sync.l");
 
     moto_size = *(u_int*)fp_r;
@@ -110,7 +110,7 @@ int PackIntDecodeWait(u_char *fp_r, u_char *fp_w, int wait_hline) {
 
     while (1) {
         if (fp_w > fp_w_end) {
-            printf(" over data pointer\n");
+            DPRINTF(" over data pointer\n");
             break;
         }
         if (fp_w == fp_w_end) {
@@ -159,9 +159,9 @@ extern CDCTRL_STR cdctrl_str; /* bss - static */
 void CdctrlInit(void) {
     WorkClear(&cdctrl_str, sizeof(cdctrl_str));
 
-    printf("in wp2 init\n");
+    DPRINTF("in wp2 init\n");
     WP2Init();
-    printf("out wp2 init\n");
+    DPRINTF("out wp2 init\n");
 
     WP2Ctrl(WP2_CDINIT, SCECdDVD);
     WP2Ctrl(WP2_SDINIT, WP2_NONE);
@@ -198,17 +198,17 @@ int CdctrlSerch(FILE_STR *fstr_pp) {
         if (ret) {
             fstr_pp->search = 1;
         } else {
-            printf("CD SEARCH ERROR!![%s]\n", fstr_pp->fname);
+            DPRINTF("CD SEARCH ERROR!![%s]\n", fstr_pp->fname);
         }
     } else {
         /* Search file from PC */
         rfd = sceOpen(fstr_pp->fname, SCE_RDONLY);
         if (rfd < 0) {
-            printf("Can\'t open %s\n", fstr_pp->fname);
+            DPRINTF("Can\'t open %s\n", fstr_pp->fname);
         } else {
             readsize = sceLseek(rfd, 0, SCE_SEEK_END);
             if (readsize < 0) {
-                printf("Can\'t open %s\n", fstr_pp->fname);
+                DPRINTF("Can\'t open %s\n", fstr_pp->fname);
             } else {
                 fstr_pp->fpCd.size = readsize;
                 fstr_pp->search = 1;
@@ -229,7 +229,7 @@ static int cdctrlReadSub(FILE_STR *fstr_pp, int ofs, int size, int buf) {
         int        read_lsn = fstr_pp->fpCd.lsn + (ofs / 2048);
 
         if (!sceCdSeek(read_lsn)) {
-            printf("sceCdSeek Error! %s\n", fstr_pp->fname);
+            DPRINTF("sceCdSeek Error! %s\n", fstr_pp->fname);
             return 0;
         } 
 
@@ -238,7 +238,7 @@ static int cdctrlReadSub(FILE_STR *fstr_pp, int ofs, int size, int buf) {
         }
 
         if (!sceCdRead(read_lsn, (size + 2047) / 2048, (void*)buf, &cdmode)) {
-            printf("sceCdRead Error! %s\n", fstr_pp->fname);
+            DPRINTF("sceCdRead Error! %s\n", fstr_pp->fname);
             return 0;
         }
 
@@ -255,18 +255,18 @@ static int cdctrlReadSub(FILE_STR *fstr_pp, int ofs, int size, int buf) {
     } else {
         int rfd = sceOpen(fstr_pp->fname, SCE_RDONLY);
         if (rfd < 0) {
-            printf("Can\'t open %s\n", fstr_pp->fname);
+            DPRINTF("Can\'t open %s\n", fstr_pp->fname);
             return 0;
         }
 
         if (sceLseek(rfd, ofs, SCE_SEEK_SET) < 0) {
-            printf("Can\'t open %s\n", fstr_pp->fname);
+            DPRINTF("Can\'t open %s\n", fstr_pp->fname);
             sceClose(rfd);
             return 0;
         }
 
         if (sceRead(rfd, (void*)buf, size) < 0) {
-            printf("read error!! \n");
+            DPRINTF("read error!! \n");
             sceClose(rfd);
             return 0;
         }
@@ -287,7 +287,7 @@ void intReadSub(void) {
     read_pos = 0;
     head_read_pp = usrMalloc(8192);
 
-    printf("intg in!!!\n");
+    DPRINTF("intg in!!!\n");
 
     while (1) {
         /* Read a whole sector into our header buffer */
@@ -297,7 +297,7 @@ void intReadSub(void) {
 
         /* Check if we loaded a valid INT */
         if (PACK(head_read_pp)->id != PACKINT_MAGIC) {
-            printf("INT FILE ERROR!![%s]\n", cdctrl_str.fstr_pp->fname);
+            DPRINTF("INT FILE ERROR!![%s]\n", cdctrl_str.fstr_pp->fname);
             while (1) {
                 MtcWait(1);
             }
@@ -319,7 +319,7 @@ void intReadSub(void) {
             /* If we don't have a temp buffer, allocate it ourselves */
             if (cdctrl_str.tmp_area != NULL) {
                 read_tmp_pp = (u_char*)(cdctrl_str.tmp_area - PACK(head_read_pp)->data_size);
-                printf("buf use:%08x size:%08x\n", cdctrl_str.tmp_area - PACK(head_read_pp)->data_size, PACK(head_read_pp)->data_size);
+                DPRINTF("buf use:%08x size:%08x\n", cdctrl_str.tmp_area - PACK(head_read_pp)->data_size, PACK(head_read_pp)->data_size);
             } else {
                 read_tmp_pp = usrMalloc(PACK(head_read_pp)->data_size);
             }
@@ -347,19 +347,19 @@ void intReadSub(void) {
         /* TIM2 textures */
         case FT_VRAM: {
             int i;
-            printf("int file tim2 file in\n");
+            DPRINTF("int file tim2 file in\n");
 
             for (i = 0; i < PACK(head_read_pp)->fnum; i++) {
                 Tim2Trans((void*)PACK(head_read_pp)->adr[i] + UsrMemAllocNext());
             }
 
-            printf("int file tim2 file out\n");
+            DPRINTF("int file tim2 file out\n");
             break;
         }
         /* Sounds */
         case FT_SND: {
             int i;
-            printf("int file snd file in\n");
+            DPRINTF("int file snd file in\n");
 
             while (TapCt(TAPCT_TRANSCHECK, TAPCT_NONE, TAPCT_NONE)) {
                 MtcWait(1);
@@ -376,7 +376,7 @@ void intReadSub(void) {
                 MtcWait(1);
             }
 
-            printf("int file snd file out\n");
+            DPRINTF("int file snd file out\n");
             break;
         }
         /* PaRappa's hat textures (TIM2) */
@@ -387,13 +387,13 @@ void intReadSub(void) {
             int i;
 
             if (GetHatRound() == (PACK(head_read_pp)->ftype - 4)) {
-                printf("int file tim2 round:%d file in\n", PACK(head_read_pp)->ftype - 3);
+                DPRINTF("int file tim2 round:%d file in\n", PACK(head_read_pp)->ftype - 3);
 
                 for (i = 0; i < PACK(head_read_pp)->fnum; i++) {
                     Tim2Trans((void*)PACK(head_read_pp)->adr[i] + UsrMemAllocNext());
                 }
 
-                printf("int file tim2 roud file out\n");
+                DPRINTF("int file tim2 roud file out\n");
             }
 
             break;
@@ -401,7 +401,7 @@ void intReadSub(void) {
         /* Models, animations, etc. */
         case FT_ONMEM: {
             int i;
-            printf("mem cnt [%d]\n", PACK(head_read_pp)->fnum);
+            DPRINTF("mem cnt [%d]\n", PACK(head_read_pp)->fnum);
 
             for (i = 0; i < PACK(head_read_pp)->fnum; i++) {
                 UsrMemAlloc(PACK(head_read_pp)->adr[i + 1] - PACK(head_read_pp)->adr[i]);
@@ -409,7 +409,7 @@ void intReadSub(void) {
         }
         /* Fallthrough, stops after the ONMEM file category */
         default:
-            printf("intg exit!!\n");
+            DPRINTF("intg exit!!\n");
             usrFree(head_read_pp);
             return;
         }
@@ -498,7 +498,7 @@ void CdctrlMemIntgDecode(u_int rbuf, u_int setbuf) {
         
         /* Check if we loaded a valid INT */
         if (PACK(head_read_pp)->id != PACKINT_MAGIC) {
-            printf("INT FILE ERROR!![%s]\n", cdctrl_str.fstr_pp->fname);
+            DPRINTF("INT FILE ERROR!![%s]\n", cdctrl_str.fstr_pp->fname);
             while (1) {
                 MtcWait(1);
             }
@@ -521,13 +521,13 @@ void CdctrlMemIntgDecode(u_int rbuf, u_int setbuf) {
         /* TIM2 textures */
         case FT_VRAM: {
             int i;
-            printf("tim trans in\n");
+            DPRINTF("tim trans in\n");
 
             for (i = 0; i < PACK(head_read_pp)->fnum; i++) {
                 Tim2Trans((void*)PACK(head_read_pp)->adr[i] + UsrMemAllocNext());
             }
 
-            printf("tim trans out\n");
+            DPRINTF("tim trans out\n");
             break;
         }
         /* Sounds */
@@ -554,13 +554,13 @@ void CdctrlMemIntgDecode(u_int rbuf, u_int setbuf) {
             int i;
 
             if (GetHatRound() == PACK(head_read_pp)->ftype - 4) {
-                printf("int file tim2 round:%d file in\n", PACK(head_read_pp)->ftype - 3);
+                DPRINTF("int file tim2 round:%d file in\n", PACK(head_read_pp)->ftype - 3);
 
                 for (i = 0; i < PACK(head_read_pp)->fnum; i++) {
                     Tim2Trans((void*)PACK(head_read_pp)->adr[i] + UsrMemAllocNext());
                 }
 
-                printf("int file tim2 roud file out\n");
+                DPRINTF("int file tim2 roud file out\n");
             }
 
             break;
@@ -568,7 +568,7 @@ void CdctrlMemIntgDecode(u_int rbuf, u_int setbuf) {
         /* Models, animations, etc. */
         case FT_ONMEM: {
             int i;
-            printf("mem cnt [%d]\n", PACK(head_read_pp)->fnum);
+            DPRINTF("mem cnt [%d]\n", PACK(head_read_pp)->fnum);
 
             for (i = 0; i < PACK(head_read_pp)->fnum; i++) {
                 UsrMemAlloc(PACK(head_read_pp)->adr[i+1] - PACK(head_read_pp)->adr[i]);
@@ -577,7 +577,7 @@ void CdctrlMemIntgDecode(u_int rbuf, u_int setbuf) {
             break;
         }
         default:
-            printf("intg exit!!\n");
+            DPRINTF("intg exit!!\n");
             usrFree(head_read_pp);
             return;
         }
@@ -612,7 +612,7 @@ void CdctrlWP2SetChannel(u_char Lchan, u_char Rchan) {
     cdctrl_str.wp2chan[0] = Lchan;
     cdctrl_str.wp2chan[1] = Rchan;
 
-    printf("channel change L[%d] R[%d]\n", Lchan, Rchan);
+    DPRINTF("channel change L[%d] R[%d]\n", Lchan, Rchan);
 }
 
 void CdctrlWP2Set(FILE_STR *fstr_pp) {
@@ -648,7 +648,7 @@ void CdctrlWP2SetFileSeek(FILE_STR *fstr_pp, int seek_pos) {
 
     if (cdctrl_str.fstr_pp != fstr_pp) {
         cdctrl_str.fstr_pp = fstr_pp;
-        printf("!!max chan [%d]\n", fstr_pp->mchan);
+        DPRINTF("!!max chan [%d]\n", fstr_pp->mchan);
 
         WP2Ctrl(WP2_SETMODE, cdctrl_str.fstr_pp->mchan);
         if (fstr_pp->frmode == FRMODE_PC) {
@@ -672,7 +672,7 @@ void CdctrlWP2SetFileSeekChan(FILE_STR *fstr_pp, int seek_pos, u_char Lch, u_cha
     WP2Ctrl(WP2_STOP, WP2_NONE);
 
     cdctrl_str.fstr_pp = fstr_pp;
-    printf("!!max chan [%d]\n", fstr_pp->mchan);
+    DPRINTF("!!max chan [%d]\n", fstr_pp->mchan);
 
     WP2Ctrl(WP2_SETMODE, cdctrl_str.fstr_pp->mchan);
     if (fstr_pp->frmode == FRMODE_PC) {
@@ -767,7 +767,7 @@ void CdctrlWp2GetSampleTmpBuf(void) {
     time_tmp = *T0_COUNT - time_tmp;
 
     if (time_tmp > time_tmp_max) {
-        printf("max cd time get[%d]\n", time_tmp);
+        DPRINTF("max cd time get[%d]\n", time_tmp);
         time_tmp_max = time_tmp;
     }
 }
@@ -852,8 +852,8 @@ void CdctrlXTRset(FILE_STR *fstr_pp, u_int usebuf) {
 
         FlushCache(WRITEBACK_DCACHE);
 
-        printf("dec size[%08x]\n", PackIntGetDecodeSize(pr_pp));
-        printf("dec info trpos[%08x] read_pos[%08x] press_size[%08x]\n", tb_pp->trpos, tb_pp->read_pos, tb_pp->press_size);
+        DPRINTF("dec size[%08x]\n", PackIntGetDecodeSize(pr_pp));
+        DPRINTF("dec info trpos[%08x] read_pos[%08x] press_size[%08x]\n", tb_pp->trpos, tb_pp->read_pos, tb_pp->press_size);
 
         PackIntDecodeWait(pr_pp, (u_char*)(tb_pp->trpos + usebuf), 230);
     }
@@ -862,12 +862,12 @@ void CdctrlXTRset(FILE_STR *fstr_pp, u_int usebuf) {
     
     seek_pos = STR(usebuf)->seek;
 
-    printf("P3STR INIT REQ IN\n");
+    DPRINTF("P3STR INIT REQ IN\n");
     p3StrInit(usebuf);
-    printf("P3STR INIT REQ OUT\n");
+    DPRINTF("P3STR INIT REQ OUT\n");
 
     WP2Ctrl(WP2_SETTRPOINT, usebuf);
-    printf("WP2_BGMSETTRPOINT exit\n");
+    DPRINTF("WP2_BGMSETTRPOINT exit\n");
 
     if (fstr_pp->frmode == FRMODE_PC) {
         WP2Ctrl(WP2_OPENFLOC, (int)cdctrl_str.fstr_pp->fname);
@@ -876,11 +876,11 @@ void CdctrlXTRset(FILE_STR *fstr_pp, u_int usebuf) {
     }
 
     WP2Ctrl(WP2_SEEK, seek_pos);
-    printf("WP2_SEEK exit\n");
+    DPRINTF("WP2_SEEK exit\n");
 
     WP2Ctrl(WP2_SETCHANNEL, PR_CONCAT(0, 1));
     WP2Ctrl(WP2_PRELOADBACK, WP2_NONE);
-    printf("WP2_PRELOAD exit\n");
+    DPRINTF("WP2_PRELOAD exit\n");
 
     CdctrlWP2SetVolume(0);
 

@@ -97,8 +97,8 @@ void PrDmaQueue::Append(void *tag) {
     if (m_pos == m_size) {
         if (!warned) {
         #if 0 /* (poly): Only present on McDonald's Demo build */
-            printf("PRLIB(WARN): DMA queue ovewrflow\n");
-            printf("PRLIB(WARN): you must initialize the queue with more size\n");
+            DPRINTF("PRLIB(WARN): DMA queue ovewrflow\n");
+            DPRINTF("PRLIB(WARN): you must initialize the queue with more size\n");
         #endif
             warned = true;
         }

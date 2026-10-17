@@ -144,7 +144,7 @@ int p3StrInitSd(P3SRT_OD *p3o_pp, P3STR_SD *p3sd_pp, int datnum) {
 
     if (p3o_pp->od_type == OD_SCENE) {
         sprintf(scnname, "%d", datnum);
-        printf("scene no:%d\n", datnum);
+        DPRINTF("scene no:%d\n", datnum);
 
         if (p3o_pp->use != DNUM_NON) {
             fbp_tmp = DrawGetFbpPos(p3o_pp->use);
@@ -195,7 +195,7 @@ int p3StrInitSd(P3SRT_OD *p3o_pp, P3STR_SD *p3sd_pp, int datnum) {
         PrPreprocessSceneModel((PR_SCENEHANDLE)p3o_pp->pad2);
     }
 
-    printf("init end\n");
+    DPRINTF("init end\n");
 
     p3o_pp->first = 1;
     return 1;
@@ -347,7 +347,7 @@ void p3str_sort_init(void) {
 
 void p3str_sort_set(P3SRT_OD *p3o_pp, P3STR_SD *p3sd_pp, int subtime) {
     if (p3str_sort_cnt > 16) {
-        printf("p3str pack over\n");
+        DPRINTF("p3str pack over\n");
         return;
     }
 
@@ -386,7 +386,7 @@ void p3StrPoll(u_int cur_time) {
     P3STR_SD *p3str_sd;
 
     if (cur_time < current_time_old) {
-        printf("back time\n");
+        DPRINTF("back time\n");
         cur_time = current_time_old;
     }
 

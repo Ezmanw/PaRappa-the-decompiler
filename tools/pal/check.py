@@ -19,7 +19,7 @@ c = os.path.join(tmp, os.path.basename(src))
 subprocess.run(f"iconv -f UTF-8 -t EUC-JP {src} > {c}", shell=True, check=True)
 obj = os.path.join(tmp, 'out.o')
 r = subprocess.run([os.path.join(ROOT, 'tools/toolchain/ee-gcc29/bin/ee-gcc'), '-c', *inc, f'-I{os.path.dirname(src)}', *flags,
-                    '-DPERMUTER', '-Wa,-Iinclude', c, '-o', obj], cwd=ROOT, capture_output=True, text=True)
+                    '-DPERMUTER', '-DVERSION_PAL', '-include', 'include/version.h', '-Wa,-Iinclude', c, '-o', obj], cwd=ROOT, capture_output=True, text=True)
 if r.returncode: print(r.stderr); sys.exit(1)
 fmap = {o['name']: o for o in json.load(open(os.path.join(ROOT, 'config/p3.pal.func_map.json')))}
 base, text = fp.load_target(ISO)

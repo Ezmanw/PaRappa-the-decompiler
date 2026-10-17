@@ -40,7 +40,7 @@ int TapCt(int command, int data1, int data2) {
     sbuff[1] = data2;
 
     while (sceSifCallRpc(&gCd, command, 0, sbuff, DATA_SIZE_NORMAL, sbuff, rsize, NULL, NULL)) {
-        printf("sceSifCallRpc tapctrl miss!\n");
+        DPRINTF("sceSifCallRpc tapctrl miss!\n");
     }
 
     return sbuff[0];

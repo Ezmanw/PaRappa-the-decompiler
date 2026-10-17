@@ -64,6 +64,11 @@ def apply_version(version: str):
 
     WP2_ENABLED = v["wp2"]
 
+    global EE_COMPILE_CMD, EE_COMPILE_CMD_CXX
+    version_flags = f"-DVERSION_{version.upper()} -include include/version.h"
+    EE_COMPILE_CMD = f"{EE_COMPILER_DIR}/ee-gcc -c {EE_COMMON_INCLUDES} {EE_COMPILER_FLAGS} {version_flags}"
+    EE_COMPILE_CMD_CXX = f"{EE_COMPILER_DIR}/ee-gcc -c {EE_COMMON_INCLUDES} {EE_COMPILER_FLAGS_CXX} {version_flags}"
+
     TARGET_ELFS = [Path(f"iso/{P3_BASENAME}")]
     if WP2_ENABLED:
         TARGET_ELFS.append(Path(f"iso/{WP2_BASENAME}"))

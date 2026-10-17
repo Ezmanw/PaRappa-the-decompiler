@@ -53,7 +53,7 @@ static short th_id_Ctrl;
 
 static void mtcStackErrorCheck(int level) {
     if (*(int*)mtcStack[level] != 0x572a8b4c) {
-        printf("stack over level[%d]\n", level);
+        DPRINTF("stack over level[%d]\n", level);
         while (1) {
             sceGsSyncV(0);
         }
