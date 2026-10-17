@@ -1,0 +1,90 @@
+name: PaRappa the Rapper 2 (PAL) (Europe, Australia) (v1.01)
+sha1: c299ee0782a2b9b4ca8e730116f7008c0c06281a
+options:
+    # paths
+    basename: SCES_504.08
+    target_path: iso/SCES_504.08.rom
+    base_path: ..
+
+    asm_path: asm
+    src_path: src
+    build_path: build
+
+    ld_script_path: SCES_504.08.splat.ld
+
+    extensions_path: tools/splat_ext
+    symbol_addrs_path: config/p3.pal.symbol_addrs.txt
+    reloc_addrs_path:  config/p3.pal.reloc_addrs.txt
+    undefined_funcs_auto_path: config/p3.pal.undefined_funcs_auto.txt
+    undefined_syms_auto_path:  config/p3.pal.undefined_syms_auto.txt
+
+    # compiler
+    compiler: EEGCC
+    platform: ps2
+
+    use_gp_rel_macro_nonmatching: False # Disable %gp_rel emission
+    make_full_disasm_for_code: True
+    generate_asm_macros_files: False
+    ld_bss_contains_common: True
+
+    string_encoding: EUC-JP
+    rodata_string_guesser_level: 2 # Improve string detection
+    disasm_unknown: True
+    named_regs_for_c_funcs: False
+    subalign: null
+
+    find_file_boundaries: False
+    section_order: [".text", ".reginfo", ".data", ".rodata", ".lit8", ".lit4", ".sdata", ".sbss", ".bss"]
+    auto_link_sections: [".data", ".rodata", ".lit8", ".lit4", ".sdata", ".sbss", ".bss"]
+
+    # Linker script needs to be manually fixed.
+    # ld_sections_allowlist:
+    #   - .reginfo
+
+    gp_value: 0x38acf0
+    ld_gp_expression: main_LIT4_START + 0x7ff0
+segments:
+    - name: main
+      type: code
+      start: 0x0
+      vram: 0x100000
+      bss_size: 0x18fec34
+      subsegments:
+        # .text
+        - [0x0,      asm, sdk/crt0]
+        - [0xC8,     asm, pal/text]
+
+        # .vutext
+        - { start: 0x85960, type: vutext, use_src_path: True, name: prlib/vu1/vump_common }
+
+        # .data
+        - [0x88200,  data, pal/data]
+
+        # .rodata
+        - [0x277280, rodata, pal/rodata]
+
+        # .gcc_except_table
+        - [0x282B80, rodata, gcc_except_table]
+
+        # .lit4
+        - [0x282D00, lit4, pal/lit4]
+
+        # .sdata
+        - [0x283100, sdata, pal/sdata]
+
+        # .sbss
+        - { type: sbss, vram: 0x00383700, name: pal/sbss }
+
+        # .bss
+        - { type: bss,  vram: 0x00383980, name: pal/bss }
+
+    - name: mfifo
+      type: code
+      start: 0x283700
+      vram: 0x01C90000
+      subalign: 0x10000
+      follows_vram: main
+      subsegments:
+        - [0x283700, mfifo, prlib/mfifo]
+
+    - [0x293700]

@@ -1,0 +1,9 @@
+_stack_size = 0x8000;
+_stack = -1;
+_heap_size = -1;
+
+_fbss = sbss_VRAM;
+_gp = lit4_VRAM + 0x7ff0;
+
+_end = 0x01df7000;
+end = _end;
