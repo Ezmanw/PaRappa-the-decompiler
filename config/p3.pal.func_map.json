@@ -3495,10 +3495,10 @@
   "name": "DrawDoubleDispIn",
   "file": "main/drawctrl.c",
   "proto": 1130016,
-  "pal": null,
+  "pal": 1127784,
   "proto_size": 992,
   "est": 1127784,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "DrawVramClear",
@@ -3666,10 +3666,10 @@
   "name": "MendererCtrl",
   "file": "main/drawctrl.c",
   "proto": 1135344,
-  "pal": null,
+  "pal": 1133088,
   "proto_size": 464,
   "est": 1133088,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "mendRatioTitleGet",
@@ -4737,10 +4737,10 @@
   "name": "guidisp_init_pr",
   "file": "main/mbar.c",
   "proto": 1160528,
-  "pal": null,
+  "pal": 1158384,
   "proto_size": 304,
   "est": 1158384,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "guidisp_draw_quit",
@@ -7248,10 +7248,10 @@
   "name": "TsSetRankingName",
   "file": "menu/menusub.c",
   "proto": 1213792,
-  "pal": null,
+  "pal": 1210664,
   "proto_size": 304,
   "est": 1210664,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TsSetRanking2UData",
@@ -7293,10 +7293,10 @@
   "name": "GetRankScoreID",
   "file": "menu/menusub.c",
   "proto": 1216432,
-  "pal": null,
+  "pal": 1213352,
   "proto_size": 360,
   "est": 1213352,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TsRanking_Set",
@@ -7320,10 +7320,10 @@
   "name": "TsCheckTimeMapChange",
   "file": "menu/menusub.c",
   "proto": 1217464,
-  "pal": null,
+  "pal": 1214384,
   "proto_size": 352,
   "est": 1214384,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TsAnimeWait_withKeySkip",
@@ -7365,10 +7365,10 @@
   "name": "TsSaveSuccessProc",
   "file": "menu/menusub.c",
   "proto": 1221976,
-  "pal": null,
+  "pal": 1218896,
   "proto_size": 392,
   "est": 1218896,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "MpSave_Flow",
@@ -7410,10 +7410,10 @@
   "name": "MpCityHallFPHSMove",
   "file": "menu/menusub.c",
   "proto": 1228032,
-  "pal": null,
+  "pal": 1224976,
   "proto_size": 432,
   "est": 1224976,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "MpCityHallFPHOK",
@@ -7644,10 +7644,10 @@
   "name": "_TsSortSetRanking",
   "file": "menu/menusub.c",
   "proto": 1238000,
-  "pal": null,
+  "pal": 1234944,
   "proto_size": 304,
   "est": 1234944,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TsGetRankingList",
@@ -7806,19 +7806,19 @@
   "name": "TsJukeObjAnime",
   "file": "menu/menusub.c",
   "proto": 1252616,
-  "pal": null,
+  "pal": 1249560,
   "proto_size": 312,
   "est": 1249560,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TsJukeObjAnime2",
   "file": "menu/menusub.c",
   "proto": 1252928,
-  "pal": null,
+  "pal": 1249872,
   "proto_size": 328,
   "est": 1249872,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "_TsJKMoveCus",
@@ -7833,10 +7833,10 @@
   "name": "_TsJKSetPadArrow",
   "file": "menu/menusub.c",
   "proto": 1253880,
-  "pal": null,
+  "pal": 1250824,
   "proto_size": 256,
   "est": 1250824,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TsJukeMenu_Flow",
@@ -7977,10 +7977,10 @@
   "name": "TsUserList_SetCurFileNoCusor",
   "file": "menu/menusub.c",
   "proto": 1260976,
-  "pal": null,
+  "pal": 1258712,
   "proto_size": 224,
   "est": 1258712,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TsUserList_SetType",
@@ -8085,10 +8085,10 @@
   "name": "TsSCFADE_Set",
   "file": "menu/menusub.c",
   "proto": 1270376,
-  "pal": null,
+  "pal": 1268424,
   "proto_size": 272,
   "est": 1268424,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TsSCFADE_Flow",
@@ -8103,10 +8103,10 @@
   "name": "TsSCFADE_Draw",
   "file": "menu/menusub.c",
   "proto": 1270960,
-  "pal": null,
+  "pal": 1269008,
   "proto_size": 304,
   "est": 1269008,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "_PkMCMsgPut",
@@ -8328,10 +8328,10 @@
   "name": "_P3MC_GetFilePath",
   "file": "menu/p3mc.c",
   "proto": 1278096,
-  "pal": null,
+  "pal": 1276152,
   "proto_size": 344,
   "est": 1276152,
-  "conf": "estimate?"
+  "conf": "anchored"
  },
  {
   "name": "_P3MC_EUC2SJIS",
@@ -8643,10 +8643,10 @@
   "name": "P3MC_SaveUser",
   "file": "menu/p3mc.c",
   "proto": 1287328,
-  "pal": null,
+  "pal": 1285416,
   "proto_size": 432,
-  "est": 1285408,
-  "conf": "estimate"
+  "est": 1285416,
+  "conf": "anchored"
  },
  {
   "name": "P3MC_SaveCheck",
@@ -9732,82 +9732,82 @@
   "name": "PrSetPostureWorkArea",
   "file": "prlib/model.cpp",
   "proto": 1312872,
-  "pal": null,
+  "pal": 1325368,
   "proto_size": 56,
   "est": 1325368,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "AllocateFromWorkArea__FUi",
   "file": "prlib/model.cpp",
   "proto": 1312928,
-  "pal": null,
+  "pal": 1325424,
   "proto_size": 64,
   "est": 1325424,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "__13PrModelObjectP13SpmFileHeader",
   "file": "prlib/model.cpp",
   "proto": 1312992,
-  "pal": null,
+  "pal": 1325488,
   "proto_size": 216,
   "est": 1325488,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "_$_13PrModelObject",
   "file": "prlib/model.cpp",
   "proto": 1313208,
-  "pal": null,
+  "pal": 1325704,
   "proto_size": 264,
   "est": 1325704,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "Initialize__13PrModelObject",
   "file": "prlib/model.cpp",
   "proto": 1313472,
-  "pal": null,
+  "pal": 1325968,
   "proto_size": 336,
   "est": 1325968,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "LinkAnimation__13PrModelObjectP13SpaFileHeader",
   "file": "prlib/model.cpp",
   "proto": 1313808,
-  "pal": null,
+  "pal": 1326304,
   "proto_size": 24,
   "est": 1326304,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "CleanupAnimation__13PrModelObject",
   "file": "prlib/model.cpp",
   "proto": 1313832,
-  "pal": null,
+  "pal": 1326328,
   "proto_size": 8,
   "est": 1326328,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "LinkPositionAnimation__13PrModelObjectP13SpaFileHeader",
   "file": "prlib/model.cpp",
   "proto": 1313840,
-  "pal": null,
+  "pal": 1326336,
   "proto_size": 24,
   "est": 1326336,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "CleanupPositionAnimation__13PrModelObject",
   "file": "prlib/model.cpp",
   "proto": 1313864,
-  "pal": null,
+  "pal": 1326360,
   "proto_size": 8,
   "est": 1326360,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "UnionBoundaryBox__13PrModelObjectPt8NaVECTOR2Zfi4T1",
@@ -9822,19 +9822,19 @@
   "name": "GetPrimitivePosition__13PrModelObjectPt8NaVECTOR2Zfi4",
   "file": "prlib/model.cpp",
   "proto": 1313976,
-  "pal": null,
+  "pal": 1326472,
   "proto_size": 264,
   "est": 1326472,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "GetScreenPosition__13PrModelObjectPt8NaVECTOR2Zfi4",
   "file": "prlib/model.cpp",
   "proto": 1314240,
-  "pal": null,
+  "pal": 1326736,
   "proto_size": 160,
   "est": 1326736,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "__16PrObjectDatabase",
@@ -10182,55 +10182,55 @@
   "name": "PrInitializeAnimation",
   "file": "prlib/prlib.cpp",
   "proto": 1317080,
-  "pal": null,
+  "pal": 1329576,
   "proto_size": 168,
   "est": 1329576,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrInitializeCamera",
   "file": "prlib/prlib.cpp",
   "proto": 1317248,
-  "pal": null,
+  "pal": 1329744,
   "proto_size": 168,
   "est": 1329744,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrCleanupModel",
   "file": "prlib/prlib.cpp",
   "proto": 1317416,
-  "pal": null,
+  "pal": 1329912,
   "proto_size": 48,
   "est": 1329912,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrCleanupAnimation",
   "file": "prlib/prlib.cpp",
   "proto": 1317464,
-  "pal": null,
+  "pal": 1329960,
   "proto_size": 168,
   "est": 1329960,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrCleanupCamera",
   "file": "prlib/prlib.cpp",
   "proto": 1317632,
-  "pal": null,
+  "pal": 1330128,
   "proto_size": 168,
   "est": 1330128,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrCleanupAllSceneModel",
   "file": "prlib/prlib.cpp",
   "proto": 1317800,
-  "pal": null,
+  "pal": 1330296,
   "proto_size": 104,
   "est": 1330296,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetAnimationStartFrame",
@@ -10263,127 +10263,127 @@
   "name": "PrGetCameraEndFrame",
   "file": "prlib/prlib.cpp",
   "proto": 1317952,
-  "pal": null,
+  "pal": 1330448,
   "proto_size": 16,
   "est": 1330448,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrSetModelUserData",
   "file": "prlib/prlib.cpp",
   "proto": 1317968,
-  "pal": null,
+  "pal": 1330464,
   "proto_size": 8,
   "est": 1330464,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrSetAnimationUserData",
   "file": "prlib/prlib.cpp",
   "proto": 1317976,
-  "pal": null,
+  "pal": 1330472,
   "proto_size": 8,
   "est": 1330472,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrSetCameraUserData",
   "file": "prlib/prlib.cpp",
   "proto": 1317984,
-  "pal": null,
+  "pal": 1330480,
   "proto_size": 8,
   "est": 1330480,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetModelUserData",
   "file": "prlib/prlib.cpp",
   "proto": 1317992,
-  "pal": null,
+  "pal": 1330488,
   "proto_size": 8,
   "est": 1330488,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetAnimationUserData",
   "file": "prlib/prlib.cpp",
   "proto": 1318000,
-  "pal": null,
+  "pal": 1330496,
   "proto_size": 8,
   "est": 1330496,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetCameraUserData",
   "file": "prlib/prlib.cpp",
   "proto": 1318008,
-  "pal": null,
+  "pal": 1330504,
   "proto_size": 8,
   "est": 1330504,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrLinkAnimation",
   "file": "prlib/prlib.cpp",
   "proto": 1318016,
-  "pal": null,
+  "pal": 1330512,
   "proto_size": 8,
   "est": 1330512,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrUnlinkAnimation",
   "file": "prlib/prlib.cpp",
   "proto": 1318024,
-  "pal": null,
+  "pal": 1330520,
   "proto_size": 8,
   "est": 1330520,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetLinkedAnimation",
   "file": "prlib/prlib.cpp",
   "proto": 1318032,
-  "pal": null,
+  "pal": 1330528,
   "proto_size": 8,
   "est": 1330528,
-  "conf": "estimate?"
+  "conf": "anchored"
  },
  {
   "name": "PrLinkPositionAnimation",
   "file": "prlib/prlib.cpp",
   "proto": 1318040,
-  "pal": null,
+  "pal": 1330536,
   "proto_size": 8,
   "est": 1330536,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrUnlinkPositionAnimation",
   "file": "prlib/prlib.cpp",
   "proto": 1318048,
-  "pal": null,
+  "pal": 1330544,
   "proto_size": 8,
   "est": 1330544,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetLinkedPositionAnimation",
   "file": "prlib/prlib.cpp",
   "proto": 1318056,
-  "pal": null,
+  "pal": 1330552,
   "proto_size": 8,
   "est": 1330552,
-  "conf": "estimate?"
+  "conf": "anchored"
  },
  {
   "name": "PrSelectCamera",
   "file": "prlib/prlib.cpp",
   "proto": 1318064,
-  "pal": null,
+  "pal": 1330560,
   "proto_size": 16,
   "est": 1330560,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetSelectedCamera",
@@ -10398,55 +10398,55 @@
   "name": "PrGetCurrentCamera",
   "file": "prlib/prlib.cpp",
   "proto": 1318088,
-  "pal": null,
+  "pal": 1330584,
   "proto_size": 32,
   "est": 1330584,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrSetDefaultCamera",
   "file": "prlib/prlib.cpp",
   "proto": 1318120,
-  "pal": null,
+  "pal": 1330616,
   "proto_size": 80,
   "est": 1330616,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrSetAppropriateDefaultCamera",
   "file": "prlib/prlib.cpp",
   "proto": 1318200,
-  "pal": null,
+  "pal": 1330696,
   "proto_size": 8,
   "est": 1330696,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrShowModel",
   "file": "prlib/prlib.cpp",
   "proto": 1318208,
-  "pal": null,
+  "pal": 1330704,
   "proto_size": 112,
   "est": 1330704,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetModelMatrix",
   "file": "prlib/prlib.cpp",
   "proto": 1318320,
-  "pal": null,
+  "pal": 1330816,
   "proto_size": 32,
   "est": 1330816,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrHideModel",
   "file": "prlib/prlib.cpp",
   "proto": 1318352,
-  "pal": null,
+  "pal": 1330848,
   "proto_size": 24,
   "est": 1330848,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetModelPrimitivePosition",
@@ -10470,28 +10470,28 @@
   "name": "PrAnimateModel",
   "file": "prlib/prlib.cpp",
   "proto": 1318504,
-  "pal": null,
+  "pal": 1331000,
   "proto_size": 16,
   "est": 1331000,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrAnimateModelPosition",
   "file": "prlib/prlib.cpp",
   "proto": 1318520,
-  "pal": null,
+  "pal": 1331016,
   "proto_size": 16,
   "est": 1331016,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrAnimateSceneCamera",
   "file": "prlib/prlib.cpp",
   "proto": 1318536,
-  "pal": null,
+  "pal": 1331032,
   "proto_size": 16,
   "est": 1331032,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrRender",
@@ -10524,145 +10524,145 @@
   "name": "PrSetDepthOfField",
   "file": "prlib/prlib.cpp",
   "proto": 1318584,
-  "pal": null,
+  "pal": 1331080,
   "proto_size": 80,
   "est": 1331080,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrSetDepthOfFieldLevel",
   "file": "prlib/prlib.cpp",
   "proto": 1318664,
-  "pal": null,
+  "pal": 1331160,
   "proto_size": 8,
   "est": 1331160,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetFocalLength",
   "file": "prlib/prlib.cpp",
   "proto": 1318672,
-  "pal": null,
+  "pal": 1331168,
   "proto_size": 8,
   "est": 1331168,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetDefocusLength",
   "file": "prlib/prlib.cpp",
   "proto": 1318680,
-  "pal": null,
+  "pal": 1331176,
   "proto_size": 8,
   "est": 1331176,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetDepthOfFieldLevel",
   "file": "prlib/prlib.cpp",
   "proto": 1318688,
-  "pal": null,
+  "pal": 1331184,
   "proto_size": 8,
   "est": 1331184,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrSaveContour",
   "file": "prlib/prlib.cpp",
   "proto": 1318696,
-  "pal": null,
+  "pal": 1331192,
   "proto_size": 8,
   "est": 1331192,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrResetContour",
   "file": "prlib/prlib.cpp",
   "proto": 1318704,
-  "pal": null,
+  "pal": 1331200,
   "proto_size": 8,
   "est": 1331200,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrSavePosture",
   "file": "prlib/prlib.cpp",
   "proto": 1318712,
-  "pal": null,
+  "pal": 1331208,
   "proto_size": 8,
   "est": 1331208,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrResetPosture",
   "file": "prlib/prlib.cpp",
   "proto": 1318720,
-  "pal": null,
+  "pal": 1331216,
   "proto_size": 8,
   "est": 1331216,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrSetContourBlurAlpha",
   "file": "prlib/prlib.cpp",
   "proto": 1318728,
-  "pal": null,
+  "pal": 1331224,
   "proto_size": 16,
   "est": 1331224,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrSetTransactionBlendRatio",
   "file": "prlib/prlib.cpp",
   "proto": 1318744,
-  "pal": null,
+  "pal": 1331240,
   "proto_size": 8,
   "est": 1331240,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetContourBlurAlpha",
   "file": "prlib/prlib.cpp",
   "proto": 1318752,
-  "pal": null,
+  "pal": 1331248,
   "proto_size": 8,
   "est": 1331248,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetContourBlurAlpha2",
   "file": "prlib/prlib.cpp",
   "proto": 1318760,
-  "pal": null,
+  "pal": 1331256,
   "proto_size": 8,
   "est": 1331256,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetTransactionBlendRatio",
   "file": "prlib/prlib.cpp",
   "proto": 1318768,
-  "pal": null,
+  "pal": 1331264,
   "proto_size": 8,
   "est": 1331264,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrSetModelDisturbance",
   "file": "prlib/prlib.cpp",
   "proto": 1318776,
-  "pal": null,
+  "pal": 1331272,
   "proto_size": 8,
   "est": 1331272,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetModelDisturbance",
   "file": "prlib/prlib.cpp",
   "proto": 1318784,
-  "pal": null,
+  "pal": 1331280,
   "proto_size": 8,
   "est": 1331280,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetVertexNum",
@@ -10821,10 +10821,10 @@
   "name": "ChangePointer__13SpaFileHeader",
   "file": "prlib/setpointer.cpp",
   "proto": 1319688,
-  "pal": null,
+  "pal": 1332200,
   "proto_size": 184,
   "est": 1332200,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "ChangePointer__16SpaNodeAnimationP13SpaFileHeader",
@@ -10851,7 +10851,7 @@
   "pal": null,
   "proto_size": 1016,
   "est": 1333504,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
  },
  {
   "name": "InitializeVu1__13PrSceneObject",
@@ -10860,16 +10860,16 @@
   "pal": null,
   "proto_size": 136,
   "est": 1334520,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
  },
  {
   "name": "PrepareScreenModelRender__13PrSceneObject",
   "file": "prlib/render.cpp",
   "proto": 1322144,
-  "pal": null,
+  "pal": 1334656,
   "proto_size": 192,
   "est": 1334656,
-  "conf": "estimate-xfile"
+  "conf": "anchored"
  },
  {
   "name": "CalculateCurrentMatrix__13PrModelObject",
@@ -10878,7 +10878,7 @@
   "pal": null,
   "proto_size": 496,
   "est": 1334848,
-  "conf": "estimate?-xfile"
+  "conf": "estimate?"
  },
  {
   "name": "CalculateCurrentMatrix__13SpmFileHeaderP13PrModelObjectRCt8NaMATRIX3Zfi4i4",
@@ -10887,7 +10887,7 @@
   "pal": null,
   "proto_size": 128,
   "est": 1335344,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
  },
  {
   "name": "CalculateCurrentMatrixAnimation__13SpmFileHeaderP13PrModelObjectRCt8NaMATRIX3Zfi4i4",
@@ -10896,7 +10896,7 @@
   "pal": null,
   "proto_size": 3920,
   "est": 1335472,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
  },
  {
   "name": "CalculateClusterMatrix__13SpmFileHeaderP13PrModelObjectRCt8NaMATRIX3Zfi4i4",
@@ -10905,7 +10905,7 @@
   "pal": null,
   "proto_size": 752,
   "est": 1339392,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
  },
  {
   "name": "CalculateClusterMatrixAnimation__13SpmFileHeaderP13PrModelObjectRCt8NaMATRIX3Zfi4i4",
@@ -10914,61 +10914,61 @@
   "pal": null,
   "proto_size": 4496,
   "est": 1340144,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
  },
  {
   "name": "RenderContext1Model__13PrModelObject",
   "file": "prlib/render.cpp",
   "proto": 1332128,
-  "pal": null,
+  "pal": 1344640,
   "proto_size": 56,
   "est": 1344640,
-  "conf": "estimate-xfile"
+  "conf": "anchored"
  },
  {
   "name": "RenderContext1Model__13SpmFileHeaderP13PrModelObject",
   "file": "prlib/render.cpp",
   "proto": 1332184,
-  "pal": null,
+  "pal": 1344696,
   "proto_size": 120,
   "est": 1344696,
-  "conf": "estimate-xfile"
+  "conf": "anchored"
  },
  {
   "name": "ModifySimpleDmaPacket__7SpmNodeP23PrVuNodeHeaderDmaPacket",
   "file": "prlib/render.cpp",
   "proto": 1332304,
-  "pal": null,
+  "pal": 1344816,
   "proto_size": 232,
   "est": 1344816,
-  "conf": "estimate-xfile"
+  "conf": "anchored"
  },
  {
   "name": "RenderContext1Node__7SpmNodeP13PrModelObject",
   "file": "prlib/render.cpp",
   "proto": 1332536,
-  "pal": null,
+  "pal": 1345064,
   "proto_size": 376,
-  "est": 1345048,
-  "conf": "estimate?-xfile"
+  "est": 1345064,
+  "conf": "anchored"
  },
  {
   "name": "RenderScreenModelNode__13PrModelObject",
   "file": "prlib/render.cpp",
   "proto": 1332912,
-  "pal": null,
+  "pal": 1345440,
   "proto_size": 48,
-  "est": 1345424,
-  "conf": "estimate?-xfile"
+  "est": 1345440,
+  "conf": "anchored"
  },
  {
   "name": "RenderScreenModelNode__13SpmFileHeader",
   "file": "prlib/render.cpp",
   "proto": 1332960,
-  "pal": null,
+  "pal": 1345488,
   "proto_size": 96,
-  "est": 1345472,
-  "conf": "estimate?-xfile"
+  "est": 1345488,
+  "conf": "anchored"
  },
  {
   "name": "RenderScreenModelNode__7SpmNode",
@@ -10976,26 +10976,26 @@
   "proto": 1333056,
   "pal": null,
   "proto_size": 320,
-  "est": 1345568,
-  "conf": "estimate?-xfile"
+  "est": 1345584,
+  "conf": "estimate"
  },
  {
   "name": "RenderBackgroundScreenModel__13PrModelObject",
   "file": "prlib/render.cpp",
   "proto": 1333376,
-  "pal": null,
+  "pal": 1345440,
   "proto_size": 48,
-  "est": 1345888,
-  "conf": "estimate?-xfile"
+  "est": 1345440,
+  "conf": "anchored"
  },
  {
   "name": "RenderBackgroundScreenModel__13SpmFileHeader",
   "file": "prlib/render.cpp",
   "proto": 1333424,
-  "pal": null,
+  "pal": 1345488,
   "proto_size": 96,
-  "est": 1345936,
-  "conf": "estimate?-xfile"
+  "est": 1345488,
+  "conf": "anchored"
  },
  {
   "name": "RenderBackgroundScreenModel__7SpmNode",
@@ -11003,26 +11003,26 @@
   "proto": 1333520,
   "pal": null,
   "proto_size": 272,
-  "est": 1346032,
-  "conf": "estimate?-xfile"
+  "est": 1345584,
+  "conf": "estimate"
  },
  {
   "name": "RenderContext2Model__13PrModelObject",
   "file": "prlib/render.cpp",
   "proto": 1333792,
-  "pal": null,
+  "pal": 1347080,
   "proto_size": 72,
-  "est": 1346304,
-  "conf": "estimate?-xfile"
+  "est": 1347080,
+  "conf": "anchored"
  },
  {
   "name": "RenderContext2Model__13SpmFileHeaderP13PrModelObject",
   "file": "prlib/render.cpp",
   "proto": 1333864,
-  "pal": null,
+  "pal": 1347152,
   "proto_size": 120,
-  "est": 1346376,
-  "conf": "estimate-xfile"
+  "est": 1347152,
+  "conf": "anchored"
  },
  {
   "name": "RenderContext2Node__7SpmNodeP13PrModelObject",
@@ -11030,8 +11030,8 @@
   "proto": 1333984,
   "pal": null,
   "proto_size": 760,
-  "est": 1346496,
-  "conf": "estimate?-xfile"
+  "est": 1347272,
+  "conf": "estimate"
  },
  {
   "name": "ComposeGlobalMatrix__7SpmNodeP13PrModelObjectRCt8NaMATRIX3Zfi4i4",
@@ -11039,8 +11039,8 @@
   "proto": 1334744,
   "pal": null,
   "proto_size": 128,
-  "est": 1347256,
-  "conf": "estimate?-xfile"
+  "est": 1348032,
+  "conf": "estimate?"
  },
  {
   "name": "ComposeGlobalMatrixWithoutVisibility__7SpmNodeP13PrModelObjectRCt8NaMATRIX3Zfi4i4",
@@ -11048,8 +11048,8 @@
   "proto": 1334872,
   "pal": null,
   "proto_size": 888,
-  "est": 1347384,
-  "conf": "estimate?-xfile"
+  "est": 1348160,
+  "conf": "estimate"
  },
  {
   "name": "InitializeEECore__13PrRenderStuffP13PrSceneObject",
@@ -11057,7 +11057,7 @@
   "proto": 1335760,
   "pal": null,
   "proto_size": 136,
-  "est": 1348116,
+  "est": 1349308,
   "conf": "estimate?"
  },
  {
@@ -11066,7 +11066,7 @@
   "proto": 1335896,
   "pal": null,
   "proto_size": 160,
-  "est": 1348252,
+  "est": 1349444,
   "conf": "estimate?"
  },
  {
@@ -11075,25 +11075,25 @@
   "proto": 1336056,
   "pal": null,
   "proto_size": 192,
-  "est": 1348412,
+  "est": 1349604,
   "conf": "estimate?"
  },
  {
   "name": "RenderVertexEECoreRefmap__13PrRenderStuff",
   "file": "prlib/renderee.cpp",
   "proto": 1336248,
-  "pal": 1348604,
+  "pal": 1349796,
   "proto_size": 8,
-  "est": 1348604,
+  "est": 1349796,
   "conf": "anchored"
  },
  {
   "name": "RenderVertexEECoreContour__13PrRenderStuff",
   "file": "prlib/renderee.cpp",
   "proto": 1336256,
-  "pal": 1348604,
+  "pal": 1349796,
   "proto_size": 8,
-  "est": 1348604,
+  "est": 1349796,
   "conf": "anchored"
  },
  {
@@ -11102,7 +11102,7 @@
   "proto": 1336264,
   "pal": null,
   "proto_size": 816,
-  "est": 1348612,
+  "est": 1349804,
   "conf": "estimate"
  },
  {
@@ -11111,7 +11111,7 @@
   "proto": 1337080,
   "pal": null,
   "proto_size": 792,
-  "est": 1349428,
+  "est": 1350620,
   "conf": "estimate?"
  },
  {
@@ -11361,10 +11361,10 @@
   "name": "GetMatrix__C16SpaNodeAnimationf",
   "file": "prlib/spadata.cpp",
   "proto": 1346032,
-  "pal": null,
+  "pal": 1359808,
   "proto_size": 304,
   "est": 1359808,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "IsVisible__C16SpaNodeAnimationf",
@@ -11424,28 +11424,28 @@
   "name": "GetSprineValue__Ct8SpaTrack1ZfUif",
   "file": "prlib/spadata.cpp",
   "proto": 1348888,
-  "pal": null,
+  "pal": 1362664,
   "proto_size": 208,
   "est": 1362664,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "GetLinearValue__Ct8SpaTrack1ZfUif",
   "file": "prlib/spadata.cpp",
   "proto": 1349096,
-  "pal": null,
+  "pal": 1362872,
   "proto_size": 96,
   "est": 1362872,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "GetValue__Ct8SpaTrack1Zff",
   "file": "prlib/spadata.cpp",
   "proto": 1349192,
-  "pal": null,
+  "pal": 1362968,
   "proto_size": 304,
   "est": 1362968,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "GetSprineValue__Ct8SpaTrack1Zt8NaMATRIX3Zfi4i4Uif",
@@ -11496,10 +11496,10 @@
   "name": "_$_13PrSceneObject",
   "file": "prlib/scene.cpp",
   "proto": 1356560,
-  "pal": null,
+  "pal": 1370336,
   "proto_size": 88,
   "est": 1370336,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "SelectCamera__13PrSceneObjectP13SpcFileHeader",
@@ -11568,10 +11568,10 @@
   "name": "_$_t11PrObjectSet1Z13PrModelObject",
   "file": "prlib/objectset.h",
   "proto": 1358296,
-  "pal": null,
+  "pal": 1372072,
   "proto_size": 32,
   "est": 1372072,
-  "conf": "estimate-xfile"
+  "conf": "anchored"
  },
  {
   "name": "RenderClusterNode__22SpmClusterGeometryNodeP13PrModelObject",
@@ -11634,7 +11634,7 @@
   "pal": null,
   "proto_size": 424,
   "est": 1377184,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
  },
  {
   "name": "PrAddTextureAreaDefinition__FP11NaGifPacketRC11PrVRAM_RECTb",
@@ -11643,16 +11643,16 @@
   "pal": null,
   "proto_size": 256,
   "est": 1377608,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
  },
  {
   "name": "PrSetSpriteDefinitionZ__FUi",
   "file": "prlib/vram.cpp",
   "proto": 1364088,
-  "pal": null,
+  "pal": 1377864,
   "proto_size": 8,
   "est": 1377864,
-  "conf": "estimate-xfile"
+  "conf": "anchored"
  },
  {
   "name": "PrAddSpriteDefinition__FP11NaGifPacketRC11PrVRAM_RECTT1b",
@@ -11661,7 +11661,7 @@
   "pal": null,
   "proto_size": 440,
   "est": 1377872,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
  },
  {
   "name": "PrAddSpriteDefinitionSuperSampled__FP11NaGifPacketRC11PrVRAM_RECTT1",
@@ -11670,7 +11670,7 @@
   "pal": null,
   "proto_size": 1704,
   "est": 1378312,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
  },
  {
   "name": "RawRandom__Fv",
@@ -11838,64 +11838,64 @@
   "name": "PrSetMendererRatio",
   "file": "prlib/menderer.cpp",
   "proto": 1372792,
-  "pal": null,
+  "pal": 1386632,
   "proto_size": 8,
   "est": 1386632,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetMendererRatio",
   "file": "prlib/menderer.cpp",
   "proto": 1372800,
-  "pal": null,
+  "pal": 1386640,
   "proto_size": 8,
   "est": 1386640,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrSetMendererDirection",
   "file": "prlib/menderer.cpp",
   "proto": 1372808,
-  "pal": null,
+  "pal": 1386648,
   "proto_size": 8,
   "est": 1386648,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetMendererDirection",
   "file": "prlib/menderer.cpp",
   "proto": 1372816,
-  "pal": null,
+  "pal": 1386656,
   "proto_size": 8,
   "est": 1386656,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrSetMendererColorModulation",
   "file": "prlib/menderer.cpp",
   "proto": 1372824,
-  "pal": null,
+  "pal": 1386664,
   "proto_size": 8,
   "est": 1386664,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrIsMendererColorModulation",
   "file": "prlib/menderer.cpp",
   "proto": 1372832,
-  "pal": null,
+  "pal": 1386672,
   "proto_size": 8,
   "est": 1386672,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrInitializeMenderer",
   "file": "prlib/menderer.cpp",
   "proto": 1372840,
-  "pal": null,
+  "pal": 1386680,
   "proto_size": 224,
   "est": 1386680,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrRenderMenderer",
@@ -11982,10 +11982,10 @@
   "name": "PrStartAwfulRotation__Fv",
   "file": "prlib/mendererawful.cpp",
   "proto": 1377768,
-  "pal": null,
+  "pal": 1391632,
   "proto_size": 16,
   "est": 1391632,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrFadeFrameImage__Ff",
@@ -12056,26 +12056,26 @@
   "proto": 1380976,
   "pal": null,
   "proto_size": 544,
-  "est": 1394840,
-  "conf": "estimate?-xfile"
+  "est": 1394936,
+  "conf": "estimate?"
  },
  {
   "name": "InitializeNoodlePositionData__Fv",
   "file": "prlib/mendererdata.cpp",
   "proto": 1381520,
-  "pal": null,
+  "pal": 1395480,
   "proto_size": 288,
-  "est": 1395384,
-  "conf": "estimate?-xfile"
+  "est": 1395480,
+  "conf": "anchored"
  },
  {
   "name": "UpdateNoodlePositionData__FP20PrNoodlePositionData",
   "file": "prlib/mendererdata.cpp",
   "proto": 1381808,
-  "pal": null,
+  "pal": 1395768,
   "proto_size": 128,
-  "est": 1395672,
-  "conf": "estimate?-xfile"
+  "est": 1395768,
+  "conf": "anchored"
  },
  {
   "name": "GetSynchronizeRatio__FPC20PrNoodlePositionData",
@@ -12083,8 +12083,8 @@
   "proto": 1381936,
   "pal": null,
   "proto_size": 248,
-  "est": 1395800,
-  "conf": "estimate?-xfile"
+  "est": 1395896,
+  "conf": "estimate?"
  },
  {
   "name": "PrInitializeNoodlePolygonPosition__Fv",
@@ -12092,8 +12092,8 @@
   "proto": 1382184,
   "pal": null,
   "proto_size": 192,
-  "est": 1396048,
-  "conf": "estimate?-xfile"
+  "est": 1396144,
+  "conf": "estimate"
  },
  {
   "name": "PrGetNoodlePolygonPosition__FPt8NaVECTOR2Zfi4Ui",
@@ -12101,8 +12101,8 @@
   "proto": 1382376,
   "pal": null,
   "proto_size": 1592,
-  "est": 1396240,
-  "conf": "estimate?-xfile"
+  "est": 1396336,
+  "conf": "estimate?"
  },
  {
   "name": "CG_WaveInit__FP8WAVE_STR",
@@ -12369,19 +12369,19 @@
   "name": "Initialize__13SpaFileHeader",
   "file": "prlib/animation.cpp",
   "proto": 1390656,
-  "pal": null,
+  "pal": 1404624,
   "proto_size": 72,
   "est": 1404624,
-  "conf": "estimate-xfile"
+  "conf": "anchored"
  },
  {
   "name": "Initialize__13SpcFileHeader",
   "file": "prlib/camera.cpp",
   "proto": 1390728,
-  "pal": null,
+  "pal": 1404696,
   "proto_size": 8,
   "est": 1404696,
-  "conf": "estimate-xfile"
+  "conf": "anchored"
  },
  {
   "name": "GetCamera__C13SpcFileHeaderf",
@@ -12390,7 +12390,7 @@
   "pal": null,
   "proto_size": 1520,
   "est": 1404704,
-  "conf": "estimate-xfile"
+  "conf": "estimate"
  },
  {
   "name": "SaveContour__13PrModelObject",
