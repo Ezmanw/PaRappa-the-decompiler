@@ -1,7 +1,15 @@
+#ifdef VERSION_PAL
+/* PAL: CdctrlMemIntgDecode returns int; keep the shared header from conflicting */
+#define CdctrlMemIntgDecode CdctrlMemIntgDecode_hdr
+#endif
 #include "main/cdctrl.h"
+#ifdef VERSION_PAL
+#undef CdctrlMemIntgDecode
+#endif
 
 #include "os/mtc.h"
 #include "os/syssub.h"
+#include "os/system.h"
 #include "os/tim2.h"
 #include "os/usrmem.h"
 
@@ -111,7 +119,11 @@ int PackIntDecodeWait(u_char *fp_r, u_char *fp_w, int wait_hline) {
     while (1) {
         if (fp_w > fp_w_end) {
             DPRINTF(" over data pointer\n");
+#ifdef VERSION_PAL
+            return 1;
+#else
             break;
+#endif
         }
         if (fp_w == fp_w_end) {
             break;
@@ -223,6 +235,23 @@ int CdctrlSerch(FILE_STR *fstr_pp) {
     return ret;
 }
 
+#ifdef VERSION_PAL
+static int cdctrlReadSub(FILE_STR *fstr_pp, int ofs, int size, int buf) {
+    if (fstr_pp->frmode == FRMODE_CD) {
+        static sceCdRMode cdmode = { .spindlctrl = SCECdSpinNom };
+        int        read_lsn = fstr_pp->fpCd.lsn + (ofs / 2048);
+
+        if (!sceCdRead(read_lsn, (size + 2047) / 2048, (void*)buf, &cdmode)) {
+            DPRINTF("sceCdRead Error! %s\n", fstr_pp->fname);
+            return 0;
+        }
+
+        MtcWait(1);
+        while (sceCdSync(1)) {
+            MtcWait(1);
+        }
+
+#else
 static int cdctrlReadSub(FILE_STR *fstr_pp, int ofs, int size, int buf) {
     if (fstr_pp->frmode == FRMODE_CD) {
         sceCdRMode cdmode   = { .spindlctrl = SCECdSpinNom };
@@ -246,12 +275,20 @@ static int cdctrlReadSub(FILE_STR *fstr_pp, int ofs, int size, int buf) {
             MtcWait(1);
         }
 
+#endif
+#ifdef VERSION_PAL
+        if (sceCdGetError() == 0) {
+            goto done;
+        }
+        return 0;
+#else
         if (sceCdGetError()) {
             return 0;
         }
             
         FlushCache(WRITEBACK_DCACHE);
         return 1;
+#endif
     } else {
         int rfd = sceOpen(fstr_pp->fname, SCE_RDONLY);
         if (rfd < 0) {
@@ -272,6 +309,9 @@ static int cdctrlReadSub(FILE_STR *fstr_pp, int ofs, int size, int buf) {
         }
 
         sceClose(rfd);
+#ifdef VERSION_PAL
+    done:
+#endif
         FlushCache(WRITEBACK_DCACHE);
         return 1;
     }
@@ -283,6 +323,9 @@ void intReadSub(void) {
     int     read_pos;
     u_char *read_tmp_pp;
     u_char *head_read_pp;
+#ifdef VERSION_PAL
+    int     decode_ret;
+#endif
 
     read_pos = 0;
     head_read_pp = usrMalloc(8192);
@@ -294,6 +337,10 @@ void intReadSub(void) {
         while (!cdctrlReadSub(cdctrl_str.fstr_pp, read_pos, 2048, (int)head_read_pp)) {
             MtcWait(1);
         }
+
+#ifdef VERSION_PAL
+        FlushCache(WRITEBACK_DCACHE);
+#endif
 
         /* Check if we loaded a valid INT */
         if (PACK(head_read_pp)->id != PACKINT_MAGIC) {
@@ -311,6 +358,9 @@ void intReadSub(void) {
             }
         }
 
+#ifdef VERSION_PAL
+        FlushCache(WRITEBACK_DCACHE);
+#endif
         read_pos += PACK(head_read_pp)->head_size + PACK(head_read_pp)->name_size;
         FlushCache(WRITEBACK_DCACHE);
 
@@ -324,6 +374,19 @@ void intReadSub(void) {
                 read_tmp_pp = usrMalloc(PACK(head_read_pp)->data_size);
             }
 
+#ifdef VERSION_PAL
+            FlushCache(WRITEBACK_DCACHE);
+            do {
+                while (!cdctrlReadSub(cdctrl_str.fstr_pp, read_pos, PACK(head_read_pp)->data_size, (int)read_tmp_pp)) {
+                    MtcWait(1);
+                }
+
+                FlushCache(WRITEBACK_DCACHE);
+                decode_ret = PackIntDecodeWait(read_tmp_pp, (u_char*)UsrMemAllocNext(), 222);
+                FlushCache(WRITEBACK_DCACHE);
+            } while (decode_ret != 0);
+
+#else
             /* Read the data... */
             FlushCache(WRITEBACK_DCACHE);
             while (!cdctrlReadSub(cdctrl_str.fstr_pp, read_pos, PACK(head_read_pp)->data_size, (int)read_tmp_pp)) {
@@ -335,6 +398,7 @@ void intReadSub(void) {
             PackIntDecodeWait(read_tmp_pp, (u_char*)UsrMemAllocNext(), 230);
             FlushCache(WRITEBACK_DCACHE);
 
+#endif
             if (cdctrl_str.tmp_area == NULL) {
                 usrFree(read_tmp_pp);
             }
@@ -356,6 +420,19 @@ void intReadSub(void) {
             DPRINTF("int file tim2 file out\n");
             break;
         }
+#ifdef VERSION_PAL
+        /* Per-language TIM2 textures */
+        case 8: {
+            int i;
+            int per_lang = PACK(head_read_pp)->fnum / 5;
+            int base = per_lang * game_status.language_type;
+
+            for (i = base; i < base + per_lang; i++) {
+                Tim2Trans((void*)PACK(head_read_pp)->adr[i] + UsrMemAllocNext());
+            }
+            break;
+        }
+#endif
         /* Sounds */
         case FT_SND: {
             int i;
@@ -486,7 +563,12 @@ void usrMemcpy(void *sakip, void *motop, int size) {
     }
 }
 
+#ifdef VERSION_PAL
+int CdctrlMemIntgDecode(u_int rbuf, u_int setbuf) {
+    int     decode_ret = 0;
+#else
 void CdctrlMemIntgDecode(u_int rbuf, u_int setbuf) {
+#endif
     u_char *head_read_pp;
     u_int   next_rp;
 
@@ -513,11 +595,25 @@ void CdctrlMemIntgDecode(u_int rbuf, u_int setbuf) {
         /* Check if there's data present */
         if (PACK(head_read_pp)->data_size != 0) {
             /* Decode the data */
+#ifdef VERSION_PAL
+            decode_ret = PackIntDecodeWait((u_char*)rbuf, (u_char*)UsrMemAllocNext(), 222);
+            FlushCache(WRITEBACK_DCACHE);
+            rbuf += PACK(head_read_pp)->data_size;
+        }
+
+        FlushCache(WRITEBACK_DCACHE);
+
+        if (decode_ret != 0) {
+            usrFree(head_read_pp);
+            return 1;
+        }
+#else
             PackIntDecodeWait((u_char*)rbuf, (u_char*)UsrMemAllocNext(), 230);
             rbuf += PACK(head_read_pp)->data_size;
         }
 
         FlushCache(WRITEBACK_DCACHE);
+#endif
 
         /* Handle the decoded data */
         switch (PACK(head_read_pp)->ftype) {
@@ -533,6 +629,19 @@ void CdctrlMemIntgDecode(u_int rbuf, u_int setbuf) {
             DPRINTF("tim trans out\n");
             break;
         }
+#ifdef VERSION_PAL
+        /* Per-language TIM2 textures */
+        case 8: {
+            int i;
+            int per_lang = PACK(head_read_pp)->fnum / 5;
+            int base = per_lang * game_status.language_type;
+
+            for (i = base; i < base + per_lang; i++) {
+                Tim2Trans((void*)PACK(head_read_pp)->adr[i] + UsrMemAllocNext());
+            }
+            break;
+        }
+#endif
         /* Sounds */
         case FT_SND: {
             int i;
@@ -582,7 +691,11 @@ void CdctrlMemIntgDecode(u_int rbuf, u_int setbuf) {
         default:
             DPRINTF("intg exit!!\n");
             usrFree(head_read_pp);
+#ifdef VERSION_PAL
+            return 0;
+#else
             return;
+#endif
         }
     }
 }
@@ -819,6 +932,9 @@ void CdctrlXTRset(FILE_STR *fstr_pp, u_int usebuf) {
     TRBOX_TR *tb_pp;
     u_char   *pr_pp;
     int       seek_pos;
+#ifdef VERSION_PAL
+    int       decode_ret;
+#endif
 
     cdctrl_str.status = 1;
     cdctrl_str.error_status = 0;
@@ -859,6 +975,23 @@ void CdctrlXTRset(FILE_STR *fstr_pp, u_int usebuf) {
 
         pr_pp = (u_char*)UsrMemEndAlloc(tb_pp->press_size);
         UsrMemEndFree();
+#ifdef VERSION_PAL
+        do {
+            FlushCache(WRITEBACK_DCACHE);
+
+            while (!cdctrlReadSub(fstr_pp, tb_pp->read_pos, tb_pp->press_size, (int)pr_pp)) {
+                MtcWait(1);
+            }
+
+            FlushCache(WRITEBACK_DCACHE);
+
+            DPRINTF("dec size[%08x]\n", PackIntGetDecodeSize(pr_pp));
+            DPRINTF("dec info trpos[%08x] read_pos[%08x] press_size[%08x]\n", tb_pp->trpos, tb_pp->read_pos, tb_pp->press_size);
+
+            decode_ret = PackIntDecodeWait(pr_pp, (u_char*)(tb_pp->trpos + usebuf), 222);
+            FlushCache(WRITEBACK_DCACHE);
+        } while (decode_ret != 0);
+#else
         FlushCache(WRITEBACK_DCACHE);
 
         while (!cdctrlReadSub(fstr_pp, tb_pp->read_pos, tb_pp->press_size, (int)pr_pp)) {
@@ -871,6 +1004,7 @@ void CdctrlXTRset(FILE_STR *fstr_pp, u_int usebuf) {
         DPRINTF("dec info trpos[%08x] read_pos[%08x] press_size[%08x]\n", tb_pp->trpos, tb_pp->read_pos, tb_pp->press_size);
 
         PackIntDecodeWait(pr_pp, (u_char*)(tb_pp->trpos + usebuf), 230);
+#endif
     }
 
     FlushCache(WRITEBACK_DCACHE);
