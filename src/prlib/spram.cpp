@@ -3,6 +3,7 @@
 #include "prpriv.h"
 
 #include "model.h"
+#include "vu0mat.h"
 #include "random.h"
 
 #include "vu1/vucommon.h"
@@ -72,9 +73,40 @@ void PrSPRAM_DATA::SendDisplayHeader() {
 }
 
 /* nalib/navector.h */
-INCLUDE_ASM("asm/nonmatchings/prlib/spram", func_00147CE0);
+float* func_00147CE0(float* self, const float& a0, const float& a1, const float& a2, const float& a3, const float& a4, const float& a5, const float& a6, const float& a7, const float& a8, const float& a9, const float& a10, const float& a11, const float& a12, const float& a13, const float& a14, const float& a15) asm("func_00147CE0");
+float* func_00147CE0(float* self, const float& a0, const float& a1, const float& a2, const float& a3, const float& a4, const float& a5, const float& a6, const float& a7, const float& a8, const float& a9, const float& a10, const float& a11, const float& a12, const float& a13, const float& a14, const float& a15) {
+    self[0] = a0;
+    self[1] = a1;
+    self[2] = a2;
+    self[3] = a3;
+    self[4] = a4;
+    self[5] = a5;
+    self[6] = a6;
+    self[7] = a7;
+    self[8] = a8;
+    self[9] = a9;
+    self[10] = a10;
+    self[11] = a11;
+    self[12] = a12;
+    self[13] = a13;
+    self[14] = a14;
+    self[15] = a15;
+    return self;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/spram", func_00147D90);
+float* func_00147D90(float* self, const float& a0, const float& a1, const float& a2, const float& a3, const float& a4, const float& a5, const float& a6, const float& a7, const float& a8) asm("func_00147D90");
+float* func_00147D90(float* self, const float& a0, const float& a1, const float& a2, const float& a3, const float& a4, const float& a5, const float& a6, const float& a7, const float& a8) {
+    self[0] = a0;
+    self[1] = a1;
+    self[2] = a2;
+    self[3] = a3;
+    self[4] = a4;
+    self[5] = a5;
+    self[6] = a6;
+    self[7] = a7;
+    self[8] = a8;
+    return self;
+}
 
 /* prlib/spram.cpp */
 extern "C" void _GLOBAL_$I$Initialize__12PrSPRAM_DATAP13PrSceneObject() {
@@ -87,8 +119,29 @@ INCLUDE_ASM("asm/nonmatchings/prlib/spram", func_00147E38);
 
 INCLUDE_ASM("asm/nonmatchings/prlib/spram", func_00147FB8);
 
+typedef NaMATRIX<float, 4, 4> Mat44;
+extern Mat44* SetMat44Raw(Mat44* self,
+    const float& a0, const float& a1, const float& a2, const float& a3,
+    const float& a4, const float& a5, const float& a6, const float& a7,
+    const float& a8, const float& a9, const float& a10, const float& a11,
+    const float& a12, const float& a13, const float& a14, const float& a15) asm("func_00145DB0");
+
+static inline Mat44* SetMat44(Mat44* self,
+    const float& a0, const float& a1, const float& a2, const float& a3,
+    const float& a4, const float& a5, const float& a6, const float& a7,
+    const float& a8, const float& a9, const float& a10, const float& a11,
+    const float& a12, const float& a13, const float& a14, const float& a15) {
+    PR_VU0_WAIT();
+    return SetMat44Raw(self, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15);
+}
+
 INCLUDE_ASM("asm/nonmatchings/prlib/spram", func_00148140);
 
-INCLUDE_ASM("asm/nonmatchings/prlib/spram", func_00148248);
+Mat44* func_00148248(Mat44* self, const float& x, const float& y, const float& z) asm("func_00148248");
+Mat44* func_00148248(Mat44* self, const float& x, const float& y, const float& z) {
+    float f0 = 1.0f, f1 = 0.0f, f2 = 0.0f, f3 = 0.0f, f4 = 0.0f, f5 = 1.0f, f6 = 0.0f, f7 = 0.0f, f8 = 0.0f, f9 = 0.0f, f10 = 1.0f, f11 = 0.0f, f15 = 1.0f;
+    SetMat44(self, f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, x, y, z, f15);
+    return self;
+}
 
 INCLUDE_RODATA("asm/nonmatchings/prlib/spram", D_00396790);
