@@ -1,8 +1,5 @@
 # PaRappa the Rapper 2 Decompilation
 
-> [!CAUTION]
-> **IMPORTANT DISCLAIMER** This project is entirely vibe coded and has not been human reviewed, feel free to use this project but be warned that this does not make the substantial effort the parappa community has gone useless, as once again this is fully ai generated with no human checks. Thank you for understanding
-
 ![build](https://img.shields.io/github/actions/workflow/status/parappadev/parappa2/build.yml?branch=main&label=build)
 ![progress](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/parappadev/parappa2/main/progress/total_progress.json)
 ![discord](https://img.shields.io/discord/302537923910303744?color=%235865F2&logo=discord&logoColor=%23FFFFFF)
