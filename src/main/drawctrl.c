@@ -21,6 +21,7 @@
 #include <libpad.h>
 
 #include <limits.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1551,7 +1552,133 @@ int DrawSceneObjData(void *para_pp, int frame, int first_f, int useDisp, int drD
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/main/drawctrl", DrawDoubleDispIn);
+typedef struct {
+    /* 0x00 */ int   mode;
+    /* 0x04 */ float base;
+    /* 0x08 */ float spd;
+    /* 0x0c */ int   amp;
+    /* 0x10 */ float stp;
+    /* 0x14 */ float ang;
+} DDISPIN_PARA;
+
+int DrawDoubleDispIn(void *para_pp, int frame, int first_f, int useDisp, int drDisp) {
+    DDISPIN_PARA *ddisp_pp = (DDISPIN_PARA*)para_pp;
+    sceGifPacket  gifpk;
+    sceGsFrame   *use_pp, *draw_pp;
+    int           i, max_num;
+    int           xp, yp, wp, hp;
+    int           skip_f, send_f;
+    int           ex, ey;
+    float         ang, base, pos;
+
+    if (first_f == DRPRGF_INIT) {
+        return 0;
+    }
+    if (first_f == DRPRGF_RESET) {
+        return 0;
+    }
+
+    max_num = 256;
+    use_pp = DrawGetFrameP(useDisp);
+    draw_pp = DrawGetFrameP(drDisp);
+
+    CmnGifADPacketMake(&gifpk, draw_pp);
+    send_f = FALSE;
+
+    sceGifPkAddGsAD(&gifpk, SCE_GS_TEX0_1, SCE_GS_SET_TEX0(use_pp->FBP << 5, use_pp->FBW, 0, 10, 8, 0, SCE_GS_MODULATE, 0, 0, 0, 0, 0));
+    sceGifPkAddGsAD(&gifpk, SCE_GS_TEX1_1, 0);
+    sceGifPkAddGsAD(&gifpk, SCE_GS_TEST_1, SCE_GS_SET_TEST(0, 0, 0, 0, 0, 0, 1, 1));
+    sceGifPkAddGsAD(&gifpk, SCE_GS_PRIM, SCE_GS_SET_PRIM(SCE_GS_PRIM_SPRITE, 0, 1, 0, 0, 0, 1, 0, 0));
+
+    ang = ddisp_pp->ang * frame;
+    base = ddisp_pp->base + ddisp_pp->spd * frame;
+
+    if (ddisp_pp->mode == 2 || ddisp_pp->mode == 3) {
+        max_num = 640;
+    }
+
+    for (i = 0; i < max_num; i++, ang += ddisp_pp->stp) {
+        pos = sinf(ang);
+        xp = 0;
+        yp = 0;
+        wp = 0;
+        hp = 0;
+        skip_f = FALSE;
+        pos = base + pos * ddisp_pp->amp;
+
+        switch ((u_int)ddisp_pp->mode) {
+        case 0:
+            if (pos < 1.0f) {
+                skip_f = TRUE;
+            } else {
+                if (pos > 640.0f) {
+                    pos = 640.0f;
+                }
+                xp = 0;
+                yp = i;
+                wp = pos;
+                hp = 1;
+            }
+            break;
+        case 1:
+            if (pos >= 639.0f) {
+                skip_f = TRUE;
+            } else {
+                if (pos < 0.0f) {
+                    pos = 0.0f;
+                }
+                yp = i;
+                xp = pos;
+                wp = 640.0f - pos;
+                hp = 1;
+            }
+            break;
+        case 2:
+            if (pos < 1.0f) {
+                skip_f = TRUE;
+            } else {
+                if (pos > 256.0f) {
+                    pos = 256.0f;
+                }
+                xp = i;
+                hp = pos;
+                wp = 1;
+            }
+            break;
+        case 3:
+            if (pos > 255.0f) {
+                skip_f = TRUE;
+            } else {
+                if (pos < 0.0f) {
+                    pos = 0.0f;
+                }
+                xp = i;
+                yp = pos;
+                wp = 1;
+                hp = 256.0f - pos;
+            }
+            break;
+        default:
+            break;
+        }
+
+        if (!skip_f) {
+            sceGifPkAddGsAD(&gifpk, SCE_GS_UV, SCE_GS_SET_UV(xp << 4, yp << 4));
+            ey = yp + hp;
+            ex = xp + wp;
+            sceGifPkAddGsAD(&gifpk, SCE_GS_XYZ2, SCE_GS_SET_XYZ(GS_X_COORD(xp), ((2048 - (256 / 2) + yp) << 4), 1));
+            send_f = TRUE;
+            sceGifPkAddGsAD(&gifpk, SCE_GS_UV, SCE_GS_SET_UV(ex << 4, ey << 4));
+            sceGifPkAddGsAD(&gifpk, SCE_GS_XYZ2, SCE_GS_SET_XYZ(GS_X_COORD(ex), ((2048 - (256 / 2) + ey) << 4), 1));
+        }
+    }
+
+    if (send_f) {
+        CmnGifADPacketMakeTrans(&gifpk);
+    }
+
+    return 0;
+}
 
 int DrawVramClear(void *para_pp, int frame, int first_f, int useDisp, int drDisp) {
     VCLR_PARA    *vclr_para_pp = (VCLR_PARA*)para_pp; /* note: not in STABS. */
