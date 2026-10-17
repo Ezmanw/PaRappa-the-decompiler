@@ -2582,7 +2582,41 @@ static int MpCityHall_Flow(int flg, u_int tpad, u_int tpad2) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", MpCityHallParaStart);
+/* data 199be8 */ extern short D_00199BE8[]; /* static */
+/* data 199bf0 */ extern short D_00199BF0[]; /* static */
+/* data 199bf8 */ extern short D_00199BF8[]; /* static */
+/* data 199c00 */ extern short D_00199C00[]; /* static */
+
+void MpCityHallParaStart(int pos) {
+    short *anmTbl = NULL;
+    int    n;
+
+    switch (pos) {
+    case 1:
+        anmTbl = D_00199BF0;
+        break;
+    case 2:
+        anmTbl = D_00199C00;
+        break;
+    case 3:
+        anmTbl = D_00199BE8;
+        break;
+    case 4:
+        anmTbl = D_00199BF8;
+        break;
+    }
+
+    if (anmTbl != NULL) {
+        while ((n = *anmTbl) != -1) {
+            if (n & 0x1000) {
+                MNScene_ContinueAnime(&MNS_CityHall, -1, &CityHallAnime[n & ~0x1000]);
+            } else {
+                MNScene_StartAnime(&MNS_CityHall, -1, &CityHallAnime[n]);
+            }
+            anmTbl++;
+        }
+    }
+}
 
 static void MpCityHallFPHSSoundMask(int flg) {
     TSSNDMASK_CHAN(3, flg);
@@ -2712,10 +2746,6 @@ static void MpCityHallCharPosSet(int pos) {
     TSSNDPLAY(0x8002);
 }
 
-#ifndef NON_MATCHING
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", MpPopMenu_Flow);
-#else
-/* short loop */
 static int MpPopMenu_Flow(int flg, u_int tpad) {
     /* sbss 399afc */ extern int state_tmp_296;
     int ret;
@@ -2760,7 +2790,6 @@ static int MpPopMenu_Flow(int flg, u_int tpad) {
 
     return 0;
 }
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", MpMapMenu_Flow);
 
@@ -2803,7 +2832,76 @@ static int _MapGetMovableDir(MAPPOS *mpw) {
     return ret;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", McErrorMess);
+int McErrorMess(int err) {
+    int mes;
+
+    if (!TsMCAMes_IsON()) {
+        switch (err) {
+        case 1:
+            mes = 0x2000014;
+            break;
+        case 2:
+            mes = 0x2000008;
+            break;
+        case 3:
+            mes = 0x2000002;
+            break;
+        case 4:
+            mes = 0x2000005;
+            break;
+        case 5:
+            mes = 0x2000014;
+            break;
+        case 6:
+            mes = 0x2000009;
+            break;
+        case 7:
+            mes = 0x200000d;
+            break;
+        case 15:
+            mes = 0x200000e;
+            break;
+        case 10:
+            mes = 0x2000012;
+            break;
+        case 12:
+            mes = 0x2000004;
+            break;
+        case 40:
+            mes = 0x2000006;
+            break;
+        case 50:
+            mes = 0x200000b;
+            break;
+        case 60:
+            mes = 0x200000c;
+            break;
+        case 70:
+            mes = 0xc000018;
+            break;
+        case 80:
+            mes = 0xc000017;
+            break;
+        case 100:
+            mes = 0xc00000a;
+            break;
+        case 200:
+            mes = 0xc000015;
+            break;
+        default:
+            return 0;
+        }
+
+        TsMCAMes_SetMes(mes);
+    }
+
+    if (TsMCAMes_GetSelect() > 0) {
+        TsMCAMes_SetMes(-1);
+        return 0;
+    }
+
+    return -1;
+}
 
 static void McInitFlow(void) {
     subStatus = 0;
