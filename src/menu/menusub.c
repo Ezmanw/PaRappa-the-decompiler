@@ -1956,7 +1956,38 @@ static int TsMap_Flow(int flg, u_int tpad, u_int tpad2) {
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsMakeUserWork);
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsSaveSuccessProc);
+/* static */ void TsSaveSuccessProc(void) {
+    TsUserList_SetCurUserData(UserWork);
+
+    memcpy(pP3GameState->pLog->name, UserWork->name, sizeof(UserWork->name));
+    pP3GameState->pLog->name[11] = '\0';
+
+    if (UserWork->mode == 2) {
+        memcpy(pP3GameState->pLog->name1, UserWork->name1, sizeof(UserWork->name1));
+        pP3GameState->pLog->name1[11] = '\0';
+
+        if (UserWork->isVs == 1) {
+            memcpy(pP3GameState->pLog->name2, UserWork->name2, sizeof(UserWork->name2));
+            pP3GameState->pLog->name2[11] = '\0';
+        }
+    }
+
+    if (UserWork->mode == 1) {
+        TsSetRankingName(pCStageRank, pP3GameState->pLog->name);
+    } else {
+        TsSetRankingName(pCStageRank, pP3GameState->pLog->name1);
+    }
+
+    TsSetRanking2UData(UserWork, pCStageRank);
+
+    if (UserWork->mode == 1) {
+        CurFileInfo.logFileNo = UserWork->fileNo;
+        memcpy(CurFileInfo.logDate, &UserWork->date_day, sizeof(CurFileInfo.logDate));
+    } else {
+        CurFileInfo.repFileNo = UserWork->fileNo;
+        memcpy(CurFileInfo.repDate, &UserWork->date_day, sizeof(CurFileInfo.repDate));
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", MpSave_Flow);
 
