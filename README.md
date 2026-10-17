@@ -1,45 +1,86 @@
-# PaRappa the Rapper 2 Decompilation
+# PaRappa the Rapper 2: PAL Decompilation Port
 
-![build](https://img.shields.io/github/actions/workflow/status/parappadev/parappa2/build.yml?branch=main&label=build)
-![progress](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/parappadev/parappa2/main/progress/total_progress.json)
-![discord](https://img.shields.io/discord/302537923910303744?color=%235865F2&logo=discord&logoColor=%23FFFFFF)
+> [!CAUTION]
+> **IMPORTANT DISCLAIMER:** This project is entirely vibe coded and has not been human reviewed. Feel free to use it, but be warned: it does **not** make the substantial effort of the PaRappa community useless. Once again, this is fully AI generated with no human checks. Thank you for understanding.
 
-<img src=".github/resources/transparent.png" style="margin:7px" align="right" width="20%" alt="PaRappa icon by pips">
+A **PAL retail port** of the [PaRappa the Rapper 2](https://en.wikipedia.org/wiki/PaRappa_the_Rapper_2) PS2 decompilation, built as a fork of the community project [parappadev/parappa2](https://github.com/parappadev/parappa2).
 
-IMPORTANT DISCLAIMER
-This project is entirely vibe coded and has not been human reviewed, feel free to use this project but be warned that this does not make the substantial effort the parappa community has gone useless, as once again this is fully ai generated with no human checks. Thank you for understanding  
+The upstream project decompiles the **July 12th NTSC-J prototype** (`SCPS_150.17`). This fork aims to make the same source also build the **PAL retail executable** (`SCES_504.08`) byte-for-byte, while leaving the prototype build untouched.
 
+All of the real groundwork (build system, tooling, symbols, hundreds of matched functions) comes from the upstream contributors. Please go and support them.
 
-A work-in-progress decompilation of [*PaRappa the Rapper 2*](https://en.wikipedia.org/wiki/PaRappa_the_Rapper_2) (パラッパラッパー2) for the PlayStation 2.<br>
-We are currently targeting the July 12th NTSC-J prototype, but we aim to target the final NTSC-J/NTSC/PAL builds in the foreseeable future.<br><br>
-> **This fork (`PaRappa-the-decompiler`)** is a downstream fork of [parappadev/parappa2](https://github.com/parappadev/parappa2) that adds a **PAL retail (`SCES_504.08`) port** on the `pal` branch.
-> PAL-specific code is guarded with `#ifdef VERSION_PAL ... #else ... #endif`, so the July 12 prototype build is unchanged.
-> Status: ~91% of functions are decompiled to C/C++ (roughly 137 `INCLUDE_ASM` functions remain), and the PAL-only MPEG movie module (`src/pal/movie.c`) is still in progress.
-> PAL tooling lives in `tools/pal/` (`refresh.sh`, `check.py`, `func_asm.py`, `align.py`). Run `.venv/bin/python tools/pal/check.py <file>` to see how many functions match PAL.
-> You must supply your own legally obtained game files; no game assets are included in this repository.<br><br>
-For any questions, we have a home at the [PS1/PS2 Decompilation Discord server](https://discord.gg/VwCPdfbxgm) and the [PaRappa the Rapper Modding Community Discord server](https://discord.gg/xpvVnYd).
+## Status
 
-### Progress
-*For a more detailed view of the progress, please check our [decomp(dot)dev page](https://decomp.dev/parappadev/parappa2).*
+| Goal | State |
+|------|-------|
+| Functions decompiled to C/C++ | ~91% (about 1,440 of ~1,580). About 137 `INCLUDE_ASM` functions remain |
+| PAL-matching files | Many files fully match PAL (`os`, most of `main`, `menu`, parts of `prlib`) |
+| PAL-only movie module (`src/pal/movie.c`) | Work in progress |
+| Prototype (`jul12`) build | Preserved: PAL changes sit behind `#ifdef VERSION_PAL` |
 
-#### EE Core
-| Folder | Progress | Description
-|--------|----------|------------
-| `dbug` | ![progress](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/parappadev/parappa2/main/progress/dbug_progress.json) | Debug utilities (VRAM save, debug menus, etc.)
-| `os` | ![progress](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/parappadev/parappa2/main/progress/os_progress.json) | OS utilities (threading, pad, memory, etc.)
-| `iop_mdl` | ![progress](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/parappadev/parappa2/main/progress/iop_mdl_progress.json) | IOP module control routines
-| `main` | ![progress](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/parappadev/parappa2/main/progress/main_progress.json) | Gameplay code (score logic, loading screen, etc.)
-| `menu` | ![progress](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/parappadev/parappa2/main/progress/menu_progress.json) | Menu code (UI flow, Memory Card saving, etc.)
-| `prlib` | ![progress](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/parappadev/parappa2/main/progress/prlib_progress.json) | Game engine (rendering, models/animations, etc.)
-| `src` | ![progress](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/parappadev/parappa2/main/progress/total_progress.json) | Total percentage
+Numbers are approximate and will go stale. Run `tools/pal/check.py` for the real picture.
 
-#### IOP modules
-| Folder | Progress | Description
-|--------|----------|------------
-| `wavep2` | ![progress](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/parappadev/parappa2/main/progress/wp2cd.total_progress.json) | BGM and asset streaming
-| `tapctrl` | N/A | Voice and sound effect playback
+## How the PAL port works
 
-### Contributing
+PAL-specific differences are guarded so one source tree serves both builds:
 
-Please see our [build](docs/build.md) and [decompilation](docs/decompilation.md) guides.
+```c
+#ifdef VERSION_PAL
+    /* retail PAL behaviour, e.g. 256-line screen height, 50 Hz */
+#else
+    /* original July 12 prototype behaviour */
+#endif
+```
 
+Typical differences between the prototype and PAL:
+- 50 Hz / 256-line screen (instead of 60 Hz / 224-line)
+- Debug code that was compiled out of the retail build
+- PAL-only code: language/subtitle handling, `Mtc*` thread helpers, and the MPEG movie player
+
+## Tools (`tools/pal/`)
+
+| Tool | Purpose |
+|------|---------|
+| `refresh.sh` | Rebuilds PAL objects and regenerates the function/symbol maps |
+| `check.py <file> [func]` | Compiles with `-DVERSION_PAL` and compares each function to the PAL binary |
+| `func_asm.py <func>` | Prints the PAL assembly for a function |
+| `align.py`, `funcstarts.py`, `boundaries.py`, `symmap.py`, `gen_syms.py` | Map prototype functions and symbols onto PAL addresses |
+| `gen_yaml.py`, `try_convert.sh`, `convert.txt` | Convert PAL splits from assembly to C/C++ |
+| `romdiff.py`, `secmatch.py`, `dataref.py`, `fingerprint.py` | ROM and section comparison helpers |
+
+Quick start (after following the build guide and supplying your own game files):
+
+```sh
+export PATH=$PWD/.venv/bin:$PATH
+./tools/pal/refresh.sh
+python tools/pal/check.py src/menu/menu.c      # whole file
+python tools/pal/check.py src/menu/menu.c FUNC # single function
+ninja
+```
+
+> [!NOTE]
+> `check.py` relies on estimated PAL addresses, which can be wrong for some functions. A function that looks "differing" may actually match once the maps are refreshed.
+
+## Building
+
+You need your own legally obtained copy of the game. **No game assets are included in this repository.** See the [build guide](docs/build.md) and the [decompilation guide](docs/decompilation.md).
+
+## Project layout
+
+| Folder | Contents |
+|--------|----------|
+| `src/main` | Gameplay code (score logic, loading screen, wipes, effects) |
+| `src/menu` | Menu code (UI flow, memory card saving) |
+| `src/prlib` | Game engine (rendering, models, animation, Menderer) |
+| `src/nalib` | Math/vector helpers |
+| `src/os` | OS utilities (threads, pad, memory) |
+| `src/iop_mdl` | IOP module control |
+| `src/pal` | PAL-only code (movie player) |
+| `tools/pal` | PAL porting and verification tools |
+
+## Credits
+
+- The [parappadev/parappa2](https://github.com/parappadev/parappa2) team and contributors, for the original decompilation
+- The [PS1/PS2 Decompilation Discord](https://discord.gg/VwCPdfbxgm) and [PaRappa Modding Community](https://discord.gg/xpvVnYd)
+
+For upstream progress, see [decomp.dev/parappadev/parappa2](https://decomp.dev/parappadev/parappa2).
