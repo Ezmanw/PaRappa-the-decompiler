@@ -2,6 +2,12 @@
 
 #include "os/mtc.h"
 
+#ifdef VERSION_PAL
+extern FILE_STR file_str_movie_file; /*= {
+    FRMODE_CD, 4, 0, 0, "\\PSS\\P3V2_EU.PSS;1", {}
+};*/
+#endif
+
 extern FILE_STR file_str_logo_file; /*= {
     FRMODE_CD, FTMODE_INTG, 0, 0, "\\DATA\\LOGO.INT;1", {}
 };*/
@@ -131,6 +137,9 @@ void stDatFirstFileSearch(void) {
 
     stDatFileSearch(&file_str_logo_file);
     stDatFileSearch(&file_str_menu_file);
+#ifdef VERSION_PAL
+    stDatFileSearch(&file_str_movie_file);
+#endif
 
     for (i = 0; i < 10u; i++) {
         stDatFileSearch(&file_str_extra_file[i]);

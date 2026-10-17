@@ -1,5 +1,6 @@
 #include "main/cmnfile.h"
 
+#include "os/system.h"
 #include "os/tim2.h"
 
 #include <stdio.h>
@@ -140,6 +141,10 @@ static CMN_FILE_STR* cmn_file_str_search(CMN_FILE_TYPE_ENUM type) {
 int cmnfTim2Trans(void) {
     int           i;
     CMN_FILE_STR *cfstr_pp;
+#ifdef VERSION_PAL
+    int           fnum;
+    int           j;
+#endif
 
     /* Get the VRAM file category */
     cfstr_pp = cmn_file_str_search(CMN_VRAM);
@@ -152,6 +157,21 @@ int cmnfTim2Trans(void) {
     for (i = 0; i < cfstr_pp->fnum; i++) {
         Tim2Trans((void*)cfstr_pp + cfstr_pp->adr[i]);
     }
+
+#ifdef VERSION_PAL
+    cfstr_pp = cmn_file_str_search(CMN_MAX);
+
+    if (cfstr_pp == NULL) {
+        return 0;
+    }
+
+    fnum = cfstr_pp->fnum / 5;
+    j = fnum * game_status.language_type;
+
+    for (i = j; i < j + fnum; i++) {
+        Tim2Trans((void*)cfstr_pp + cfstr_pp->adr[i]);
+    }
+#endif
 
     return 1;
 }

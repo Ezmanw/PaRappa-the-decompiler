@@ -49,7 +49,11 @@ void MNScene_Init(MN_SCENE *pshdl, MN_SCENETBL *tbl, int bFocus) {
 
     memset(pshdl, 0, sizeof(*pshdl));
 
+#ifdef VERSION_PAL
+    pshdl->scene = PrInitializeScene(&DBufDc.draw01, NULL, (bFocus) ? 240 : -1);
+#else
     pshdl->scene = PrInitializeScene(&DBufDc.draw01, NULL, (bFocus) ? FBP_VRAM_DRAW2 : -1);
+#endif
 
     for (mn = 0; mn < PR_ARRAYSIZE(pshdl->mdl) && mtbl->fn_mdl != 0; mn++, mdl++, mtbl++) {
         float clear = 0.0f;

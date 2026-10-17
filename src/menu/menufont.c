@@ -28,7 +28,11 @@ static int _JPFont_GetSubtCode(u_char *str, SUBT_CODE *subt_code);
 static int _EGFont_GetSubtCode(u_char *str, SUBT_CODE *subt_code, MCODE_DAT *pfnt_ascii);
 static MCODE_DAT* codeKanjiCheck(u_char dat0, u_char dat1, MCODE_KANJI *kcode_pp, int kcode_max);
 static MCODE_DAT* codeKanjiACheck(u_char dat0, u_char dat1, MCODE_KANJI_ANIME *kcode_pp, int kcode_max);
+#ifdef VERSION_PAL
+#define LANG_JAPANESE 6
+#else
 static void euc2sjis(unsigned char *c1, unsigned char *c2);
+#endif
 
 void MenuFont_ASC2EUC(char *des, char *src) {
     u_int len = strlen(Tbl_ASC2EUC) / 2;
@@ -381,6 +385,7 @@ static int _JPFont_GetSubtCode(u_char *str, SUBT_CODE *subt_code) {
         }
 
         dat1 = *str++;
+#ifndef VERSION_PAL
         euc2sjis(&dat0, &dat1);
 
         /* '@' in SJIS - new line */
@@ -388,6 +393,7 @@ static int _JPFont_GetSubtCode(u_char *str, SUBT_CODE *subt_code) {
             line_num++;
             continue;
         }
+#endif
 
         if (_PadFont_SW) {
             ppMcode->pmcode = codeKanjiACheck(dat0, dat1, PadSymbolFontA, 12);
@@ -443,7 +449,9 @@ static int _EGFont_GetSubtCode(u_char *str, SUBT_CODE *subt_code, MCODE_DAT *pfn
         if (_PadFont_SW) {
             dat0 = c;
             dat1 = *str;
+#ifndef VERSION_PAL
             euc2sjis(&dat0, &dat1);
+#endif
 
             ppMcode->pmcode = codeKanjiACheck(dat0, dat1, PadSymbolFontA, 12);
             if (ppMcode->pmcode != NULL) {
@@ -495,6 +503,7 @@ static MCODE_DAT* codeKanjiACheck(u_char dat0, u_char dat1, MCODE_KANJI_ANIME *k
     return NULL;
 }
 
+#ifndef VERSION_PAL
 static void euc2sjis(unsigned char *c1, unsigned char *c2) {
     if (*c1 % 2 == 0) {
         *c2 -= 0x02;
@@ -515,3 +524,4 @@ static void euc2sjis(unsigned char *c1, unsigned char *c2) {
         *c1 += 0x70;
     }
 }
+#endif

@@ -519,12 +519,21 @@ void ClearFrameBufferGifTag(sceGsFrame *draw_pp, sceGifPacket *gifpk_pp, u_char 
     sceGifPkAddGsAD(gifpk_pp, SCE_GS_FRAME_1, *(u_long*)draw_pp);
     sceGifPkAddGsAD(gifpk_pp, SCE_GS_TEST_1, SCE_GS_SET_TEST_1(1, 0, 0, 1, 0, 0, 1, 1));
     sceGifPkAddGsAD(gifpk_pp, SCE_GS_RGBAQ, SCE_GS_SET_RGBAQ(r, g, b, a, 0));
+#ifdef VERSION_PAL
+    sceGifPkAddGsAD(gifpk_pp, SCE_GS_SCISSOR_1, SCE_GS_SET_SCISSOR(0, 640, 0, 256));
+    sceGifPkAddGsAD(gifpk_pp, SCE_GS_PRMODECONT, SCE_GS_SET_PRMODECONT(1));
+    sceGifPkAddGsAD(gifpk_pp, SCE_GS_XYOFFSET_1, SCE_GS_SET_XYOFFSET(27648, 30720));
+    sceGifPkAddGsAD(gifpk_pp, SCE_GS_PRIM, SCE_GS_PRIM_SPRITE);
+    sceGifPkAddGsAD(gifpk_pp, SCE_GS_XYZ2, SCE_GS_SET_XYZ(GS_X_COORD(0), ((2048 - (256 / 2) + 0) << 4), 1));
+    sceGifPkAddGsAD(gifpk_pp, SCE_GS_XYZ2, SCE_GS_SET_XYZ(GS_X_COORD(640), ((2048 - (256 / 2) + 256) << 4), 1));
+#else
     sceGifPkAddGsAD(gifpk_pp, SCE_GS_SCISSOR_1, SCE_GS_SET_SCISSOR(0, 640, 0, 224));
     sceGifPkAddGsAD(gifpk_pp, SCE_GS_PRMODECONT, SCE_GS_SET_PRMODECONT(1));
     sceGifPkAddGsAD(gifpk_pp, SCE_GS_XYOFFSET_1, SCE_GS_SET_XYOFFSET(27648, 30976)); // ???
     sceGifPkAddGsAD(gifpk_pp, SCE_GS_PRIM, SCE_GS_PRIM_SPRITE);
     sceGifPkAddGsAD(gifpk_pp, SCE_GS_XYZ2, SCE_GS_SET_XYZ(GS_X_COORD(0), GS_Y_COORD(0), 1));
     sceGifPkAddGsAD(gifpk_pp, SCE_GS_XYZ2, SCE_GS_SET_XYZ(GS_X_COORD(640), GS_Y_COORD(224), 1));
+#endif
 }
 
 void GGsSetLocalMoveImage(
@@ -733,13 +742,21 @@ int DrawGetFbpPos(DNUM_ENUM dnum) {
 
     switch (dnum)  {
     case DNUM_SHOW:
+#ifdef VERSION_PAL
+        ret = 80;
+#else
         ret = FBP_VRAM_DRAW1;
+#endif
         if (outbuf_idx == 0) {
             ret = FBP_VRAM_DRAW0;
         }
         break;
     case DNUM_DRAW:
+#ifdef VERSION_PAL
+        ret = 80;
+#else
         ret = FBP_VRAM_DRAW1;
+#endif
         if (outbuf_idx != 0) {
             ret = FBP_VRAM_DRAW0;
         }
@@ -748,13 +765,25 @@ int DrawGetFbpPos(DNUM_ENUM dnum) {
         ret = FBP_VRAM_DRAW0;
         break;
     case DNUM_VRAM1:
+#ifdef VERSION_PAL
+        ret = 80;
+#else
         ret = FBP_VRAM_DRAW1;
+#endif
         break;
     case DNUM_VRAM2:
+#ifdef VERSION_PAL
+        ret = 240;
+#else
         ret = FBP_VRAM_DRAW2;
+#endif
         break;
     case DNUM_ZBUFF:
+#ifdef VERSION_PAL
+        ret = 160;
+#else
         ret = FBP_VRAM_ZBUF;
+#endif
         break;
     case DNUM_END:
         ret = FBP_VRAM_END;
@@ -769,13 +798,21 @@ int DrawGetTbpPos(DNUM_ENUM dnum) {
 
     switch (dnum) {
     case DNUM_SHOW:
+#ifdef VERSION_PAL
+        ret = 2560;
+#else
         ret = TBP_VRAM_DRAW1;
+#endif
         if (outbuf_idx == 0) {
             ret = TBP_VRAM_DRAW0;
         }
         break;
     case DNUM_DRAW:
+#ifdef VERSION_PAL
+        ret = 2560;
+#else
         ret = TBP_VRAM_DRAW1;
+#endif
         if (outbuf_idx != 0) {
             ret = TBP_VRAM_DRAW0;
         }
@@ -784,13 +821,25 @@ int DrawGetTbpPos(DNUM_ENUM dnum) {
         ret = TBP_VRAM_DRAW0;
         break;
     case DNUM_VRAM1:
+#ifdef VERSION_PAL
+        ret = 2560;
+#else
         ret = TBP_VRAM_DRAW1;
+#endif
         break;
     case DNUM_VRAM2:
+#ifdef VERSION_PAL
+        ret = 7680;
+#else
         ret = TBP_VRAM_DRAW2;
+#endif
         break;
     case DNUM_ZBUFF:
+#ifdef VERSION_PAL
+        ret = 5120;
+#else
         ret = TBP_VRAM_ZBUF;
+#endif
         break;
     case DNUM_END:
         ret = TBP_VRAM_END;

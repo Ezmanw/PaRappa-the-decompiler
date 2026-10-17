@@ -107,6 +107,8 @@ for sec in SECS:
         if t is None:
             continue
         sz = obj_sizes(n).get(sec, 0)
+        if sz == 0 and t.startswith('.'):
+            continue
         b = base(n, sec)
         if b is None:
             errors.append(f"{n} {sec}: no unique PAL base"); continue

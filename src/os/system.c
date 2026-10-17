@@ -11,6 +11,9 @@
 #include <devvu0.h>
 #include <eekernel.h>
 #include <libcdvd.h>
+#ifdef VERSION_PAL
+#include <libsdr.h>
+#endif
 #include <limits.h>
 #include <sifcmd.h>
 #include <sifdev.h>
@@ -86,12 +89,18 @@ int SetIopModule(void) {
     u_int i;
 
     sceSifInitRpc(0);
+#ifdef VERSION_PAL
+    sceSifInitIopHeap();
+#endif
     sceCdInit(0);
 
     while (!sceSifRebootIop("cdrom0:\\IRX\\IOPRP23.IMG;1"));
     while (!sceSifSyncIop());
 
     sceSifInitRpc(0);
+#ifdef VERSION_PAL
+    sceSifInitIopHeap();
+#endif
     sceSifLoadFileReset();
     sceFsReset();
 
@@ -124,11 +133,19 @@ static void firstClrFrameBuffer(void) {
 
     vclr_dma.clear.rgbaq.Q = 1.0f;
 
+#ifdef VERSION_PAL
+    sceGsSetDefDrawEnv(&vclr_dma.drEnv, SCE_GS_PSMCT32, SCREEN_WIDTH, 512, SCE_GS_ZNOUSE, SCE_GS_ZNOUSE);
+    sceGsSetDefClear(
+        &vclr_dma.clear, SCE_GS_ZNOUSE, 2048 - (SCREEN_WIDTH / 2), 2048 - (512 / 2), SCREEN_WIDTH,
+        512, 0, 0, 0, 0, 0
+    );
+#else
     sceGsSetDefDrawEnv(&vclr_dma.drEnv, SCE_GS_PSMCT32, SCREEN_WIDTH, SCREEN_HEIGHT, SCE_GS_ZNOUSE, SCE_GS_ZNOUSE);
     sceGsSetDefClear(
         &vclr_dma.clear, SCE_GS_ZNOUSE, 2048 - (SCREEN_WIDTH / 2), 2048 - (SCREEN_HEIGHT / 2), SCREEN_WIDTH,
         SCREEN_HEIGHT, 0, 0, 0, 0, 0
     );
+#endif
 
     sceDmaSync(sceDmaGetChan(SCE_DMA_GIF), 0, INT_MAX);
     FlushCache(WRITEBACK_DCACHE);
@@ -149,9 +166,15 @@ void initSystem(void) {
 
     firstClrFrameBuffer();
     sceGsSyncV(0);
+#ifdef VERSION_PAL
+    sceGsResetGraph(0, SCE_GS_INTERLACE, SCE_GS_PAL, SCE_GS_FRAME);
+
+    sceGsSetDefDBuffDc(&DBufDc, SCE_GS_PSMCT32, SCREEN_WIDTH, 256, SCE_GS_ZGEQUAL, SCE_GS_PSMZ32, SCE_GS_CLEAR);
+#else
     sceGsResetGraph(0, SCE_GS_INTERLACE, SCE_GS_NTSC, SCE_GS_FRAME);
 
     sceGsSetDefDBuffDc(&DBufDc, SCE_GS_PSMCT32, SCREEN_WIDTH, SCREEN_HEIGHT / 2, SCE_GS_ZGEQUAL, SCE_GS_PSMZ32, SCE_GS_CLEAR);
+#endif
     SetBackColor(0, 0, 0);
 
     /* Start TIMER0 on H-BLANK mode. */
@@ -188,12 +211,20 @@ void initSystem(void) {
     drawEnvP[USE_BUF_DRAW1] = &DBufDc.draw01;
 
     drawEnvSp = DBufDc.draw01;
+#ifdef VERSION_PAL
+    drawEnvSp.frame1.FBP = 240;
+#else
     drawEnvSp.frame1.FBP = FBP_VRAM_DRAW2;
+#endif
     drawEnvP[USE_BUF_DRAW2] = &drawEnvSp;
     sceGsSetHalfOffset(&drawEnvSp, 2048, 2048, 0);
 
     drawEnvZbuff = DBufDc.draw01;
+#ifdef VERSION_PAL
+    drawEnvZbuff.frame1.FBP = 160;
+#else
     drawEnvZbuff.frame1.FBP = FBP_VRAM_ZBUF;
+#endif
     drawEnvP[USE_BUF_ZBUFF] = &drawEnvZbuff;
     sceGsSetHalfOffset(&drawEnvZbuff, 2048, 2048, 0);
 
@@ -206,6 +237,9 @@ void initSystem(void) {
     CmnGifClear();
 
     SyoriLineInit(256);
+#ifdef VERSION_PAL
+    sceSdRemoteInit();
+#endif
     while (!sceGsSyncV(0));
 
     usrMallcInit();
@@ -300,6 +334,10 @@ static int FullAllocAndFree(void) {
 }
 
 void mallocInit(void) {
+#ifdef VERSION_PAL
+    FullAllocAndFree();
+#else
     int size = FullAllocAndFree();
     scePrintf("HEAP SIZE[%08x]\n", size);
+#endif
 }

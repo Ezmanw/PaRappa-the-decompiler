@@ -216,3 +216,17 @@ int MtcGetCondition(long level) {
 int MtcResetCheck(void) {
     return 0;
 }
+
+#ifdef VERSION_PAL
+void MtcSleep(void) {
+    SleepThread();
+}
+
+void MtcWakeup(void) {
+    WakeupThread(mtcTaskConB[mtcCurrentTask].th_id);
+}
+
+void MtcWakeupI(void) {
+    iWakeupThread(mtcTaskConB[mtcCurrentTask].th_id);
+}
+#endif

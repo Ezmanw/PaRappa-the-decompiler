@@ -5,6 +5,21 @@
 
 #include "main/etc.h"
 
+#ifdef VERSION_PAL
+typedef struct {
+    u_int starTime;
+    u_int endTime;
+    u_char *txtData[5];
+} JIMAKU_DAT_PAL;
+
+typedef struct {
+    int size;
+    JIMAKU_DAT_PAL *jimaku_dat_pp;
+} JIMAKU_STR_PAL;
+
+#define LANG_JAPANESE 6
+#endif
+
 /* data 184ba0 */ extern MCODE_ASCII mcode_ascii[]; /* static */
 
 int SUBT_POSX = 2048;
@@ -188,15 +203,27 @@ void SubtCtrlInit(void *adrs, int ser_f) {
 
     if (ser_f) {
         SUBT_POSX = 2048;
+#ifdef VERSION_PAL
+        SUBT_POSY = 2134;
+#else
         SUBT_POSY = 2122;
+#endif
     } else {
         SUBT_POSX = 2048;
+#ifdef VERSION_PAL
+        SUBT_POSY = 2114;
+#else
         SUBT_POSY = 2104;
+#endif
     }
 }
 
 void SubtCtrlPrint(JIMAKU_STR *jstr_pp, int line, int time, int lang) {
+#ifdef VERSION_PAL
+    JIMAKU_STR_PAL *jstr_tmp_pp = &((JIMAKU_STR_PAL*)jstr_pp)[line];
+#else
     JIMAKU_STR *jstr_tmp_pp = &jstr_pp[line];
+#endif
     int         i;
 
     for (i = 0; i < jstr_tmp_pp->size; i++) {
@@ -228,7 +255,11 @@ void SubtMenuCtrlInit(void *adrs) {
 
 void SubtMenuCtrlPrint(u_char *msg_pp, int xp, int yp, int lang) {
     xp += GS_X_COORD(0) >> 4;
+#ifdef VERSION_PAL
+    yp += 1920;
+#else
     yp += GS_Y_COORD(0) >> 4;
+#endif
 
     SubtClear();
     SubtMsgPrint(msg_pp, xp, yp, lang == LANG_JAPANESE, 0);
@@ -341,7 +372,11 @@ void SubtCtrlPrintBoxyWipe(JIMAKU_STR *jstr_pp, int line, int time, int lang, vo
     int         lang_f;
 
     void       *kanjiset_tmp_pp;
+#ifdef VERSION_PAL
+    JIMAKU_STR_PAL *jstr_tmp_pp = &((JIMAKU_STR_PAL*)jstr_pp)[line];
+#else
     JIMAKU_STR *jstr_tmp_pp = &jstr_pp[line];
+#endif
 
     for (i = 0; i < jstr_tmp_pp->size; i++) {
         if ((time >= jstr_tmp_pp->jimaku_dat_pp[i].starTime) &&
@@ -356,7 +391,11 @@ void SubtCtrlPrintBoxyWipe(JIMAKU_STR *jstr_pp, int line, int time, int lang, vo
             }
 
             SubtClear();
+#ifdef VERSION_PAL
+            SubtMsgPrint(jstr_tmp_pp->jimaku_dat_pp[i].txtData[lang], 2048, 2134, lang_f, 0);
+#else
             SubtMsgPrint(jstr_tmp_pp->jimaku_dat_pp[i].txtData[lang], 2048, 2122, lang_f, 0);
+#endif
 
             SubtFlash();
             SubtKanjiSet(kanjiset_tmp_pp);

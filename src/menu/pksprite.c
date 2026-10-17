@@ -1,5 +1,9 @@
 #include "menu/pksprite.h"
 
+#ifdef VERSION_PAL
+#include "os/usrmem.h"
+#endif
+
 #include <malloc.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1475,17 +1479,29 @@ void PkPolyFT4_Add(SPR_PKT pk, SPR_PRM *ppspr, int flg) {
 }
 
 PKMESH* PkMesh_Create(int w, int h) {
+#ifdef VERSION_PAL
+    PKMESH *pmesh = (PKMESH*)UsrMemEndAlloc(sizeof(PKMESH));
+#else
     PKMESH *pmesh = malloc(sizeof(PKMESH));
+#endif
 
     if (pmesh == NULL) {
         return NULL;
     }
 
     memset(pmesh, 0, sizeof(*pmesh));
+#ifdef VERSION_PAL
+    pmesh->pmspt = (PKMSPT*)UsrMemEndAlloc(sizeof(PKMSPT) * (w + 1) * (h + 1));
+#else
     pmesh->pmspt = malloc(sizeof(PKMSPT) * (w + 1) * (h + 1));
+#endif
 
     if (pmesh->pmspt == NULL) {
+#ifdef VERSION_PAL
+        UsrMemEndFree();
+#else
         free(NULL);
+#endif
         return NULL;
     } else {
         pmesh->mw = w;
@@ -1498,10 +1514,18 @@ PKMESH* PkMesh_Create(int w, int h) {
 void PkMesh_Delete(PKMESH *mesh) {
     if (mesh != NULL) {
         if (mesh->pmspt != NULL) {
+#ifdef VERSION_PAL
+            UsrMemEndFree();
+#else
             free(mesh->pmspt);
+#endif
         }
 
+#ifdef VERSION_PAL
+        UsrMemEndFree();
+#else
         free(mesh);
+#endif
     }
 }
 

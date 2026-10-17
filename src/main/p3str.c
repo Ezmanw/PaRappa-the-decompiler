@@ -103,7 +103,11 @@ void p3StrInit(u_int adrs) {
         }
     }
 
+#ifdef VERSION_PAL
+    PrSetFrameRate(50.0f);
+#else
     PrSetFrameRate(60.0f);
+#endif
 }
 
 int getTopSeekPos(void) {
@@ -385,6 +389,11 @@ void p3StrPoll(u_int cur_time) {
     P3SRT_OD *p3srt_od_pp;
     P3STR_SD *p3str_sd;
 
+#ifdef VERSION_PAL
+    PrSetFrameRate(60.0f);
+    cur_time = (cur_time * 60 + 25) / 50;
+#endif
+
     if (cur_time < current_time_old) {
         DPRINTF("back time\n");
         cur_time = current_time_old;
@@ -408,6 +417,9 @@ void p3StrPoll(u_int cur_time) {
 
     p3str_sort_disp();
     UsrPrSetScene();
+#ifdef VERSION_PAL
+    PrSetFrameRate(50.0f);
+#endif
 }
 
 void p3StrQuitSd(void) {

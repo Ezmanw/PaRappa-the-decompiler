@@ -150,5 +150,9 @@ void SprWindow(u_int x, u_int y, u_int w, u_int h) {
 }
 
 void SprWindowDf(void) {
+#ifdef VERSION_PAL
+    SprWindow(0, 0, 640, 256);
+#else
     SprWindow(0, 0, 640, 224);
+#endif
 }

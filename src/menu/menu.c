@@ -23,6 +23,16 @@ static void menuDrawReq(void);
 static void menuDrawQuit(void);
 static void P3LogInit(P3LOG_VAL *plog);
 
+#ifdef VERSION_PAL
+extern void MenuLangTim2Trans(int lang);
+
+static void func_00122D00(void) {
+}
+
+static void func_00122D08(void) {
+}
+#endif
+
 static void menuDraw(void *x) {
     while (1) {
         TsMenu_Draw();
@@ -31,7 +41,11 @@ static void menuDraw(void *x) {
 }
 
 static void menuDrawReq(void) {
+#ifdef VERSION_PAL
+    PrSetFrameRate(50.0f);
+#else
     PrSetFrameRate(60.0f);
+#endif
     MtcExec(menuDraw, MTC_TASK_07);
 }
 
@@ -76,6 +90,10 @@ int MenuCtrl(/* s0 16 */ MENU_STR *menu_str_ptr) {
     /* a1 5 */ int lost;
     register int a1 asm("a1");
 
+#ifdef VERSION_PAL
+    MenuLangTim2Trans(game_status.language_type);
+    func_00122D00();
+#endif
     MenuDataSndInit();
 
     P3GameState.pLog = &P3Log_Val;
@@ -223,6 +241,10 @@ int MenuCtrl(/* s0 16 */ MENU_STR *menu_str_ptr) {
     } else {
         pGStatus->demo_flagG = DEMOF_OFF;
     }
+
+#ifdef VERSION_PAL
+    func_00122D08();
+#endif
 
     return (ret == P3MRET_TOTITLE);
 }
@@ -373,5 +395,9 @@ int MenuCtrl(MENU_STR *menu_str_ptr) {
 #endif
 
 static void P3LogInit(P3LOG_VAL *plog) {
+#ifdef VERSION_PAL
+    memset(plog, 0, sizeof(*plog) + 8);
+#else
     memset(plog, 0, sizeof(*plog));
+#endif
 }
