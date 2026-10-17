@@ -5,6 +5,10 @@
 
 <img src=".github/resources/transparent.png" style="margin:7px" align="right" width="20%" alt="PaRappa icon by pips">
 
+IMPORTANT DISCLAIMER
+This project is entirely vibe coded and has not been human reviewed, feel free to use this project but be warned that this does not make the substantial effort the parappa community has gone useless, as once again this is fully ai generated with no human checks. Thank you for understanding  
+
+
 A work-in-progress decompilation of [*PaRappa the Rapper 2*](https://en.wikipedia.org/wiki/PaRappa_the_Rapper_2) (パラッパラッパー2) for the PlayStation 2.<br>
 We are currently targeting the July 12th NTSC-J prototype, but we aim to target the final NTSC-J/NTSC/PAL builds in the foreseeable future.<br><br>
 > **This fork (`PaRappa-the-decompiler`)** is a downstream fork of [parappadev/parappa2](https://github.com/parappadev/parappa2) that adds a **PAL retail (`SCES_504.08`) port** on the `pal` branch.
