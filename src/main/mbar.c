@@ -13,6 +13,11 @@
 #include <math.h>
 #include <stdio.h>
 
+#ifdef VERSION_PAL
+#undef GS_Y_COORD
+#define GS_Y_COORD(y) ((2048 - 128 + y) << 4)
+#endif
+
 /* data 186288 */ extern TIM2_DAT tim2spr_tbl_tmp1[]; /* static, tim2spr_tbl */
 /* data 186a68 */ extern u_int tmpColor[]; /* static */
 /* data 186aa8 */ extern NIKO_CHAN_STR niko_chan_str_hook[]; /* static */
@@ -144,6 +149,23 @@ static void clrColorBuffer(int id) {
 }
 
 void MbarMemberClear(int stg) {
+#ifdef VERSION_PAL
+    if (stg < 6) {
+        clrColorBuffer(57);
+    }
+    if (stg < 4) {
+        clrColorBuffer(56);
+    }
+    if (stg < 3) {
+        clrColorBuffer(55);
+    }
+    if (stg < 2) {
+        clrColorBuffer(54);
+    }
+    if (stg < 1) {
+        clrColorBuffer(53);
+    }
+#else
     if (stg < 6) {
         clrColorBuffer(59);
     }
@@ -159,6 +181,7 @@ void MbarMemberClear(int stg) {
     if (stg < 1) {
         clrColorBuffer(55);
     }
+#endif
 }
 
 void examCharBasic(EX_CHAR_DISP *ecd_pp, TIM2_DAT *tim2_dat_pp) {
@@ -194,7 +217,11 @@ void examCharCltSet(EX_CHAR_DISP *ecd_pp, TIM2_DAT *tim2_dat_pp) {
 
 void examCharPosSet(EX_CHAR_DISP *ecd_pp, int xp, int yp) {
     ecd_pp->x = (xp << 4) - GS_X_COORD(640);
+#ifdef VERSION_PAL
+    ecd_pp->y = (yp << 4) - ((2048 - 128 + 256) << 4);
+#else
     ecd_pp->y = (yp << 4) - GS_Y_COORD(224);
+#endif
 }
 
 void examCharUVWHSet(EX_CHAR_DISP *ecd_pp, u_short u, u_short v, u_short w, u_short h) {
@@ -265,6 +292,12 @@ void MbarNikoSet(int num, int ofs) {
     }
 }
 
+#ifdef VERSION_PAL
+#define NIKO_Y0 0x780
+#else
+#define NIKO_Y0 0x790
+#endif
+
 static void MbarNikoDisp(sceGifPacket *gifpk_pp) {
     int i;
     NIKO_CHAN_STR *niko_pp;
@@ -301,7 +334,11 @@ static void MbarNikoDisp(sceGifPacket *gifpk_pp) {
             tim2_dat_pp = &tim2spr_tbl_tmp1[61];
             break;
         case NIKO_SKIP:
+#ifdef VERSION_PAL
+            tim2_dat_pp = &tim2spr_tbl_tmp1[61];
+#else
             tim2_dat_pp = &tim2spr_tbl_tmp1[62];
+#endif
             break;
         }
 
@@ -310,18 +347,18 @@ static void MbarNikoDisp(sceGifPacket *gifpk_pp) {
             sceGifPkAddGsAD(gifpk_pp, SCE_GS_TEX1_1, tim2_dat_pp->GsTex1);
             sceGifPkAddGsAD(gifpk_pp, SCE_GS_PRIM, SCE_GS_SET_PRIM(6, 0, 1, 0, 1, 0, 1, 0, 0));
             sceGifPkAddGsAD(gifpk_pp, SCE_GS_UV, SCE_GS_SET_UV(0, 0));
-            sceGifPkAddGsAD(gifpk_pp, SCE_GS_XYZ2, SCE_GS_SET_XYZ2((niko_pp->xp + 0x6c0) << 4, (niko_pp->yp + 0x790) << 4, 1));
+            sceGifPkAddGsAD(gifpk_pp, SCE_GS_XYZ2, SCE_GS_SET_XYZ2((niko_pp->xp + 0x6c0) << 4, (niko_pp->yp + NIKO_Y0) << 4, 1));
             sceGifPkAddGsAD(gifpk_pp, SCE_GS_UV, SCE_GS_SET_UV(tim2_dat_pp->w << 4, tim2_dat_pp->h << 4));
-            sceGifPkAddGsAD(gifpk_pp, SCE_GS_XYZ2, SCE_GS_SET_XYZ2((niko_pp->xp + tim2_dat_pp->w + 0x6c0) << 4, (niko_pp->yp + (tim2_dat_pp->h / 2) + 0x790) << 4, 1));
+            sceGifPkAddGsAD(gifpk_pp, SCE_GS_XYZ2, SCE_GS_SET_XYZ2((niko_pp->xp + tim2_dat_pp->w + 0x6c0) << 4, (niko_pp->yp + (tim2_dat_pp->h / 2) + NIKO_Y0) << 4, 1));
 
             if (tim2_dat2_pp != NULL) {
                 sceGifPkAddGsAD(gifpk_pp, SCE_GS_TEX0_1, tim2_dat2_pp->GsTex0);
                 sceGifPkAddGsAD(gifpk_pp, SCE_GS_TEX1_1, tim2_dat2_pp->GsTex1);
                 sceGifPkAddGsAD(gifpk_pp, SCE_GS_PRIM, SCE_GS_SET_PRIM(6, 0, 1, 0, 1, 0, 1, 0, 0));
                 sceGifPkAddGsAD(gifpk_pp, SCE_GS_UV, SCE_GS_SET_UV(0, 0));
-                sceGifPkAddGsAD(gifpk_pp, SCE_GS_XYZ2, SCE_GS_SET_XYZ2((niko_pp->xp + 0x6c0) << 4, (niko_pp->yp + 0x790) << 4, 1));
+                sceGifPkAddGsAD(gifpk_pp, SCE_GS_XYZ2, SCE_GS_SET_XYZ2((niko_pp->xp + 0x6c0) << 4, (niko_pp->yp + NIKO_Y0) << 4, 1));
                 sceGifPkAddGsAD(gifpk_pp, SCE_GS_UV, SCE_GS_SET_UV(tim2_dat2_pp->w << 4, (tim2_dat2_pp->h / 2) << 4));
-                sceGifPkAddGsAD(gifpk_pp, SCE_GS_XYZ2, SCE_GS_SET_XYZ2((niko_pp->xp + tim2_dat2_pp->w + 0x6c0) << 4, (niko_pp->yp + (tim2_dat2_pp->h / 4) + 0x790) << 4, 1));
+                sceGifPkAddGsAD(gifpk_pp, SCE_GS_XYZ2, SCE_GS_SET_XYZ2((niko_pp->xp + tim2_dat2_pp->w + 0x6c0) << 4, (niko_pp->yp + (tim2_dat2_pp->h / 4) + NIKO_Y0) << 4, 1));
             }
         }
     }
@@ -392,7 +429,11 @@ void vsAnimationReq(int ply, long scrMoto, long scrSaki, VS_MV_TYPE vt) {
 
     vsc_pp->motoScr = scrMoto;
     vsc_pp->sakiScr = scrSaki;
+#ifdef VERSION_PAL
+    vsc_pp->animation_time = 50;
+#else
     vsc_pp->animation_time = 60;
+#endif
     vsc_pp->vt = vt;
 }
 
@@ -410,7 +451,11 @@ static int vsScr2Move(long scr) {
         scr = 500;
     }
 
+#ifdef VERSION_PAL
+    return (scr * 833) / 500;
+#else
     return scr * 2;
+#endif
 }
 
 static void vsAnimationPoll(void) {
@@ -418,19 +463,33 @@ static void vsAnimationPoll(void) {
 
     for (i = 0; i < 4; i++) {
         if (vs_scr_ctrl[i].animation_time != 0) {
+#ifdef VERSION_PAL
+            vsScoreAni[i] = 50 - vs_scr_ctrl[i].animation_time;
+
+            score = ((vs_scr_ctrl[i].sakiScr - vs_scr_ctrl[i].motoScr) * vsScoreAni[i]) / 50;
+#else
             vsScoreAni[i] = 60 - vs_scr_ctrl[i].animation_time;
 
             score = ((vs_scr_ctrl[i].sakiScr - vs_scr_ctrl[i].motoScr) * vsScoreAni[i]) / 60;
+#endif
             score += vs_scr_ctrl[i].motoScr;
 
             vsScoreMove[i] = score;
             vsScoreMove[i] = vsScr2Move(vsScoreMove[i]);
 
             if (vs_scr_ctrl[i].vt == VSMT_UP) {
+#ifdef VERSION_PAL
+                vsScoreAni[i] += 51;
+#else
                 vsScoreAni[i] += 62;
+#endif
             }
             if (vs_scr_ctrl[i].vt == VSMT_DW) {
+#ifdef VERSION_PAL
+                vsScoreAni[i] += 1;
+#else
                 vsScoreAni[i] += 2;
+#endif
             }
 
             vs_scr_ctrl[i].animation_time--;
@@ -491,7 +550,11 @@ void metFrameInit(void) {
     int i;
 
     for (i = 0; i < 3; i++) {
+#ifdef VERSION_PAL
+        metFrameCnt[i] = 117;
+#else
         metFrameCnt[i] = 140;
+#endif
         metFrameCntLight[i] = 0;
     }
 
@@ -894,6 +957,12 @@ void MbarGifTrans(int pri) {
     CmnGifCloseCmnPk(&mbar_gif, pri);
 }
 
+#ifdef VERSION_PAL
+#define Y0 0x7800
+#else
+#define Y0 0x7900
+#endif
+
 void MbarCharSet(MBARR_CHR *mb_pp) {
     MBA_CHAR_DATA *mbcd_pp;
     float          w, h;
@@ -917,13 +986,13 @@ void MbarCharSet(MBARR_CHR *mb_pp) {
     h *= 0.5f;
     x1 = (mb_pp->xp - w) * 16.0f;
     y1 = (mb_pp->yp - h) * 16.0f;
-    sceGifPkAddGsAD(&mbar_gif, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(0x6C00 + x1, 0x7900 + y1, 1));
+    sceGifPkAddGsAD(&mbar_gif, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(0x6C00 + x1, Y0 + y1, 1));
 
     sceGifPkAddGsAD(&mbar_gif, SCE_GS_UV, SCE_GS_SET_UV(mbcd_pp->tim2_dat_pp->w << 4, mbcd_pp->tim2_dat_pp->h << 4));
 
     x2 = (mb_pp->xp + w) * 16.0f;
     y2 = (mb_pp->yp + h) * 16.0f;
-    sceGifPkAddGsAD(&mbar_gif, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(0x6C00 + x2, 0x7900 + y2, 1));
+    sceGifPkAddGsAD(&mbar_gif, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(0x6C00 + x2, Y0 + y2, 1));
 }
 
 void MbarCharSet2(MBARR_CHR2 *mb_pp) {
@@ -1460,6 +1529,16 @@ void mbar_othon_frame_set(MBAR_REQ_STR* mr_pp) {
     }
 
     if (mr_pp->mbar_req_enum & 0x40) {
+#ifdef VERSION_PAL
+        mp_st = 41;
+        mp_end = 75;
+        mp_fix = 75;
+    } else {
+        mp_st = 75;
+        mp_end = 108;
+        mp_fix = 41;
+    }
+#else
         mp_st = 50;
         mp_end = 90;
         mp_fix = 90;
@@ -1468,6 +1547,7 @@ void mbar_othon_frame_set(MBAR_REQ_STR* mr_pp) {
         mp_end = 130;
         mp_fix = 50;
     }
+#endif
 
     if (curtime < 24) {
         mp_fix = (((mp_end - mp_st) * curtime) / 24) + mp_st;
@@ -1719,6 +1799,28 @@ int MbarDispGuiScene(void *para_pp, int frame, int first_f, int useDisp, int drD
     men_tmp = PrGetMendererRatio();
     PrSetMendererRatio(0.0f);
 
+#ifdef VERSION_PAL
+    if (global_data.play_step == PSTEP_GAME || global_data.play_step == PSTEP_VS) {
+        switch (clearStageCheck()) {
+        case P3_STAGE_0:
+            guimap[GUIME_HARI_L].spamapP = 0x2d;
+            guimap[GUIME_HARI_M].spamapP = 0x29;
+            guimap[GUIME_HARI_R].spamapP = 0x2f;
+            break;
+        case P3_STAGE_1:
+            guimap[GUIME_HARI_L].spamapP = 0x27;
+            guimap[GUIME_HARI_M].spamapP = 0x2b;
+            guimap[GUIME_HARI_R].spamapP = 0x2f;
+            break;
+        default:
+            guimap[GUIME_HARI_L].spamapP = 0x29;
+            guimap[GUIME_HARI_M].spamapP = 0x2d;
+            guimap[GUIME_HARI_R].spamapP = 0x2f;
+            break;
+        }
+    }
+
+#else
     if (global_data.play_step == PSTEP_GAME || global_data.play_step == PSTEP_VS) {
         switch (clearStageCheck()) {
         case P3_STAGE_0:
@@ -1739,6 +1841,7 @@ int MbarDispGuiScene(void *para_pp, int frame, int first_f, int useDisp, int drD
         }
     }
 
+#endif
     ChangeDrawArea(DrawGetDrawEnvP(drDisp));
 
     PR_SCOPE()
@@ -1747,7 +1850,11 @@ int MbarDispGuiScene(void *para_pp, int frame, int first_f, int useDisp, int drD
     PR_SCOPEEND()
 
     otehonAniCnt++;
+#ifdef VERSION_PAL
+    otehonAniCnt %= 116;
+#else
     otehonAniCnt %= 140;
+#endif
 
     guidisp_init_pr();
 
@@ -1856,7 +1963,11 @@ int MbarDispGuiSceneMbarArea(void *para_pp, int frame, int first_f, int useDisp,
     PR_SCOPEEND()
 
     otehonAniCnt++;
+#ifdef VERSION_PAL
+    otehonAniCnt %= 116;
+#else
     otehonAniCnt %= 140;
+#endif
 
     guidisp_init_pr();
 
@@ -1907,6 +2018,7 @@ TIM2_DAT* lessonCl2InfoGet(SCRRJ_LESSON_ROUND_ENUM type) {
 }
 
 void MbarDemoCharDisp(void) {
+#ifndef VERSION_PAL
     TIM2_DAT *tim2_dat_pp;
     SPR_PRIM  spr_prim = {
         .x = 2298,
@@ -1931,4 +2043,5 @@ void MbarDemoCharDisp(void) {
     SprSetColor(128, 128, 128, 128);
     SprDispAlp(&spr_prim);
     SprFlash();
+#endif
 }
