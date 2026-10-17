@@ -1,4 +1,16 @@
+#ifdef VERSION_PAL
+#define tapsubt tapsubt[3]; u_char *tapsubt_pal
+#define vsTapdatSetMemorySave vsTapdatSetMemorySave_proto
+#define vsTapdatSet vsTapdatSet_proto
+#endif
 #include "main/scrctrl.h"
+#ifdef VERSION_PAL
+#undef tapsubt
+#undef vsTapdatSetMemorySave
+#undef vsTapdatSet
+void vsTapdatSetMemorySave(int flg);
+int vsTapdatSet(SCORE_INDV_STR *sindv_pp);
+#endif
 
 #include "dbug/dbgmsg.h"
 
@@ -431,6 +443,68 @@ static LERO_POS_STR lero_pos_str[][2] = {
     },
 };
 
+#ifdef VERSION_PAL
+static LERO_POS_STR lero_pos_str_fr[][2] = {
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_1, .posx =  88, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_2, .posx =  80, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_3, .posx =  80, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_4, .posx =  72, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_5, .posx =  72, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_1, .posx = 104, .posy = -48 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_2, .posx =  96, .posy = -48 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_3, .posx =  96, .posy = -48 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_4, .posx =  88, .posy = -48 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_5, .posx =  88, .posy = -48 } },
+};
+
+static LERO_POS_STR lero_pos_str_de[][2] = {
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_1, .posx =  88, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_2, .posx =  80, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_3, .posx =  80, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_4, .posx =  72, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_5, .posx =  72, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_1, .posx =  80, .posy = -48 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_2, .posx =  72, .posy = -48 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_3, .posx =  72, .posy = -48 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_4, .posx =  64, .posy = -48 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_5, .posx =  64, .posy = -48 } },
+};
+
+static LERO_POS_STR lero_pos_str_es[][2] = {
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_1, .posx = 112, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_2, .posx = 104, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_3, .posx = 104, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_4, .posx =  96, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_5, .posx =  96, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_1, .posx = 104, .posy = -48 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_2, .posx =  96, .posy = -48 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_3, .posx =  96, .posy = -48 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_4, .posx =  88, .posy = -48 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_5, .posx =  88, .posy = -48 } },
+};
+
+static LERO_POS_STR lero_pos_str_it[][2] = {
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_1, .posx = 112, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_2, .posx = 104, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_3, .posx = 104, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_4, .posx =  96, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_LESSON, .posx = -160, .posy = -16 }, { .tim2_num = LERO_ENUM_5, .posx =  96, .posy = -16 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_1, .posx = 104, .posy = -48 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_2, .posx =  96, .posy = -48 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_3, .posx =  96, .posy = -48 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_4, .posx =  88, .posy = -48 } },
+    { { .tim2_num = LERO_ENUM_ROUND,  .posx = -152, .posy = -48 }, { .tim2_num = LERO_ENUM_5, .posx =  88, .posy = -48 } },
+};
+
+static LERO_POS_STR (*lero_pos_str_pp[])[2] = {
+    lero_pos_str,
+    lero_pos_str_fr,
+    lero_pos_str_de,
+    lero_pos_str_es,
+    lero_pos_str_it,
+};
+#endif
+
 SCR_SND_DBUFF scr_snd_dbuff = {};
 static SNDTAP *scr_sndtap_pp[4];
 SCORE_STR score_str = {};
@@ -734,7 +808,11 @@ static int exam_tbl_updownChange(SCORE_INDV_STR *sindv_pp, TAP_CTRL_LEVEL_ENUM c
     return ret;
 }
 
+#ifdef VERSION_PAL
+void vsTapdatSetMemorySave(int flg) {
+#else
 void vsTapdatSetMemorySave(void) {
+#endif
     int        i;
     VSOTHSAVE  vsothsave_tmp;
     TAPDAT    *tapdat_pp;
@@ -743,6 +821,20 @@ void vsTapdatSetMemorySave(void) {
 
     WorkClear(vsothsave_tmp, sizeof(vsothsave_tmp));
 
+#ifdef VERSION_PAL
+    if (flg) {
+        for (i = 0; i < vs_tapdat_tmp_cnt; i++, tapdat_pp++) {
+            int time = tapdat_pp->time / 24;
+            if (time < 32) {
+                vsothsave_tmp[time] = *(u_char*)&tapdat_pp->KeyIndex;
+            }
+        }
+    } else {
+        for (i = 0; i < 32; i++) {
+            vsothsave_tmp[i] = 0x77;
+        }
+    }
+#else
     for (i = 0; i < vs_tapdat_tmp_cnt; i++, tapdat_pp++) {
         int time = tapdat_pp->time / 24;
         if (time >= 32) {
@@ -751,6 +843,7 @@ void vsTapdatSetMemorySave(void) {
             vsothsave_tmp[time] = *(u_char*)&tapdat_pp->KeyIndex;
         }
     }
+#endif
 
     mccReqVSOTHSAVEset(&vsothsave_tmp);
 }
@@ -762,6 +855,13 @@ void vsTapdatSetMemoryLoad(void) {
     WorkClear(&vsothsave_tmp, sizeof(vsothsave_tmp));
 
     if (mccReqVSOTHSAVEget(&vsothsave_tmp)) {
+#ifdef VERSION_PAL
+        if (vsothsave_tmp[0] == 0x77) {
+            return;
+        }
+
+        WorkClear(vs_tapdat_tmp, sizeof(vs_tapdat_tmp));
+#endif
         vs_tapdat_tmp_cnt = 0;
 
         for (i = 0; i < 32; i++) {
@@ -776,7 +876,11 @@ void vsTapdatSetMemoryLoad(void) {
     }
 }
 
+#ifdef VERSION_PAL
+int vsTapdatSet(SCORE_INDV_STR *sindv_pp) {
+#else
 void vsTapdatSet(SCORE_INDV_STR *sindv_pp) {
+#endif
     int             i;
     SCR_TAP_MEMORY *stm_pp;
     int             tmptime;
@@ -865,7 +969,13 @@ void vsTapdatSet(SCORE_INDV_STR *sindv_pp) {
             vs_tapdat_tmp[vs_tapdat_tmp_cnt].KeyIndex = stm_pp->key;
             vs_tapdat_tmp_cnt++;
         }
+#ifdef VERSION_PAL
+        return 1;
+#endif
     }
+#ifdef VERSION_PAL
+    return 0;
+#endif
 }
 
 void vsTapdatSetMoto(SCORE_INDV_STR *sindv_pp) {
@@ -968,7 +1078,11 @@ int ScrDrawTimeGet(int line) {
 
 int ScrDrawTimeGetFrame(int line) {
     if (line & 0x8000) {
+#ifdef VERSION_PAL
+        return (scrRefLineTime * 3000.0f + GetLineTempo(line) * 96.0f * 0.5f) / (GetLineTempo(line) * 96.0f);
+#else
         return (scrRefLineTime * 3600.0f + GetLineTempo(line) * 96.0f * 0.5f) / (GetLineTempo(line) * 96.0f);
+#endif
     }
 
     return score_str.stdat_dat_pp->scr_pp->scr_ctrl_pp[line].lineTimeFrame;
@@ -997,12 +1111,21 @@ SCRREC* ScrCtrlCurrentSearch(SCORE_INDV_STR *sindv_pp, int index, int frame) {
     }
 
     while (1) {
+#ifdef VERSION_PAL
+        if (scrrec_pp->job == SCRRJ_ENDJOB || scrrec_pp->job == SCRRJ_ENDGAME) {
+            return scrrec_pp;
+        }
+        if (scrrec_pp->job == SCRRJ_PLY && scrrec_pp->data >= frame) {
+            return scrrec_pp;
+        }
+#else
         if (scrrec_pp->job == SCRRJ_ENDJOB || scrrec_pp->job == SCRRJ_ENDGAME) {
             break;
         }
         if (scrrec_pp->job == SCRRJ_PLY && scrrec_pp->data >= frame) {
             break;
         }
+#endif
 
         scrrec_pp++;
     }
@@ -1192,9 +1315,13 @@ void tapLevelChange(SCORE_INDV_STR *sindv_pp) {
     int tmp_lv;
     int tmp_hklv;
 
+#ifdef VERSION_PAL
+    if (sindv_pp->global_ply->flags & GPLAY_TBLCNG_REQ) {
+#else
     if (!(sindv_pp->global_ply->flags & GPLAY_TBLCNG_REQ)) {
         return;
     }
+#endif
 
     tmp_lv = exam_tbl_updownChange(sindv_pp, global_data.tap_ctrl_level, global_data.roundL, (RANK_LEVEL2DISP_LEVEL(sindv_pp->global_ply->rank_level) == DLVL_COOL));
 
@@ -1259,7 +1386,11 @@ void tapLevelChange(SCORE_INDV_STR *sindv_pp) {
         selectIndvTapResetPlay(1);
     }
 
+#ifdef VERSION_PAL
+    }
+#else
     DPRINTF("            after [%d]\n\n", add_move);
+#endif
 }
 
 void ScrCtrlIndvNextRead(SCORE_INDV_STR *sindv_pp, int tap_res_f) {
@@ -2055,6 +2186,10 @@ void tapEventCheck(SCORE_INDV_STR *sindv_pp, int Ttime, int Ctime, int num) {
         paddata = pad[padType].shot;
         paddata_one = pad[padType].one;
 
+#ifdef VERSION_PAL
+        onKeyTime = -1;
+#endif
+
         if (sindv_pp->scr_tap_vib_on < 3) {
             if (game_status.vibration == VIBRATION_ON) {
                 pad[padType].padvib[0] = 1;
@@ -2687,9 +2822,18 @@ static TAPSET* IndvGetTapSetAdrs(SCORE_INDV_STR *sindv_pp) {
     int id = global_data.tapLevel;
     int ln = sindv_pp->tapset_pos;
 
+#ifdef VERSION_PAL
+    if (ln < 0) {
+        return NULL;
+    }
+    if (sindv_pp->scrdat_pp == NULL) {
+        return NULL;
+    }
+#else
     if (ln < 0 || sindv_pp->scrdat_pp == NULL) {
         return NULL;
     }
+#endif
 
     if (ln >= sindv_pp->scrdat_pp->tapstr[id].tapset_size) {
         return NULL;
@@ -3086,6 +3230,7 @@ int ScrExamSetCheck(SCORE_INDV_STR *sindv_pp, int Pnum, int ctime_next, int indv
                 }
             }
 
+#ifndef VERSION_PAL
             if (dbg_select_str.debug_on && dbg_select_str.score_updown) {
                 if (sindv_pp->global_ply != NULL) {
                     if (pad[0].shot & SCE_PADLdown) {
@@ -3096,6 +3241,7 @@ int ScrExamSetCheck(SCORE_INDV_STR *sindv_pp, int Pnum, int ctime_next, int indv
                     }
                 }
             }
+#endif
 
             if (global_data.demo_flagL == DEMOF_REPLAY) {
                 MC_REP_SCR *mcr_scr_pp;
@@ -3468,6 +3614,32 @@ int ScrExamSetCheck(SCORE_INDV_STR *sindv_pp, int Pnum, int ctime_next, int indv
 
                         DPRINTF("vs cool point:%d  now point:%d\n", scex_pp->exam_coolP, scex_pp->exam_point);
 
+#ifdef VERSION_PAL
+                        {
+                            int vs_set_f = 0;
+                            if (scex_pp->exam_point > scex_pp->exam_coolP) {
+                                if (gplay_my->exam_score[1] != 0) {
+                                    vs_set_f = vsTapdatSet(sindv_pp);
+                                }
+                            }
+
+                            if (global_data.demo_flagL == DEMOF_REPLAY) {
+                                vsTapdatSetMemoryLoad();
+                            } else {
+                                vsTapdatSetMemorySave(vs_set_f);
+                            }
+
+                            if (hantei_flag) {
+                                int add_move = tapLevelChangeSub();
+                                if (global_data.demo_flagL == DEMOF_REPLAY) {
+                                    add_move = mccReqLvlGet();
+                                } else {
+                                    mccReqLvlSet(add_move);
+                                }
+                                global_data.tapLevel = add_move;
+                            }
+                        }
+#else
                         if (scex_pp->exam_point > scex_pp->exam_coolP) {
                             if (gplay_my->exam_score[1] != 0) {
                                 vsTapdatSet(sindv_pp);
@@ -3479,6 +3651,7 @@ int ScrExamSetCheck(SCORE_INDV_STR *sindv_pp, int Pnum, int ctime_next, int indv
                         } else {
                             vsTapdatSetMemorySave();
                         }
+#endif
 
                         break;
                     }
@@ -3576,7 +3749,11 @@ int ScrExamSetCheck(SCORE_INDV_STR *sindv_pp, int Pnum, int ctime_next, int indv
                 TimeCallbackTimeSetChanTempo(goto_line, goto_time, GetLineTempo(goto_line));
 
                 sindv_pp->top_scr_ctrlpp[goto_line].lineTime = goto_time;
+#ifdef VERSION_PAL
+                sindv_pp->top_scr_ctrlpp[goto_line].lineTimeFrame = ((goto_time * 3000.0f) + (GetLineTempo(goto_line) * 96.0f * 0.5f)) / (GetLineTempo(goto_line) * 96.0f);
+#else
                 sindv_pp->top_scr_ctrlpp[goto_line].lineTimeFrame = ((goto_time * 3600.0f) + (GetLineTempo(goto_line) * 96.0f * 0.5f)) / (GetLineTempo(goto_line) * 96.0f);
+#endif
 
                 ScrLincChangTbl(goto_line);
                 return -1;
@@ -3791,7 +3968,11 @@ void subjobEvent(SCORE_INDV_STR *sindv_pp, int ctime_next) {
         case SCRSUBJ_STOP_MENDERER: {
             int next_time = ScrCtrlIndvNextTime(sindv_pp, 1) - sindv_pp->current_time;
 
+#ifdef VERSION_PAL
+            PrDecelerateMenderer(((next_time * 3000.0f) + (GetLineTempo(sindv_pp->useLine) * 96.0f * 0.5f)) / (GetLineTempo(sindv_pp->useLine) * 96.0f));
+#else
             PrDecelerateMenderer(((next_time * 3600.0f) + (GetLineTempo(sindv_pp->useLine) * 96.0f * 0.5f)) / (GetLineTempo(sindv_pp->useLine) * 96.0f));
+#endif
             DPRINTF("SCRSUBJ_STOP_MENDERER req\n");
             break;
         }
@@ -3898,7 +4079,11 @@ static void ScrCtrlIndvJob(void) {
 
                 ctime_next = sindv_pp->wakeUpGoTime;
                 sindv_pp->top_scr_ctrlpp[sindv_pp->useLine].lineTime = ctime_next;
+#ifdef VERSION_PAL
+                sindv_pp->top_scr_ctrlpp[sindv_pp->useLine].lineTimeFrame = (((ctime_next * 3000.0f) + ((GetLineTempo(sindv_pp->useLine) * 96.0f) * 0.5f)) / (GetLineTempo(sindv_pp->useLine) * 96.0f));
+#else
                 sindv_pp->top_scr_ctrlpp[sindv_pp->useLine].lineTimeFrame = (((ctime_next * 3600.0f) + ((GetLineTempo(sindv_pp->useLine) * 96.0f) * 0.5f)) / (GetLineTempo(sindv_pp->useLine) * 96.0f));
+#endif
                 sindv_pp->status &= ~SCS_WAIT;
 
                 allIndvNextContinue();
@@ -3988,7 +4173,11 @@ static void ScrTimeRenew(SCR_MAIN *scr_main_pp) {
 
     for (i = 0; i < scr_main_pp->scr_ctrl_num; i++) {
         if (scr_main_pp->scr_ctrl_pp[i].gtime_type == GTIME_VSYNC) {
+#ifdef VERSION_PAL
+            scr_main_pp->scr_ctrl_pp[i].lineTime =  ((TimeCallbackTimeGetChan(i) * 96.0f * GetLineTempo(i) + 1500.0f)  / 3000.0f);
+#else
             scr_main_pp->scr_ctrl_pp[i].lineTime =  ((TimeCallbackTimeGetChan(i) * 96.0f * GetLineTempo(i) + 1800.0f)  / 3600.0f);
+#endif
             scr_main_pp->scr_ctrl_pp[i].lineTime += ((GetLineTempo(i) * 96.0f * scr_main_pp->scr_ctrl_pp[i].ofsCdtime) / 60000.0f);
 
             if (scr_main_pp->scr_ctrl_pp[i].lineTime < 0) {
@@ -4091,7 +4280,11 @@ void allTimeCallbackTimeSetChanTempo(int time) {
             scr_main_pp->scr_ctrl_pp[i].lineTime = time;
             TimeCallbackTimeSetChanTempo(i, time, GetLineTempo(i));
 
+#ifdef VERSION_PAL
+            scr_main_pp->scr_ctrl_pp[i].lineTimeFrame = (time * 3000.0f + GetLineTempo(i) * 96.0f * 0.5f) / (GetLineTempo(i) * 96.0f);
+#else
             scr_main_pp->scr_ctrl_pp[i].lineTimeFrame = (time * 3600.0f + GetLineTempo(i) * 96.0f * 0.5f) / (GetLineTempo(i) * 96.0f);
+#endif
         }
     }
 }
@@ -4231,7 +4424,11 @@ void ScrCtrlMainLoop(void *x) {
 
         rtime = nextExamTime();
         if (rtime >= 0) {
+#ifdef VERSION_PAL
+            BallThrowSetFrame(((rtime * 3000.0f) + (score_str.stdat_dat_pp->tempo * 96.0f * 0.5f)) / (score_str.stdat_dat_pp->tempo * 96.0f));
+#else
             BallThrowSetFrame(((rtime * 3600.0f) + (score_str.stdat_dat_pp->tempo * 96.0f * 0.5f)) / (score_str.stdat_dat_pp->tempo * 96.0f));
+#endif
         }
 
         SprClear();
@@ -4255,7 +4452,11 @@ void ScrCtrlMainLoop(void *x) {
             }
         }
 
+#ifdef VERSION_PAL
+        tmp_time = ((ScrDrawTimeGet(scrJimakuLine) * 3000.0f) + (score_str.stdat_dat_pp->tempo * 96.0f * 0.5f)) / (score_str.stdat_dat_pp->tempo * 96.0f);
+#else
         tmp_time = ((ScrDrawTimeGet(scrJimakuLine) * 3600.0f) + (score_str.stdat_dat_pp->tempo * 96.0f * 0.5f)) / (score_str.stdat_dat_pp->tempo * 96.0f);
+#endif
         subtline = GetSubtLine(scrJimakuLine);
         if (subtline != -1) {
             if (game_status.subtitle == SUBTITLE_ON) {
@@ -4263,6 +4464,7 @@ void ScrCtrlMainLoop(void *x) {
             }
         }
 
+#ifndef VERSION_PAL
         if (global_data.play_step == PSTEP_GAME ||
             global_data.play_step == PSTEP_VS   ||
             global_data.play_step == PSTEP_HOOK ||
@@ -4295,6 +4497,7 @@ void ScrCtrlMainLoop(void *x) {
                 CmnGifCloseCmnPk(&dbgPk, 0xf);
             }
         }
+#endif
 
         MtcWait(1);
     }
@@ -4582,6 +4785,16 @@ int ScrEndCheckScore(void) {
     int             i;
     SCORE_INDV_STR *sindv_pp = score_indv_str;
 
+#ifdef VERSION_PAL
+    for (i = 0; i < PR_ARRAYSIZE(score_indv_str); i++) {
+        if (!(sindv_pp[i].status & SCS_USE)) {
+            continue;
+        }
+        if (sindv_pp[i].status & SCS_END) {
+            return 1;
+        }
+    }
+#else
     for (i = 0; i < PR_ARRAYSIZE(score_indv_str); i++, sindv_pp++) {
         if (!(sindv_pp->status & SCS_USE)) {
             continue;
@@ -4591,6 +4804,7 @@ int ScrEndCheckScore(void) {
             return 1;
         }
     }
+#endif
 
     return 0;
 }
@@ -4843,11 +5057,19 @@ static void bnNumberDisp(sceGifPacket *gif_pp, long score, short x, short y, int
         num = (score >> ((keta - tmp) << 2)) & 0xf;
 
         if (num != 0 || first_f || i == (keta - 1)) {
+#ifdef VERSION_PAL
+            sceGifPkAddGsAD(gif_pp, SCE_GS_UV, SCE_GS_SET_UV((bn_num_type_pp->map[num][0] << 4) + 8, bn_num_type_pp->map[num][1] << 4));
+            sceGifPkAddGsAD(gif_pp, SCE_GS_XYZ2, SCE_GS_SET_XYZ((x << 4) + GS_X_COORD(0), (y << 4) + ((2048 - (256 / 2)) << 4), 1));
+
+            sceGifPkAddGsAD(gif_pp, SCE_GS_UV, SCE_GS_SET_UV(((bn_num_type_pp->map[num][0] + bn_num_type_pp->w) << 4) + 8, (bn_num_type_pp->map[num][1] + bn_num_type_pp->h) << 4));
+            sceGifPkAddGsAD(gif_pp, SCE_GS_XYZ2, SCE_GS_SET_XYZ(((x + (GS_X_COORD(0)>>4)) + bn_num_type_pp->w) << 4, ((y + (2048 - (256 / 2))) + bn_num_type_pp->h) << 4, 1));
+#else
             sceGifPkAddGsAD(gif_pp, SCE_GS_UV, SCE_GS_SET_UV(bn_num_type_pp->map[num][0] << 4, bn_num_type_pp->map[num][1] << 4));
             sceGifPkAddGsAD(gif_pp, SCE_GS_XYZ2, SCE_GS_SET_XYZ((x << 4) + GS_X_COORD(0), (y << 4) + GS_Y_COORD(0), 1));
 
             sceGifPkAddGsAD(gif_pp, SCE_GS_UV, SCE_GS_SET_UV((bn_num_type_pp->map[num][0] + bn_num_type_pp->w) << 4, (bn_num_type_pp->map[num][1] + bn_num_type_pp->h) << 4));
             sceGifPkAddGsAD(gif_pp, SCE_GS_XYZ2, SCE_GS_SET_XYZ(((x + (GS_X_COORD(0)>>4)) + bn_num_type_pp->w) << 4, ((y + (GS_Y_COORD(0)>>4)) + bn_num_type_pp->h) << 4, 1));
+#endif
 
             first_f = TRUE;
         }
@@ -4936,7 +5158,11 @@ static void LessonRoundDisp(SCRRJ_LESSON_ROUND_ENUM type) {
     sceGifPkAddGsAD(&gifpk, SCE_GS_PRIM, SCE_GS_SET_PRIM(SCE_GS_PRIM_SPRITE, 0, 1, 0, 1, 0, 1, 0, 0));
 
     for (i = 0; i < 2; i++) {
+#ifdef VERSION_PAL
+        set_lero_gifset(&gifpk, &lero_tim2_pt[lero_pos_str_pp[game_status.language_type][type][i].tim2_num], lero_pos_str_pp[game_status.language_type][type][i].posx, lero_pos_str_pp[game_status.language_type][type][i].posy);
+#else
         set_lero_gifset(&gifpk, &lero_tim2_pt[lero_pos_str[type][i].tim2_num], lero_pos_str[type][i].posx, lero_pos_str[type][i].posy);
+#endif
     }
 
     CmnGifCloseCmnPk(&gifpk, 2);

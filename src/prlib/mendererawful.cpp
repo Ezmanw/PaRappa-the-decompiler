@@ -30,9 +30,11 @@ void SetNextSwitchRotationTimer() {
     awfulChangeTimer = (u_int)((PrFloatRandom() * 4.0f + 3.0f) * 60.0f);
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/mendererawful", GetAwfulRotation__Fv);
-#if 0
-// TODO: nonmatching (branch likely / delay slot choices)
+#include "tim2.h"
+
+extern TIM2_PICTUREHEADER *awfulPictureHeader;
+extern float D_003719B0[4];
+
 float GetAwfulRotation() {
     if (awfulRotationState == 0 || awfulRotationState == 2) {
         if (--awfulChangeTimer == 0) {
@@ -43,24 +45,21 @@ float GetAwfulRotation() {
     }
 
     if (awfulRotationState == 1) {
-        float rotation = awfulRotation - 0.016f / 180.0f;
-        if (rotation < -0.016f) {
-            rotation = -0.016f;
+        awfulRotation -= 0.016f / 180.0f;
+        if (awfulRotation < -0.016f) {
+            awfulRotation = -0.016f;
             awfulRotationState = 2;
         }
-        awfulRotation = rotation;
     } else if (awfulRotationState == 3) {
-        float rotation = awfulRotation + 0.016f / 180.0f;
-        if (rotation > 0.016f) {
-            rotation = 0.016f;
+        awfulRotation += 0.016f / 180.0f;
+        if (awfulRotation > 0.016f) {
+            awfulRotation = 0.016f;
             awfulRotationState = 0;
         }
-        awfulRotation = rotation;
     }
 
     return awfulRotation;
 }
-#endif
 
 void PrStartAwfulRotation() {
     awfulRotationState = 0;
@@ -91,26 +90,43 @@ void PrFadeFrameImage(float arg0) {
     sceDmaSendN(chan, &mendererFadeData, 7);
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/mendererawful", PrInitializeAwfulBackground__FPv);
+void PrInitializeAwfulBackground(void *picture) {
+    if (picture != NULL) {
+        awfulPictureHeader = Tim2GetPictureHeader(picture, 0);
+        u_int color = Tim2GetClutColor(awfulPictureHeader, 0, 0);
+        mendererAwfulColor = color;
+        D_003719B0[0] = (float)((color >> 0) & 255) / 255.0f;
+        D_003719B0[1] = (float)((color >> 8) & 255) / 255.0f;
+        D_003719B0[2] = (float)((color >> 16) & 255) / 255.0f;
+        D_003719B0[3] = 1.0f;
+    } else {
+        awfulPictureHeader = NULL;
+    }
+
+    WaveCtrlInit(&awfulWave, 640, 256, WM_WSLICE);
+}
 
 INCLUDE_ASM("asm/nonmatchings/prlib/mendererawful", PrDrawAwfulBackground__FG10sceGsFrame);
 
-INCLUDE_ASM("asm/nonmatchings/prlib/mendererawful", PrUpdateAwfulMenderer__Fv);
-#if 0
-// TODO: nonmatching (target keeps extra mov.s copies in the angle wrap)
 void PrUpdateAwfulMenderer() {
     if (prAwfulMendererPause != 0) {
         return;
     }
 
     float angle = awfulBackgroundAngle + prAwfulMendererSpeed * GetAwfulRotation();
-    angle = (angle >= 6.2831855f) ? angle - 6.2831855f : angle;
-    angle = (angle < 0.0f) ? angle + 6.2831855f : angle;
-    awfulBackgroundAngle = angle;
+    float a = angle;
+    if (a >= 6.2831855f) {
+        angle = a - 6.2831855f;
+        a = angle;
+    }
+    if (angle < 0.0f) {
+        a = angle + 6.2831855f;
+    }
+    awfulBackgroundAngle = a;
 
     WaveCtrlUpdate(&awfulWave, prAwfulMendererSpeed);
 }
-#endif
+
 
 /* nalib/navector.h */
 INCLUDE_ASM("asm/nonmatchings/prlib/mendererawful", func_00150CE8);

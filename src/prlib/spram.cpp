@@ -14,6 +14,7 @@ INCLUDE_ASM("asm/nonmatchings/prlib/spram", Initialize__12PrSPRAM_DATAP13PrScene
 
 extern NaMATRIX<float, 4, 4> screenClipMatrix;
 extern NaMATRIX<float, 4, 4> screenPrimitiveMatrix;
+extern int g_NoodlePause;
 
 void PrSPRAM_DATA::InitializeModel(PrModelObject *model) {
     m_model_contour_blur_alpha[0] = model->m_contour_blur_alpha[0];
@@ -59,9 +60,10 @@ void PrSPRAM_DATA::SendDisplayHeader() {
     m_display_header.inner.screen_clip_matrix = screenClipMatrix;
     m_display_header.inner.screen_primitive_matrix = screenPrimitiveMatrix;
 
-    u_int disturbance_param = PrRandom();
-    m_disturbance_param = disturbance_param;
-    m_display_header.inner.disturbance_param = disturbance_param;
+    if (!g_NoodlePause) {
+        m_disturbance_param = PrRandom();
+    }
+    m_display_header.inner.disturbance_param = m_disturbance_param;
 
     void       *tag  = PR_DMA_SPR_ADDR(&m_display_header);
     sceDmaChan *chan = sceDmaGetChan(SCE_DMA_VIF1);
@@ -75,7 +77,10 @@ INCLUDE_ASM("asm/nonmatchings/prlib/spram", func_00147CE0);
 INCLUDE_ASM("asm/nonmatchings/prlib/spram", func_00147D90);
 
 /* prlib/spram.cpp */
-INCLUDE_ASM("asm/nonmatchings/prlib/spram", _GLOBAL_$I$Initialize__12PrSPRAM_DATAP13PrSceneObject);
+extern "C" void _GLOBAL_$I$Initialize__12PrSPRAM_DATAP13PrSceneObject() {
+    NaMATRIX<float, 4, 4> a;
+    NaMATRIX<float, 4, 4> b;
+}
 
 /* nalib/navector.h */
 INCLUDE_ASM("asm/nonmatchings/prlib/spram", func_00147E38);

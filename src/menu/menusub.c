@@ -108,9 +108,9 @@
 // /* data 18c4b0 */ static int PopBubblePat_No[0][9];
 // /* data 18c540 */ static PTPOS POPWZoom_CXY[0];
 /* data 18c588 */ extern PTPOS JUKEBOX_Pos[]; /* static */
-// /* data 18c5b0 */ static PATPOS JUKEJKT_Pat[0];
+/* data 18c5b0 */ extern PATPOS JUKEJKT_Pat[]; /* static */
 // /* data 18c628 */ static float JUKEWAV_INITBL[0];
-// /* data 18c650 */ static PATPOS JUKEJKT_PatS[0];
+/* data 18c650 */ extern PATPOS JUKEJKT_PatS; /* static */
 // /* data 18c660 */ static PATPOS JUKEREC_Pat[0];
 // /* data 18c6d8 */ static PATPOS JUKEREC_PatS[0];
 /* data 18c6e8 */ extern u_int HosiColor[][8]; /* static */
@@ -482,7 +482,67 @@ void TsBGMInit(void) {
     memset(&TsBGMState, 0, sizeof(TsBGMState));
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsBGMPlay);
+/* static */ void TsBGMPlay(int no, int time) {
+    BGMSTATE *pbgm = &TsBGMState;
+    int       i;
+    int       bPlay = 0;
+
+    if (no >= 11) {
+        return;
+    }
+
+    if (MenuVoiceBankSet(-1)) {
+        pbgm->state  = 1;
+        pbgm->wtLoad = 1;
+        pbgm->wtNo   = no;
+        pbgm->wtTim  = time;
+        pbgm->chgReq = 0;
+        pbgm->cstate = 0;
+        pbgm->ctim   = 0;
+        return;
+    }
+
+    if ((pbgm->state & 1) && pbgm->wtLoad == 0) {
+        if (pbgm->sndno == no && pbgm->vol == 0x100) {
+            pbgm->sndno = no;
+            pbgm->vol   = 0x100;
+            pbgm->state = 1;
+            pbgm->ttim0 = 0;
+            pbgm->ttim  = 0;
+            tsBGMONEVol(pbgm->sndno, 0x100);
+            return;
+        }
+        bPlay = 1;
+    }
+
+    pbgm->chgReq = 0;
+    pbgm->cstate = 0;
+    pbgm->ctim   = 0;
+    pbgm->wtLoad = 0;
+
+    if (time > 0) {
+        pbgm->state = 7;
+        pbgm->vol   = 0;
+        pbgm->ttim0 = time;
+        pbgm->sndno = no;
+        pbgm->ttim  = 0;
+    } else {
+        pbgm->vol   = 0x100;
+        pbgm->state = 1;
+        pbgm->sndno = no;
+        pbgm->ttim0 = 0;
+        pbgm->ttim  = 0;
+    }
+
+    if (!bPlay) {
+        MNSceneMusicFitTimerClear();
+        for (i = 0; i < 11; i++) {
+            tsBGMONEPlay(i);
+        }
+    }
+
+    tsBGMONEVol(pbgm->sndno, pbgm->vol);
+}
 
 static void TsBGMStop(int time) {
     BGMSTATE *pbgm = &TsBGMState;
@@ -2621,7 +2681,36 @@ static void MpCityHallFPHOK(int flg) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", MpCityHallCharPosSet);
+/* data 199c28 */ extern short D_00199C28[];
+/* data 199c38 */ extern short D_00199C38[];
+/* data 199c48 */ extern short D_00199C48[];
+
+static void MpCityHallCharPosSet(int pos) {
+    short *anmTbl = NULL;
+    int    n;
+    u_int  bnk;
+
+    switch (pos) {
+    case 0:
+        anmTbl = D_00199C28;
+        break;
+    case 1:
+        anmTbl = D_00199C38;
+        break;
+    case 2:
+        anmTbl = D_00199C48;
+        break;
+    }
+
+    bnk = 0x80000000;
+    while ((n = *anmTbl) != -1) {
+        bnk |= MNScene_StartAnime(&MNS_CityHall, -1, &CityHallAnime[n & ~0x1000]);
+        anmTbl++;
+    }
+
+    MNScene_SetAnimeBankEnd(&MNS_CityHall, bnk);
+    TSSNDPLAY(0x8002);
+}
 
 #ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", MpPopMenu_Flow);
@@ -2723,9 +2812,6 @@ static void McInitFlow(void) {
     waitTime  = 0;
 }
 
-#ifndef NON_MATCHING /* .rodata JPT */
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", McStartCheckFlow);
-#else
 static int McStartCheckFlow(/* a0 4 */ int flg) {
     /* v1 3 */ int ret;
 
@@ -2825,7 +2911,6 @@ static int McStartCheckFlow(/* a0 4 */ int flg) {
 
     return -1;
 }
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", McUserCheckFlow);
 
@@ -2919,9 +3004,6 @@ void TsMCAMes_SetMes(int no) {
     pmesw->line = _PkMCMsgGetLine(pmesw->mesflg & 0xffff);
 }
 
-#ifndef NON_MATCHING
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsMCAMes_Flow);
-#else /* Needs .sdata match */
 static void TsMCAMes_Flow(u_int tpad) {
     MCMES_WORK *pmesw;
     int         cLine;
@@ -2993,12 +3075,12 @@ static void TsMCAMes_Flow(u_int tpad) {
             isCAN = TRUE;
         }
     
-        if (isOK && (tpad & 0x20)) {
+        if (isOK && (tpad & 0x40)) {
             pmesw->selflg = 1;
             TSSNDPLAY(6);
         }
     
-        if (isCAN && (tpad & 0x40)) {
+        if (isCAN && (tpad & 0x10)) {
             pmesw->selflg = 2;
             if (pmesw->mesflg & 0x4000000) {
                 TSSNDPLAY(6);
@@ -3015,7 +3097,6 @@ static void TsMCAMes_Flow(u_int tpad) {
         }
     }
 }
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsMCAMes_Draw);
 
@@ -3676,9 +3757,6 @@ static int TsUserList_TagChangeAble(USERLIST_MENU *pfw, int *pno) {
     return flg;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsUserList_SetCurTag);
-#if 0
-// TODO: nonmatching (regalloc in the curFileDate copy; target loads curFileNo via the date pointer)
 /* static */ int TsUserList_SetCurTag(USERLIST_MENU *pfw, int no) {
     USERLIST_TYPE *ptype;
     int            fileNo;
@@ -3697,7 +3775,11 @@ INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsUserList_SetCurTag);
     fileNo = -1;
     if (pfw->dataMode == 1) {
         memcpy(pfw->curFileDate, CurFileInfo.logDate, sizeof(pfw->curFileDate));
-        fileNo = CurFileInfo.logFileNo;
+        if (!pfw->isSave) {
+            fileNo = CurFileInfo.logFileNo;
+        } else {
+            fileNo = CurFileInfo.logFileNo;
+        }
     } else {
         memcpy(pfw->curFileDate, CurFileInfo.repDate, sizeof(pfw->curFileDate));
         if (!pfw->isSave) {
@@ -3708,7 +3790,6 @@ INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsUserList_SetCurTag);
 
     return 0;
 }
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsUserList_Flow);
 
@@ -3977,17 +4058,157 @@ void TsMenu_CaptureVram(SPR_PKT pk, SPR_PRM *spr) {
     PkALPHA_Add(pk, SCE_GS_SET_ALPHA(0, 1, 0, 1, 0));
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsSetCTransSpr);
+void TsSetCTransSpr(SPR_PKT pk, SPR_PRM *spr, int mx, int my, float zx, float zy) {
+    PKMESH *mesh;
+    PKMSPT *pmspt;
+    int     x, y;
+    int     cx, cy;
+    float   wx, wy;
+    float   rx, ry;
+    float   fx, fy;
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsSetSLTransSpr);
+    mesh = PkMesh_Create(mx, my);
+    PkMesh_SetXYWH(mesh, spr->px, spr->py, spr->sw * spr->zx, spr->sh * spr->zy);
+    PkMesh_SetUVWH(mesh, spr->ux, spr->uy, spr->uw, spr->uh);
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsSetPNTransSpr);
+    cx = (mesh->mw + 1) >> 1;
+    cy = (mesh->mh + 1) >> 1;
+    wx = (mesh->sw * 0.5f) * zx;
+    wy = (mesh->sh * 0.5f) * zy;
+
+    for (y = 0; y < (mesh->mh + 1); y++) {
+        for (x = 0; x < (mesh->mw + 1); x++) {
+            rx = (float)(cx - x) / (float)cx;
+            ry = (float)(cy - y) / (float)cy;
+            pmspt = &mesh->pmspt[(y * (mesh->mw + 1)) + x];
+
+            fx = cosf(rx * 1.5707964f);
+            fy = cosf(ry * 1.5707964f);
+
+            pmspt->ofsx += (wx * (1.0f - fy)) * rx;
+            pmspt->ofsy += (wy * (1.0f - fx)) * ry;
+        }
+    }
+
+    PkFTMesh_Add(pk, spr, mesh);
+    PkMesh_Delete(mesh);
+}
+
+void TsSetSLTransSpr(SPR_PKT pk, SPR_PRM *spr, int mx, int my, float zx) {
+    PKMESH *mesh;
+    int     i;
+    float   oy0;
+    float   zy, h, w;
+
+    oy0 = spr->ofsy;
+    zy  = 1.08f - (sinf(((zx + 1.0f) * 3.1415927f) * 0.5f) * 0.08f);
+    h   = spr->sh * spr->zy;
+    zy  = zy * spr->zy;
+
+    spr->ofsy += h - (spr->sh * zy);
+    w = h * cosf((zx * 0.31415927f) + 1.5707964f);
+
+    mesh = PkMesh_Create(mx, my);
+    PkMesh_SetXYWH(mesh, spr->px, spr->py, spr->sw * spr->zx, spr->sh * zy);
+    PkMesh_SetUVWH(mesh, spr->ux, spr->uy, spr->uw, spr->uh);
+
+    for (i = 0; i < (mesh->mh + 1); i++) {
+        PkMesh_SetHLinOfs(mesh, i, w * cosf(((float)i / (float)mesh->mh) * 1.5707964f), 0.0f);
+    }
+
+    PkFTMesh_Add(pk, spr, mesh);
+    PkMesh_Delete(mesh);
+
+    spr->ofsy = oy0;
+}
+
+void TsSetPNTransSpr(SPR_PKT pk, SPR_PRM *spr, int mx, int my, float wr, float dr) {
+    PKMESH *mesh;
+    int     i;
+    float   r0, r1, r2;
+    float   d0, d1;
+
+    r0 = wr * 6.2831855f;
+    mesh = PkMesh_Create(mx, my);
+
+    r1 = r0 - 3.1415927f;
+    r2 = r0 + 3.1415927f;
+
+    PkMesh_SetXYWH(mesh, spr->px, spr->py, spr->sw * spr->zx, spr->sh * spr->zy);
+    PkMesh_SetUVWH(mesh, spr->ux, spr->uy, spr->uw, spr->uh);
+
+    for (i = 0; i < (mesh->mh + 1); i++) {
+        d0 = sinf(r0 + (((float)i / (float)mesh->mh) * 3.1415927f)) * 1.5f;
+        d0 += 0.75f;
+        d1 = (-sinf(r1 - (((float)i / (float)mesh->mh) * 4.712389f)) * 1.5f) + 0.75f;
+        PkMesh_SetHLinOfsLRX(mesh, i, d0 * dr, d1 * dr);
+    }
+
+    for (i = 0; i < (mesh->mw + 1); i++) {
+        d0 = cosf(r0 + (((float)i / (float)mesh->mw) * 3.1415927f)) * 0.7f;
+        d1 = -cosf(r2 - (((float)i / (float)mesh->mw) * 4.712389f)) * 0.7f;
+        PkMesh_SetVLinOfsUDY(mesh, i, d0 * dr, d1 * dr);
+    }
+
+    PkFTMesh_Add(pk, spr, mesh);
+    PkMesh_Delete(mesh);
+}
 
 static void TsPatTexFnc(int flg) {
     _TexFunc = flg;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", _TsPatSetPrm);
+static void _TsPatSetPrm(SPR_PKT pk, SPR_PRM *spr, PATPOS *ppos, int ox, int oy) {
+    TSTEX_INF *ptex;
+    int        px, py, w, h;
+
+    ptex = &tblTex[ppos->texNo];
+    switch (_TexFunc) {
+    case 0:
+        PkTEX0_Add(pk, ptex->tex0);
+        break;
+    case 1:
+        PkTEX0_Add(pk, ptex->tex0 | (1UL << 36));
+        break;
+    case 2:
+        PkTEX0_Add(pk, ptex->tex0 | (3UL << 35));
+        break;
+    }
+
+    spr->ux = 0;
+    spr->uy = 0;
+    spr->uw = ptex->w;
+    spr->uh = ptex->h;
+
+    px = ox + ppos->x;
+    py = oy + ppos->y;
+    w  = ppos->w;
+    if (w == 0) {
+        w = ptex->w;
+    } else if (w == -1) {
+        w = ptex->w;
+        spr->ux = w - 1;
+        spr->uy = 0;
+        spr->uw = -(w - 2);
+        spr->uh = ptex->h;
+    }
+
+    h = ppos->h;
+    if (h == 0) {
+        h = ptex->h;
+    } else if (h == -1) {
+        h = ptex->h;
+        spr->ux = 0;
+        spr->uy = h - 1;
+        spr->uw = ptex->w;
+        spr->uh = -(h - 2);
+    }
+
+    spr->px = px;
+    spr->py = py;
+    spr->sw = w;
+    spr->sh = h;
+}
 
 static void TsPatPut(SPR_PKT pk, SPR_PRM *spr, PATPOS *ppos, int ox, int oy) {
     _TsPatSetPrm(pk, spr, ppos, ox, oy);
@@ -4011,9 +4232,66 @@ static void TsPatGetSize(PATPOS *ppos, int *x, int *y, int *w, int *h) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPatPutRZoom);
+static void TsPatPutRZoom(SPR_PKT pk, SPR_PRM *spr, PATPOS *ppos, int ox, int oy, float zrate, float rot) {
+    float zx0, zy0;
+    float ox0, oy0;
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPatPutMZoom);
+    zx0 = spr->zx;
+    zy0 = spr->zy;
+    ox0 = spr->ofsx;
+    oy0 = spr->ofsy;
+
+    spr->zx = zx0 * zrate;
+    spr->zy = zy0 * zrate;
+
+    _TsPatSetPrm(pk, spr, ppos, ox, oy);
+
+    spr->ofsx -= (spr->sw * (spr->zx - zx0)) * 0.5f;
+    spr->ofsy -= (spr->sh * (spr->zy - zy0)) * 0.5f;
+
+    while (rot > 3.1415927f) {
+        rot -= 6.2831855f;
+    }
+    while (rot < -3.1415927f) {
+        rot += 6.2831855f;
+    }
+
+    spr->rot = rot;
+    spr->cx  = spr->sw * 0.5f;
+    spr->cy  = spr->sh * 0.5f;
+
+    PkRSprite_Add(pk, spr, 3);
+
+    spr->zx   = zx0;
+    spr->zy   = zy0;
+    spr->ofsx = ox0;
+    spr->ofsy = oy0;
+}
+
+static void TsPatPutMZoom(SPR_PKT pk, SPR_PRM *spr, PATPOS *ppos, int ox, int oy, float Zrx, float Zry, int mx, int my, float Crx, float Cry) {
+    float zx0, zy0;
+    float ox0, oy0;
+
+    zx0 = spr->zx;
+    zy0 = spr->zy;
+    ox0 = spr->ofsx;
+    oy0 = spr->ofsy;
+
+    spr->zx = zx0 * Zrx;
+    spr->zy = zy0 * Zry;
+
+    _TsPatSetPrm(pk, spr, ppos, ox, oy);
+
+    spr->ofsx -= (spr->sw * (spr->zx - zx0)) * 0.5f;
+    spr->ofsy -= (spr->sh * (spr->zy - zy0)) * 0.5f;
+
+    TsSetCTransSpr(pk, spr, mx, my, Crx, Cry);
+
+    spr->zx   = zx0;
+    spr->zy   = zy0;
+    spr->ofsx = ox0;
+    spr->ofsy = oy0;
+}
 
 static void TsPatPutSwing(SPR_PKT pk, SPR_PRM *spr, PATPOS *ppos, int ox, int oy, int mx, int my, float Crx) {
     _TsPatSetPrm(pk, spr, ppos, ox, oy);
@@ -4122,10 +4400,146 @@ int TsCELBackDraw(TsUSERPKT *UPacket, SPR_PRM *spr, int dispSw, int colNo) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", _TsCELBackObjDraw);
+static void _TsCELBackObjDraw(SPR_PKT pk, SPR_PRM *spr, int sw, int sh, u_int *colTbl) {
+    HOSI_TYPE *type;
+    HOSI_OBJ  *obj;
+    TSTEX_INF *ptex;
+    u_int      abgr;
+    int        rw, rh, ox, oy;
+    int        i, l;
+    int        tim, t0, t1, ton;
+    float      zrate, rot;
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsHosiPut);
+    type = hTypeTable;
+    obj  = HOSIObj;
 
-INCLUDE_RODATA("asm/nonmatchings/menu/menusub", D_00396168);
+    for (l = 0; l < PR_ARRAYSIZEU(hTypeTable); l++, type++) {
+        ptex = &tblTex[type->patNo + 0x4c];
+        PkTEX0_Add(pk, ptex->tex0);
 
-INCLUDE_RODATA("asm/nonmatchings/menu/menusub", D_00396170);
+        abgr = colTbl[type->colIdx];
+        zrate = type->rate * 0.01f;
+        spr->zy = zrate;
+        spr->zx = zrate * 2.0f;
+
+        for (i = 0; i < type->num; i++, obj++) {
+            if (obj->wtim > 0) {
+                obj->wtim--;
+                if (obj->wtim == 0) {
+                    obj->tim = type->dispTime;
+                    obj->dir = rand() & 1;
+
+                    switch (rand() % 4) {
+                    case 0:
+                        rw = sw;
+                        rh = sh >> 2;
+                        ox = 0;
+                        oy = 0;
+                        break;
+                    case 1:
+                        rw = sw >> 3;
+                        rh = sh;
+                        ox = 0;
+                        oy = 0;
+                        break;
+                    case 2:
+                        rw = sw >> 3;
+                        rh = sh;
+                        ox = sw - rw;
+                        oy = 0;
+                        break;
+                    case 3:
+                    default:
+                        rw = sw;
+                        rh = sh >> 2;
+                        ox = 0;
+                        oy = sh - rh;
+                        break;
+                    }
+
+                    ox += ((rand() % (rw / (type->patW >> 1))) * (type->patW >> 1)) - 20;
+                    oy += ((rand() % (rh / (type->patW >> 2))) * (type->patW >> 2)) - 10;
+                    obj->px = ox;
+                    obj->vx = ((sw >> 1) - ox) * 0.001f;
+                    obj->py = oy;
+                    obj->vy = ((sh >> 1) - oy) * 0.001f;
+                }
+            } else {
+                obj->tim--;
+                tim = obj->tim;
+                if (tim <= 0) {
+                    obj->wtim = (rand() % (type->dispTime >> 3)) * 3;
+                } else {
+                    t0  = (type->dispTime * 3) >> 2;
+                    t1  = type->dispTime >> 2;
+                    ton = 256;
+                    if (tim > t0) {
+                        ton = 256 - (((tim - t0) << 8) / t1);
+                    } else if (tim < t1) {
+                        ton = (tim << 8) / t1;
+                    }
+
+                    spr->rgba0 = GetDToneColor(abgr, abgr | 0x80000000, ton);
+
+                    zrate = (float)(obj->tim % t0) / (float)t0;
+                    zrate = (cosf(zrate * 6.2831855f) * 0.1) + 0.9;
+                    t0 = type->dispTime >> 1;
+                    rot = (float)(obj->tim % t0) / (float)t0;
+                    if (obj->dir != 0) {
+                        rot = -rot;
+                    }
+                    rot *= 6.2831855f;
+
+                    obj->px -= obj->vx;
+                    obj->py -= obj->vy;
+
+                    TsHosiPut(pk, spr, ptex, obj->px, obj->py, zrate, rot);
+                }
+            }
+        }
+    }
+}
+
+static void TsHosiPut(SPR_PKT pk, SPR_PRM *spr, TSTEX_INF *ptex, float px, float py, float zrate, float rot) {
+    float zx0, zy0;
+    float ox0, oy0;
+
+    spr->ux = 0;
+    spr->uy = 0;
+    spr->uw = ptex->w;
+    spr->uh = ptex->h;
+
+    zx0 = spr->zx;
+    zy0 = spr->zy;
+    ox0 = spr->ofsx;
+    oy0 = spr->ofsy;
+
+    spr->px = 0;
+    spr->py = 0;
+    spr->zx = zx0 * zrate;
+    spr->zy = zy0 * zrate;
+
+    spr->sw = ptex->w;
+    spr->sh = ptex->h;
+
+    spr->ofsx = (ox0 - ((spr->sw * (spr->zx - zx0)) * 0.5f)) + px;
+    spr->ofsy = (oy0 - ((spr->sh * (spr->zy - zy0)) * 0.5f)) + py;
+
+    while (rot > 3.1415927f) {
+        rot -= 6.2831855f;
+    }
+    while (rot < -3.1415927f) {
+        rot += 6.2831855f;
+    }
+
+    spr->rot = rot;
+    spr->cx  = spr->sw * 0.5f;
+    spr->cy  = spr->sh * 0.5f;
+
+    PkRSprite_Add(pk, spr, 3);
+
+    spr->zx   = zx0;
+    spr->zy   = zy0;
+    spr->ofsx = ox0;
+    spr->ofsy = oy0;
+}
