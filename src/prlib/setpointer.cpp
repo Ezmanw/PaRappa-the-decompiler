@@ -3,7 +3,9 @@
 #include <eetypes.h>
 #include <eestruct.h>
 
+#include "animation.h"
 #include "camera.h"
+#include "spadata.h"
 #include "microprogram.h"
 #include "model.h"
 
@@ -69,9 +71,88 @@ void SpmNode::ChangePointer(SpmFileHeader *model, SpmNode *arg1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/setpointer", ChangePointer__13SpaFileHeader);
+void SpaFileHeader::ChangePointer() {
+    if (m_flags & 0x1) {
+        return;
+    }
+
+    this->unk38 = CalculatePointer<int>(this->unk38);
+    this->unk50 = (SpaNodeAnimation**)(this + 1);
+
+    for (u_int i = 0; i < this->unk4C; i++) {
+        SpaNodeAnimation **node = &this->unk50[i];
+        if (*node != NULL) {
+            *node = CalculatePointer<SpaNodeAnimation>(*node);
+            (*node)->ChangePointer(this);
+            (*node)->Optimize();
+        }
+    }
+
+    m_flags |= 0x1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/prlib/setpointer", ChangePointer__16SpaNodeAnimationP13SpaFileHeader);
+#if 0
+// TODO: nonmatching (regalloc; the visibility track ChangePointer is not tail-merged in the target)
+void SpaNodeAnimation::ChangePointer(SpaFileHeader *animation) {
+    this->unk10 = animation->CalculatePointer<int>(this->unk10);
+    this->unk4 = animation->CalculatePointer<SpaTrack<int> >(this->unk4);
+    if (this->unk4 != NULL) {
+        this->unk4->ChangePointer();
+    }
+
+    this->unkC = (SpaTransform**)&this->unk30[this->unk2C];
+    this->unk18 = this->unkC + this->unk8;
+
+    for (u_int i = 0; i < this->unk8; i++) {
+        this->unkC[i] = animation->CalculatePointer<SpaTransform>(this->unkC[i]);
+        if (this->unkC[i] == NULL) {
+            continue;
+        }
+
+        SpaTransform *transform;
+        switch (this->unkC[i]->unk0) {
+        case 0:
+        case 1:
+        case 5:
+        case 7:
+            transform = this->unkC[i];
+            transform->GetTrack<NaVECTOR<float, 4> >()->ChangePointer();
+            break;
+        case 2:
+        case 3:
+        case 4:
+            transform = this->unkC[i];
+            transform->GetTrack<float>()->ChangePointer();
+            break;
+        case 6:
+            transform = this->unkC[i];
+            transform->GetTrack<NaMATRIX<float, 4, 4> >()->ChangePointer();
+            break;
+        default:
+            continue;
+        }
+
+        if (transform->unk14 == 0) {
+            this->unkC[i] = NULL;
+        }
+    }
+
+    for (u_int i = 0; i < this->unk14; i++) {
+        this->unk18[i] = animation->CalculatePointer<SpaTransform>(this->unk18[i]);
+        if (this->unk18[i] != NULL) {
+            this->unk18[i]->GetTrack<NaVECTOR<float, 4> >()->ChangePointer();
+        }
+    }
+
+    for (u_int i = 0; i < this->unk2C; i++) {
+        this->unk30[i] = animation->CalculatePointer<SpaTrack<float> >(this->unk30[i]);
+        if (this->unk30[i] != NULL) {
+            this->unk30[i]->ChangePointer();
+        }
+    }
+}
+#endif
 
 void SpcFileHeader::ChangePointer() {
     if (m_flags & 0x1) {

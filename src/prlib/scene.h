@@ -36,21 +36,22 @@ public:
 public:
     PrLinkedList<PrSceneObject> m_list;
     PrObjectSet<PrSceneObject> *m_obj_set;
-    PR_PADDING(unkC, 0x4);
+    u_int unkC;
     PrPERSPECTIVE_CAMERA m_default_camera;
     sceGsFrame unk50;
     sceGsXyoffset unk58;
     PrObjectSet<PrModelObject> m_model_set;
     SpcFileHeader *m_camera;
     sceGsDrawEnv1 *unk70;
-    PR_PADDING(unk74, 0x8);
+    int unk74;
+    int unk78;
     float m_camera_time;
     char *m_name;
     float m_default_focal_len;
     float m_default_defocus_len;
     u_int m_default_depth_level;
     sceGsDBuffDc *unk90;
-    PR_PADDING(unk94, 0x4);
+    u_int unk94;
     PrModelObject *unk98;
     PrModelObject *unk9C;
     PrModelObject *m_screen_model_list;

@@ -118,17 +118,91 @@ PrModelObject* PrInitializeModel(SpmFileHeader *spm, PrSceneObject *scene) {
     return model;
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrInitializeAnimation);
+PR_EXTERN
+SpaFileHeader* PrInitializeAnimation(SpaFileHeader *spa) {
+    if (spa->m_magic != SPA_MAGIC) {
+        exit(0);
+    }
+    if (spa->m_version != SPA_VERSION) {
+        exit(0);
+    }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrInitializeCamera);
+    spa->Initialize();
+    if (spa->m_obj_set == NULL) {
+        spa->m_user_data = NULL;
+        prObjectDatabase.InsertAnimation(spa);
+    }
+    return spa;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrCleanupModel);
+PR_EXTERN
+SpcFileHeader* PrInitializeCamera(SpcFileHeader *spc) {
+    if (spc->m_magic != SPC_MAGIC) {
+        exit(0);
+    }
+    if (spc->m_version != SPC_VERSION) {
+        exit(0);
+    }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrCleanupAnimation);
+    spc->Initialize();
+    if (spc->m_obj_set == NULL) {
+        spc->m_user_data = NULL;
+        prObjectDatabase.InsertCamera(spc);
+    }
+    return spc;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrCleanupCamera);
+PR_EXTERN
+void PrCleanupModel(PrModelObject *model) {
+    if (model == NULL) {
+        PrCleanupAllSceneModel(NULL);
+    } else {
+        delete model;
+        model = NULL;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrCleanupAllSceneModel);
+PR_EXTERN
+void PrCleanupAnimation(SpaFileHeader *animation) {
+    if (animation == NULL) {
+        SpaFileHeader *head;
+        while ((head = prObjectDatabase.m_animation_set.m_head) != NULL) {
+            PrCleanupAnimation(head);
+        }
+    } else {
+        if (animation->m_obj_set != NULL) {
+            prObjectDatabase.RemoveAnimation(animation);
+        }
+    }
+}
+
+PR_EXTERN
+void PrCleanupCamera(SpcFileHeader *camera) {
+    if (camera == NULL) {
+        SpcFileHeader *head;
+        while ((head = prObjectDatabase.m_camera_set.m_head) != NULL) {
+            PrCleanupCamera(head);
+        }
+    } else {
+        if (camera->m_obj_set != NULL) {
+            prObjectDatabase.RemoveCamera(camera);
+        }
+    }
+}
+
+PR_EXTERN
+void PrCleanupAllSceneModel(PrSceneObject *scene) {
+    if (scene == NULL) {
+        for (scene = prObjectDatabase.m_scene_set.m_head; scene != NULL; scene = scene->m_list.next) {
+            PrCleanupAllSceneModel(scene);
+        }
+    } else {
+        PrModelObject *model;
+        while ((model = scene->m_model_set.m_head) != NULL) {
+            PrCleanupModel(model);
+        }
+    }
+}
 
 PR_EXTERN
 float PrGetAnimationStartFrame(SpaFileHeader *animation) {
@@ -145,50 +219,126 @@ float PrGetCameraStartFrame(SpcFileHeader *camera) {
     return 0.0f;
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetCameraEndFrame);
+PR_EXTERN
+float PrGetCameraEndFrame(SpcFileHeader *camera) {
+    return camera->m_end_frame * prFrameRate;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrSetModelUserData);
+PR_EXTERN
+void PrSetModelUserData(PrModelObject *model, void *user_data) {
+    model->m_user_data = user_data;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrSetAnimationUserData);
+PR_EXTERN
+void PrSetAnimationUserData(SpaFileHeader *animation, void *user_data) {
+    animation->m_user_data = user_data;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrSetCameraUserData);
+PR_EXTERN
+void PrSetCameraUserData(SpcFileHeader *camera, void *user_data) {
+    camera->m_user_data = user_data;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetModelUserData);
+PR_EXTERN
+void* PrGetModelUserData(PrModelObject *model) {
+    return model->m_user_data;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetAnimationUserData);
+PR_EXTERN
+void* PrGetAnimationUserData(SpaFileHeader *animation) {
+    return animation->m_user_data;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetCameraUserData);
+PR_EXTERN
+void* PrGetCameraUserData(SpcFileHeader *camera) {
+    return camera->m_user_data;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrLinkAnimation);
+PR_EXTERN
+void PrLinkAnimation(PrModelObject *model, SpaFileHeader *animation) {
+    model->LinkAnimation(animation);
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrUnlinkAnimation);
+PR_EXTERN
+void PrUnlinkAnimation(PrModelObject *model) {
+    model->LinkAnimation(NULL);
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetLinkedAnimation);
+PR_EXTERN
+SpaFileHeader* PrGetLinkedAnimation(PrModelObject *model) {
+    return model->m_animation;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrLinkPositionAnimation);
+PR_EXTERN
+void PrLinkPositionAnimation(PrModelObject *model, SpaFileHeader *animation) {
+    model->LinkPositionAnimation(animation);
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrUnlinkPositionAnimation);
+PR_EXTERN
+void PrUnlinkPositionAnimation(PrModelObject *model) {
+    model->LinkPositionAnimation(NULL);
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetLinkedPositionAnimation);
+PR_EXTERN
+SpaFileHeader* PrGetLinkedPositionAnimation(PrModelObject *model) {
+    return model->m_position_animation;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrSelectCamera);
+PR_EXTERN
+void PrSelectCamera(SpcFileHeader *camera, PrSceneObject *scene) {
+    scene->SelectCamera(camera);
+}
 
 PR_EXTERN
 SpcFileHeader* PrGetSelectedCamera(PrSceneObject *scene) {
     return scene->m_camera;
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetCurrentCamera);
+PR_EXTERN
+PrPERSPECTIVE_CAMERA* PrGetCurrentCamera(PrSceneObject *scene) {
+    return scene->GetCurrentCamera();
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrSetDefaultCamera);
+PR_EXTERN
+void PrSetDefaultCamera(PrPERSPECTIVE_CAMERA *camera, PrSceneObject *scene) {
+    PrPERSPECTIVE_CAMERA *dst = &scene->m_default_camera;
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrSetAppropriateDefaultCamera);
+    dst->position = camera->position;
+    dst->interest = camera->interest;
+    dst->up = camera->up;
+    dst->aspect = camera->aspect;
+    dst->field_of_view = camera->field_of_view;
+    dst->near_clip = camera->near_clip;
+    dst->far_clip = camera->far_clip;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrShowModel);
+PR_EXTERN
+void PrSetAppropriateDefaultCamera(PrSceneObject *scene) {
+    scene->SetAppropriateDefaultCamera();
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetModelMatrix);
+PR_EXTERN
+void PrShowModel(PrModelObject *model, NaMATRIX<float, 4, 4> *position) {
+    model->m_flags |= 0x1;
+    if (position != NULL) {
+        model->unk10 = *position;
+    } else {
+        model->unk10 = NaMATRIX<float, 4, 4>::IDENT;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrHideModel);
+PR_EXTERN
+NaMATRIX<float, 4, 4>* PrGetModelMatrix(PrModelObject *model) {
+    if ((model->m_flags & 0x1) == 0) {
+        return NULL;
+    }
+    return &model->unk10;
+}
+
+PR_EXTERN
+void PrHideModel(PrModelObject *model) {
+    model->m_flags &= ~0x1;
+}
 
 PR_EXTERN
 NaVECTOR<float, 4>* PrGetModelPrimitivePosition(PrModelObject *model) {
@@ -208,11 +358,20 @@ NaVECTOR<float, 4>* PrGetModelScreenPosition(PrModelObject *model) {
 
 int prCurrentStage = 0;
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrAnimateModel);
+PR_EXTERN
+void PrAnimateModel(PrModelObject *model, float time) {
+    model->m_animation_time = time * prInverseFrameRate;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrAnimateModelPosition);
+PR_EXTERN
+void PrAnimateModelPosition(PrModelObject *model, float time) {
+    model->m_position_animation_time = time * prInverseFrameRate;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrAnimateSceneCamera);
+PR_EXTERN
+void PrAnimateSceneCamera(PrSceneObject *scene, float time) {
+    scene->m_camera_time = time * prInverseFrameRate;
+}
 
 PR_EXTERN
 void PrRender(PrSceneObject *scene) {
@@ -229,37 +388,96 @@ void PrSetStage(int stage) {
     prCurrentStage = stage;
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrSetDepthOfField);
+PR_EXTERN
+void PrSetDepthOfField(PrSceneObject *scene, float focal_lng, float defocus_lng) {
+    if (focal_lng != 0.0f) {
+        if (focal_lng < 0.0f || defocus_lng <= focal_lng) {
+            defocus_lng = 0.0f;
+            return;
+        }
+    } else {
+        defocus_lng = 0.0f;
+    }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrSetDepthOfFieldLevel);
+    scene->m_default_focal_len = focal_lng;
+    scene->m_default_defocus_len = defocus_lng;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetFocalLength);
+PR_EXTERN
+void PrSetDepthOfFieldLevel(PrSceneObject *scene, u_int level) {
+    scene->m_default_depth_level = level;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetDefocusLength);
+PR_EXTERN
+float PrGetFocalLength(PrSceneObject *scene) {
+    return scene->m_default_focal_len;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetDepthOfFieldLevel);
+PR_EXTERN
+float PrGetDefocusLength(PrSceneObject *scene) {
+    return scene->m_default_defocus_len;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrSaveContour);
+PR_EXTERN
+u_int PrGetDepthOfFieldLevel(PrSceneObject *scene) {
+    return scene->m_default_depth_level;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrResetContour);
+PR_EXTERN
+void PrSaveContour(PrModelObject *model) {
+    model->SaveContour();
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrSavePosture);
+PR_EXTERN
+void PrResetContour(PrModelObject *model) {
+    model->ResetContour();
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrResetPosture);
+PR_EXTERN
+void PrSavePosture(PrModelObject *model) {
+    model->SavePosture();
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrSetContourBlurAlpha);
+PR_EXTERN
+void PrResetPosture(PrModelObject *model) {
+    model->ResetPosture();
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrSetTransactionBlendRatio);
+PR_EXTERN
+void PrSetContourBlurAlpha(PrModelObject *model, float alpha, float alpha2) {
+    model->m_contour_blur_alpha[0] = alpha;
+    model->m_contour_blur_alpha[1] = alpha2;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetContourBlurAlpha);
+PR_EXTERN
+void PrSetTransactionBlendRatio(PrModelObject *model, float ratio) {
+    model->m_transaction_blend_ratio = ratio;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetContourBlurAlpha2);
+PR_EXTERN
+float PrGetContourBlurAlpha(PrModelObject *model) {
+    return model->m_contour_blur_alpha[0];
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetTransactionBlendRatio);
+PR_EXTERN
+float PrGetContourBlurAlpha2(PrModelObject *model) {
+    return model->m_contour_blur_alpha[1];
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrSetModelDisturbance);
+PR_EXTERN
+float PrGetTransactionBlendRatio(PrModelObject *model) {
+    return model->m_transaction_blend_ratio;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetModelDisturbance);
+PR_EXTERN
+void PrSetModelDisturbance(PrModelObject *model, float disturbance) {
+    model->m_disturbance = disturbance;
+}
+
+PR_EXTERN
+float PrGetModelDisturbance(PrModelObject *model) {
+    return model->m_disturbance;
+}
 
 INCLUDE_ASM("asm/nonmatchings/prlib/prlib", PrGetVertexNum);
 

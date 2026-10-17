@@ -6,8 +6,43 @@
 #include <float.h>
 
 INCLUDE_ASM("asm/nonmatchings/prlib/scene", __13PrSceneObjectP13sceGsDrawEnv1PCcUi);
+#if 0
+// TODO: nonmatching (instruction scheduling / store order)
+PrSceneObject::PrSceneObject(sceGsDrawEnv1 *draw_env, const char *name, u_int fbp) {
+    unkC = 0x19832b1a;
+    unk94 = fbp;
+    m_default_depth_level = 3;
+    m_camera_time = 0.0f;
+    m_name = "(noname)";
+    m_list.next = NULL;
+    m_list.prev = NULL;
+    m_obj_set = NULL;
+    m_camera = NULL;
+    m_default_focal_len = 0.0f;
+    m_default_defocus_len = 0.0f;
+    unk90 = NULL;
+    unk70 = draw_env;
+    unk50 = draw_env->frame1;
+    unk74 = unk50.FBW * 64;
+    unk58 = draw_env->xyoffset1;
+    unk78 = (2048 - ((u_int)draw_env->xyoffset1.OFY >> 4)) * 2;
 
-INCLUDE_ASM("asm/nonmatchings/prlib/scene", _$_13PrSceneObject);
+    m_default_camera.position.Set(0.0f, 0.0f, 1000.0f, 1.0f);
+    m_default_camera.interest.Set(0.0f, 0.0f, 0.0f, 1.0f);
+    m_default_camera.up.Set(0.0f, 1.0f, 0.0f, 1.0f);
+    m_default_camera.aspect = 1.0f;
+    m_default_camera.field_of_view = 0.7853982f;
+    m_default_camera.near_clip = 100.0f;
+    m_default_camera.far_clip = 100000.0f;
+
+    unk9C = NULL;
+    m_screen_model_list = NULL;
+    unk98 = NULL;
+}
+#endif
+
+PrSceneObject::~PrSceneObject() {
+}
 
 void PrSceneObject::SelectCamera(SpcFileHeader *camera) {
     m_camera = camera;
@@ -173,4 +208,4 @@ INCLUDE_ASM("asm/nonmatchings/prlib/scene", func_0014B988);
 INCLUDE_ASM("asm/nonmatchings/prlib/scene", func_0014B9B0);
 
 /* prlib/objectset.h */
-INCLUDE_ASM("asm/nonmatchings/prlib/scene", _$_t11PrObjectSet1Z13PrModelObject);
+/* _$_t11PrObjectSet1Z13PrModelObject is emitted here by the compiler */

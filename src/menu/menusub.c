@@ -1360,7 +1360,27 @@ void TsMenu_Draw(void) {
     TsCmnPkClose(&FPacket, pkt, 0xf);
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsSetRankingName);
+/* static */ void TsSetRankingName(P3MC_STAGERANK *pRankTop, u_char *name) {
+    P3MC_STAGERANK *pRank;
+    int             i, j, k;
+
+    pRank = pRankTop;
+    for (i = 0; i < 8; i++, pRank++) {
+        for (j = 0; j < pRank->nSplay; j++) {
+            if (pRank->splay[j].name[0] == 0) {
+                memcpy(pRank->splay[j].name, name, sizeof(pRank->splay[j].name));
+            }
+        }
+
+        for (k = 0; k < 4; k++) {
+            for (j = 0; j < pRank->nVplay[k]; j++) {
+                if (pRank->vplay[k][j].name[0] == 0) {
+                    memcpy(pRank->vplay[k][j].name, name, sizeof(pRank->vplay[k][j].name));
+                }
+            }
+        }
+    }
+}
 
 static void TsSetRanking2UData(USER_DATA *puser, P3MC_STAGERANK *wkRank) {
     int i;
@@ -1383,7 +1403,19 @@ int DateChgInt(u_int n) {
     );
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", GetRankScoreID);
+void GetRankScoreID(MAP_TIME *mptim, u_int *dat) {
+    int year, sec, hour, day, month, min;
+
+    year  = DateChgInt(mptim->date_year);
+    sec   = DateChgInt(mptim->date_second);
+    hour  = DateChgInt(mptim->date_hour);
+    day   = DateChgInt(mptim->date_day);
+    month = DateChgInt(mptim->date_month);
+    min   = DateChgInt(mptim->date_minute);
+
+    dat[0] = (year % 50) * (12 * 31 * 24 * 60 * 60) + (month % 12) * (31 * 24 * 60 * 60) + (day % 31) * (24 * 60 * 60) + (hour % 24) * (60 * 60) + (min % 60) * 60 + (sec % 60);
+    dat[1] = ((rand() % 0x10000) << 8) + mptim->date_pad;
+}
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsRanking_Set);
 
@@ -1396,7 +1428,43 @@ void TsMENU_SetMapScreen(int mapNo) {
     CurMapState = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsCheckTimeMapChange);
+/* static */ int TsCheckTimeMapChange(void) {
+    if (CurMapState == 0) {
+        if (CurMapBakFlg != CurMapOldFlg) {
+            if (MNScene_isSeniAnime(&MNS_StageMap)) {
+                return 0;
+            }
+            _bMapCaptureReq = 1;
+            CurMapState = 1;
+            return 1;
+        }
+    }
+
+    switch (CurMapState) {
+    case 0:
+        TsMENU_GetMapTimeState(0);
+        break;
+    case 1:
+        TsSetScene_Map(&MNS_StageMap2, CurMapNo, CurMapBakFlg, 0);
+        MNScene_CopyState(&MNS_StageMap2, &MNS_StageMap);
+        TsMENU_SetMapScreen(CurMapNo);
+        MNScene_CopyState(&MNS_StageMap, &MNS_StageMap2);
+        MNScene_DispSw(&MNS_StageMap, 0);
+        MNScene_DispSw(&MNS_StageMap2, 1);
+        CurMapState = 2;
+    case 2:
+        if (TsSCFADE_Set(5, 30, 2)) {
+            break;
+        }
+        MNScene_DispSw(&MNS_StageMap2, 0);
+        MNScene_End(&MNS_StageMap2);
+        MNScene_DispSw(&MNS_StageMap, 1);
+        CurMapState = 0;
+        break;
+    }
+
+    return CurMapState;
+}
 
 int TsAnimeWait_withKeySkip(u_int tpad, MN_SCENE *scene, int ltim, u_int bnk) {
     if (bnk == -1) {
@@ -1888,7 +1956,38 @@ static int TsMap_Flow(int flg, u_int tpad, u_int tpad2) {
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsMakeUserWork);
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsSaveSuccessProc);
+/* static */ void TsSaveSuccessProc(void) {
+    TsUserList_SetCurUserData(UserWork);
+
+    memcpy(pP3GameState->pLog->name, UserWork->name, sizeof(UserWork->name));
+    pP3GameState->pLog->name[11] = '\0';
+
+    if (UserWork->mode == 2) {
+        memcpy(pP3GameState->pLog->name1, UserWork->name1, sizeof(UserWork->name1));
+        pP3GameState->pLog->name1[11] = '\0';
+
+        if (UserWork->isVs == 1) {
+            memcpy(pP3GameState->pLog->name2, UserWork->name2, sizeof(UserWork->name2));
+            pP3GameState->pLog->name2[11] = '\0';
+        }
+    }
+
+    if (UserWork->mode == 1) {
+        TsSetRankingName(pCStageRank, pP3GameState->pLog->name);
+    } else {
+        TsSetRankingName(pCStageRank, pP3GameState->pLog->name1);
+    }
+
+    TsSetRanking2UData(UserWork, pCStageRank);
+
+    if (UserWork->mode == 1) {
+        CurFileInfo.logFileNo = UserWork->fileNo;
+        memcpy(CurFileInfo.logDate, &UserWork->date_day, sizeof(CurFileInfo.logDate));
+    } else {
+        CurFileInfo.repFileNo = UserWork->fileNo;
+        memcpy(CurFileInfo.repDate, &UserWork->date_day, sizeof(CurFileInfo.repDate));
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", MpSave_Flow);
 
@@ -2429,7 +2528,72 @@ static void MpCityHallFPHSSoundMask(int flg) {
     TSSNDMASK_CHAN(3, flg);
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", MpCityHallFPHSMove);
+/* data 199c08 */ extern short D_00199C08[]; /* static */
+/* data 199c10 */ extern short D_00199C10[]; /* static */
+/* data 199c18 */ extern short D_00199C18[]; /* static */
+/* data 199c20 */ extern short D_00199C20[]; /* static */
+
+/* static */ int MpCityHallFPHSMove(int pos, int fpos) {
+    short *anmTbl = NULL;
+    int    n;
+
+    if (pos == fpos) {
+        if (!TsAnimeWait_withKeySkip(0, &MNS_CityHall, 0, 6)) {
+            if (TSSND_CHANISSTOP(3)) {
+                TSSNDPLAY(0x8002);
+            }
+        }
+        return fpos;
+    }
+
+    if (TsAnimeWait_withKeySkip(0, &MNS_CityHall, 2, 6)) {
+        return fpos;
+    }
+
+    if (pos > 0 && fpos > 0) {
+        pos = 0;
+    }
+
+    switch (fpos) {
+    case 0:
+        switch (pos) {
+        case 1:
+            anmTbl = D_00199C10;
+            break;
+        case 2:
+            anmTbl = D_00199C20;
+            break;
+        }
+        break;
+    case 1:
+        if (pos == 0) {
+            anmTbl = D_00199C08;
+        }
+        break;
+    case 2:
+        if (pos == 0) {
+            anmTbl = D_00199C18;
+        }
+        break;
+    }
+
+    if (anmTbl == NULL) {
+        return fpos;
+    }
+
+    TSSNDPLAY(53);
+
+    while ((n = *anmTbl) != -1) {
+        if (n & 0x1000) {
+            MNScene_ContinueAnime(&MNS_CityHall, -1, &CityHallAnime[n & ~0x1000]);
+        } else {
+            MNScene_StartAnime(&MNS_CityHall, -1, &CityHallAnime[n]);
+        }
+        anmTbl++;
+    }
+
+    return pos;
+}
 
 static void MpCityHallFPHOK(int flg) {
     int n;
@@ -2974,7 +3138,41 @@ static int TsANIME_GetRate(ANIME_WK *wk, float *rt0, float *rt1, float *rt2) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", _TsSortSetRanking);
+/* static */ void _TsSortSetRanking(P3MC_RANKSCORE **ptRank, int n, P3MC_RANKSCORE *pRank, int bNameCmp) {
+    P3MC_RANKSCORE *pcur;
+    int             i, j, k, l, flg;
+
+    for (i = 0; i < n; i++, pRank++) {
+        for (j = 0; j < 20; j++) {
+            pcur = ptRank[j];
+            if (pcur == NULL || pcur->score < pRank->score) {
+                for (l = 19; j < l; l--) {
+                    ptRank[l] = ptRank[l - 1];
+                }
+                ptRank[j] = pRank;
+                break;
+            }
+
+            if (pcur->score == pRank->score && pcur->scDate[0] == pRank->scDate[0] && pcur->scDate[1] == pRank->scDate[1]) {
+                flg = 1;
+                if (bNameCmp) {
+                    for (k = 0; k < 8; k++) {
+                        if (ptRank[j]->name[k] != pRank->name[k]) {
+                            flg = 0;
+                            break;
+                        }
+                        if (ptRank[j]->name[k] == 0) {
+                            break;
+                        }
+                    }
+                }
+                if (flg) {
+                    break;
+                }
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsGetRankingList);
 
@@ -3103,13 +3301,191 @@ static int TsJukeIsObjAnime(int isComp) {
     return FALSE;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsJukeObjAnime);
+/* static */ int TsJukeObjAnime(int isOut) {
+    int        i;
+    JUKE_MENU *pfw;
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsJukeObjAnime2);
+    pfw = &JukeMenu;
+
+    for (i = 0; i < PR_ARRAYSIZE(pfw->cusObj); i++) {
+        if (i < 5) {
+            pfw->cusObj[i].dir2 = i & 1;
+            pfw->cusObj[i].dir  = 1;
+            if (!isOut) {
+                pfw->cusObj[i].state = 1;
+                pfw->cusObj[i].anime = TSJKANM_IN;
+                pfw->cusObj[i].atime = (5 - i) * 6 + 1;
+            } else {
+                pfw->cusObj[i].anime = TSJKANM_OUT;
+                pfw->cusObj[i].atime = (5 - i) * 6 + 1;
+            }
+        } else {
+            pfw->cusObj[i].dir2 = (i + 1) & 1;
+            pfw->cusObj[i].dir  = 0;
+            if (!isOut) {
+                pfw->cusObj[i].state = 1;
+                pfw->cusObj[i].anime = TSJKANM_IN;
+                pfw->cusObj[i].atime = (i - 5) * 6 + 19;
+            } else {
+                pfw->cusObj[i].anime = TSJKANM_OUT;
+                pfw->cusObj[i].atime = (i - 5) * 6 + 19;
+            }
+        }
+    }
+
+    return 0;
+}
+
+/* static */ int TsJukeObjAnime2(int isOut) {
+    int        i;
+    JUKE_MENU *pfw;
+
+    pfw = &JukeMenu;
+
+    for (i = 0; i < PR_ARRAYSIZE(pfw->cusObj); i++) {
+        if (i == pfw->selno) {
+            switch (isOut) {
+            case 0:
+                pfw->cusObj[i].atime = 1;
+                pfw->cusObj[i].state = 2;
+                pfw->cusObj[i].anime = TSJKANM_PLAY1;
+                break;
+            case 2:
+                pfw->cusObj[i].atime = 0;
+                pfw->cusObj[i].state = isOut;
+                pfw->cusObj[i].anime = TSJKANM_ROTSTOP;
+                break;
+            }
+        } else {
+            pfw->cusObj[i].atime = (rand() % 3) * 3 + 1;
+            switch (isOut) {
+            case 0:
+                pfw->cusObj[i].anime = TSJKANM_PLAY2;
+                break;
+            case 1:
+                pfw->cusObj[i].state = isOut;
+                pfw->cusObj[i].anime = TSJKANM_RETURN2;
+                break;
+            }
+        }
+    }
+
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", _TsJKMoveCus);
+#if 0
+// TODO: nonmatching (regalloc / tail merging)
+/* static */ int _TsJKMoveCus(int *cx, int *cy, int mx, int my, JUKECDOBJ *cobj) {
+    int ocx, ocy;
+    int x, y, pos;
+    int i, ret;
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", _TsJKSetPadArrow);
+    ocy = *cy;
+    ocx = *cx;
+
+    y = TSLOOP(ocy + my, 2);
+    x = ocx;
+    pos = y * 5 + ocx;
+
+    if (mx != 0) {
+        pos = TSLOOP(pos + mx, 10);
+        x = pos % 5;
+        y = pos / 5;
+    }
+
+    if (!cobj[pos].bMsk) {
+        *cx = x;
+        *cy = y;
+        return 1;
+    }
+
+    if (mx != 0) {
+        if (mx > 0) {
+            mx = 1;
+        } else {
+            mx = -1;
+        }
+
+        for (i = 0; i < 10; i++) {
+            pos = TSLOOP(pos + mx, 10);
+            if (!cobj[pos].bMsk) {
+                x = pos % 5;
+                y = pos / 5;
+                *cx = x;
+                *cy = y;
+                ret = 0;
+                if (ocx != x || ocy != y) {
+                    ret = 1;
+                }
+                return ret;
+            }
+        }
+        return 0;
+    }
+
+    for (i = x; i < 5; i++) {
+        pos = y * 5 + i;
+        if (!cobj[pos].bMsk) {
+            *cx = pos % 5;
+            *cy = pos / 5;
+            return 1;
+        }
+    }
+
+    for (i = x; i >= 0; i--) {
+        pos = y * 5 + i;
+        if (!cobj[pos].bMsk) {
+            x = pos % 5;
+            y = pos / 5;
+            *cx = x;
+            *cy = y;
+            ret = 0;
+            if (ocx != x || ocy != y) {
+                ret = 1;
+            }
+            return ret;
+        }
+    }
+
+    return 0;
+}
+#endif
+
+/* static */ void _TsJKSetPadArrow(int sel, JUKECDOBJ *cobj) {
+    int cx, cy;
+    int x, y;
+    int flg = 0;
+
+    x = sel % 5;
+    y = sel / 5;
+
+    cx = x;
+    cy = y;
+    if (_TsJKMoveCus(&cx, &cy, -1, 0, cobj)) {
+        flg |= 1;
+    }
+
+    cx = x;
+    cy = y;
+    if (_TsJKMoveCus(&cx, &cy, 1, 0, cobj)) {
+        flg |= 2;
+    }
+
+    cx = x;
+    cy = y;
+    if (_TsJKMoveCus(&cx, &cy, 0, -1, cobj)) {
+        flg |= 4;
+    }
+
+    cx = x;
+    cy = y;
+    if (_TsJKMoveCus(&cx, &cy, 0, 1, cobj)) {
+        flg |= 8;
+    }
+
+    MENUSubt_PadFontArrowSet(flg);
+}
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsJukeMenu_Flow);
 
@@ -3231,7 +3607,39 @@ static void TsUserList_SetCurDispUserData(USER_DATA *psrc) {
     *(pfw->pusrdspWk->pUserDisp + (pfw->curuser + pfw->curPageTop)) = *psrc;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsUserList_SetCurFileNoCusor);
+/* static */ void TsUserList_SetCurFileNoCusor(int fileNo, u_int *fDate) {
+    USERLIST_MENU *pfw = &UserListMenu;
+    USER_DATA     *puser;
+    int            i;
+
+    if (fileNo < 0) {
+        return;
+    }
+
+    if (pfw->pusrlst == NULL) {
+        return;
+    }
+
+    for (i = 0; i < pfw->userMax; i++) {
+        puser = pfw->pusrlst->pUserTbl[i];
+        if (puser->fileNo == fileNo && *(u_int*)&puser->date_day == fDate[0] && *(u_int*)&puser->date_pad == fDate[1]) {
+            break;
+        }
+    }
+
+    if (i < pfw->userMax) {
+        pfw->curuser = 2;
+        pfw->curPageTop = i - 2;
+        if (i + 3 >= pfw->userMax) {
+            pfw->curPageTop = pfw->userMax - 5;
+            pfw->curuser = i - pfw->curPageTop;
+        }
+        if (pfw->curPageTop < 0) {
+            pfw->curuser += pfw->curPageTop;
+            pfw->curPageTop = 0;
+        }
+    }
+}
 
 static void TsUserList_SetType(USERLISTTYPE_TABLE *ptbl, int mode, int curTag) {
     USERLIST_MENU *pfw = &UserListMenu;
@@ -3269,6 +3677,38 @@ static int TsUserList_TagChangeAble(USERLIST_MENU *pfw, int *pno) {
 }
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsUserList_SetCurTag);
+#if 0
+// TODO: nonmatching (regalloc in the curFileDate copy; target loads curFileNo via the date pointer)
+/* static */ int TsUserList_SetCurTag(USERLIST_MENU *pfw, int no) {
+    USERLIST_TYPE *ptype;
+    int            fileNo;
+
+    TsUserList_TagChangeAble(pfw, &no);
+    TsUserList_Flow(2, 0, 0);
+
+    ptype = &UserListTbl[pfw->ptypttbl->typeNo[no]];
+    pfw->scene     = ptype->pScene;
+    pfw->isSave    = ptype->isSave;
+    pfw->cmpMesTbl = ptype->cmpMesTbl;
+    pfw->dataMode  = ptype->dataMode;
+    pfw->dispColor = ptype->dispColor;
+    pfw->nTag      = no;
+
+    fileNo = -1;
+    if (pfw->dataMode == 1) {
+        memcpy(pfw->curFileDate, CurFileInfo.logDate, sizeof(pfw->curFileDate));
+        fileNo = CurFileInfo.logFileNo;
+    } else {
+        memcpy(pfw->curFileDate, CurFileInfo.repDate, sizeof(pfw->curFileDate));
+        if (!pfw->isSave) {
+            fileNo = CurFileInfo.repFileNo;
+        }
+    }
+    pfw->curFileNo = fileNo;
+
+    return 0;
+}
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsUserList_Flow);
 
@@ -3324,7 +3764,52 @@ INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsNAMEINBox_Flow);
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsNAMEINBox_Draw);
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsSCFADE_Set);
+int TsSCFADE_Set(int flg, int num, int prio) {
+    SCFADE *pfw = &ScFade;
+    int     isSet = 0;
+    int     ret;
+
+    switch (flg) {
+    case 1:
+    case 5:
+        if (pfw->state == flg) {
+            isSet = 1;
+        } else {
+            TsSCFADE_Flow(1, 0);
+            pfw->ton = 256;
+        }
+        break;
+    case 2:
+    case 6:
+        if (pfw->state == flg) {
+            isSet = 1;
+        } else {
+            TsSCFADE_Flow(1, 0);
+            pfw->ton = 0;
+        }
+        break;
+    default:
+        isSet = 1;
+        break;
+    }
+
+    if (isSet) {
+        ret = pfw->ttim0 - 1;
+        ret -= pfw->ttim;
+        if (ret <= 0) {
+            return 0;
+        }
+        return ret;
+    }
+    if (num != 0) {
+        pfw->prio  = prio;
+        pfw->state = flg;
+        pfw->ttim0 = num;
+        pfw->ttim  = 0;
+    }
+    return num;
+
+}
 
 static void TsSCFADE_Flow(int flg, int prm) {
     SCFADE *pfw = &ScFade;
@@ -3359,7 +3844,41 @@ static void TsSCFADE_Flow(int flg, int prm) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsSCFADE_Draw);
+/* static */ void TsSCFADE_Draw(SPR_PKT pk, SPR_PRM *spr, int prio) {
+    SCFADE *pfw = &ScFade;
+
+    if (pfw->ton == 0) {
+        return;
+    }
+
+    if (prio != pfw->prio) {
+        return;
+    }
+
+    switch (pfw->state) {
+    case 5:
+    case 6:
+        spr->rgba0 = SCE_GS_SET_RGBAQ(128, 128, 128, 128, 0);
+        spr->zy = 1.0f;
+        spr->zx = 1.0f;
+        PkALPHA_Add(pk, SCE_GS_SET_ALPHA(0, 1, 2, 1, (pfw->ton * 128) >> 8));
+        PkSprPkt_SetTexVram(pk, spr, DrawGetDrawEnvP(DNUM_VRAM2));
+        SetSprScreenXYWH(spr);
+        PkNSprite_AddAdj(pk, spr, 1);
+        PkALPHA_Add(pk, 0x44);
+        break;
+    case 1:
+    case 2:
+    default:
+        spr->zy = 1.0f;
+        spr->zx = 1.0f;
+        spr->rgba0 = GetDToneColor(0, 0x80000000, pfw->ton);
+        SetSprScreenXYWH(spr);
+        PkALPHA_Add(pk, 0x44);
+        PkCRect_Add(pk, spr, 0);
+        break;
+    }
+}
 
 void _PkMCMsgPut(SPR_PKT pk, SPR_PRM *spr, int id, int x, int y, u_int abgr) {
     int flg;

@@ -67,7 +67,7 @@ public:
     u_int unk188;
     PR_PADDING(unk18C, 0xc);
     int *unk198;
-    PR_PADDING(unk19C, 0x4);
+    u_int unk19C;
     int *unk1A0;
     PrVuNodeHeaderDmaPacket *unk1A4;
     PR_PADDING(unk1A8, 0xc);
@@ -109,10 +109,11 @@ public:
     PR_PADDING(unk8, 0x28);
     NaVECTOR<float, 4> unk30;
     NaVECTOR<float, 4> unk40;
-    PR_PADDING(unk50, 0x14);
+    PrModelObject *m_linked_model;
+    PR_PADDING(unk54, 0x10);
     int *unk64;
     u_int m_node_num;
-    PR_PADDING(unk6C, 0x4);
+    u_int unk6C;
     int unk70;
     SpmNode **m_nodes;
     int unk78;
@@ -160,18 +161,28 @@ public:
     PrObjectSet<PrModelObject> *m_obj_set;
     PrSceneObject *m_linked_scene;
     NaMATRIX<float, 4, 4> unk10;
-    PR_PADDING(unk50, 0x8);
+    u_int unk50;
+    void *m_user_data;
     SpmFileHeader *m_spm_image;
     u_int m_flags;
-    PR_PADDING(unk60, 0x10);
+    float m_animation_time;
+    float m_position_animation_time;
+    SpaFileHeader *m_animation;
+    SpaFileHeader *m_position_animation;
     int m_active_transition;
-    PR_PADDING(unk74, 0x10);
+    int *unk74;
+    int *unk78;
+    NaMATRIX<float, 4, 4> *unk7C;
+    NaMATRIX<float, 4, 4> *unk80;
     int m_rendered_once;
-    PR_PADDING(unk88, 0xC);
+    void *unk88;
+    void *unk8C;
+    int unk90;
     float m_contour_blur_alpha[2];
     float m_transaction_blend_ratio;
     float m_disturbance;
-    PR_PADDING(unkA4, 0xC);
+    float unkA4;
+    PR_PADDING(unkA8, 0x8);
 };
 
 #endif /* PRLIB_MODEL_H */
