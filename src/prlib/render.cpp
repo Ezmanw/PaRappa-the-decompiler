@@ -230,7 +230,25 @@ void SpmFileHeader::RenderContext2Model(PrModelObject *model) {
 INCLUDE_ASM("asm/nonmatchings/prlib/render", RenderContext2Node__7SpmNodeP13PrModelObject);
 
 /* nalib/navector.h */
-INCLUDE_ASM("asm/nonmatchings/prlib/render", func_00145DB0);
+extern "C" float *func_00145DB0(float *d, const float& a0, const float& a1, const float& a2, const float& a3, const float& a4, const float& a5, const float& a6, const float& a7, const float& a8, const float& a9, const float& a10, const float& a11, const float& a12, const float& a13, const float& a14, const float& a15) {
+    d[0] = a0;
+    d[1] = a1;
+    d[2] = a2;
+    d[3] = a3;
+    d[4] = a4;
+    d[5] = a5;
+    d[6] = a6;
+    d[7] = a7;
+    d[8] = a8;
+    d[9] = a9;
+    d[10] = a10;
+    d[11] = a11;
+    d[12] = a12;
+    d[13] = a13;
+    d[14] = a14;
+    d[15] = a15;
+    return d;
+}
 
 /* prlib/render.cpp */
 void SpmNode::ComposeGlobalMatrix(PrModelObject *model, const NaMATRIX<float, 4, 4>& arg1) {
@@ -248,7 +266,9 @@ void SpmNode::ComposeGlobalMatrix(PrModelObject *model, const NaMATRIX<float, 4,
 }
 
 /* prlib/renderstuff.h */
-INCLUDE_ASM("asm/nonmatchings/prlib/render", func_00145E50);
+extern "C" void func_00145E50(PrDmaQueue *queue, void *tag) {
+    queue->Append(tag);
+}
 
 /* prlib/render.cpp */
 INCLUDE_ASM("asm/nonmatchings/prlib/render", ComposeGlobalMatrixWithoutVisibility__7SpmNodeP13PrModelObjectRCt8NaMATRIX3Zfi4i4);
