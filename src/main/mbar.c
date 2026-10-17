@@ -1622,18 +1622,23 @@ void MbarDispSceneVsDrawInit(void) {
     vs_mouse_disp_flag = 0;
 }
 
-#ifndef NON_MATCHING
-INCLUDE_ASM("asm/nonmatchings/main/mbar", guidisp_init_pr);
-#else
 /* Needs .sdata match */
 static void guidisp_init_pr(void) {
     GUIMAP *guim_pp;
     int     i;
 
+#ifdef VERSION_PAL
+    PrSetFrameRate(50.0f);
+#else
     PrSetFrameRate(60.0f);
+#endif
 
     guime_hdl = PrInitializeScene(&DBufDc.draw01, "gui", -1);
+#ifdef VERSION_PAL
+    guime_camera_hdl = PrInitializeCamera(cmnfGetFileAdrs(49));
+#else
     guime_camera_hdl = PrInitializeCamera(cmnfGetFileAdrs(72));
+#endif
     PrSelectCamera(guime_camera_hdl, guime_hdl);
     PrAnimateSceneCamera(guime_hdl, 0.0f);
 
@@ -1656,7 +1661,6 @@ static void guidisp_init_pr(void) {
 
     PrPreprocessSceneModel(guime_hdl);
 }
-#endif
 
 static void guidisp_draw_quit(int drapP) {
     GUIMAP *guim_pp;
