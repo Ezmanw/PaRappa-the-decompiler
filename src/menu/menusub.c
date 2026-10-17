@@ -3142,6 +3142,83 @@ INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsJukeObjAnime);
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsJukeObjAnime2);
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", _TsJKMoveCus);
+#if 0
+// TODO: nonmatching (regalloc / tail merging)
+/* static */ int _TsJKMoveCus(int *cx, int *cy, int mx, int my, JUKECDOBJ *cobj) {
+    int ocx, ocy;
+    int x, y, pos;
+    int i, ret;
+
+    ocy = *cy;
+    ocx = *cx;
+
+    y = TSLOOP(ocy + my, 2);
+    x = ocx;
+    pos = y * 5 + ocx;
+
+    if (mx != 0) {
+        pos = TSLOOP(pos + mx, 10);
+        x = pos % 5;
+        y = pos / 5;
+    }
+
+    if (!cobj[pos].bMsk) {
+        *cx = x;
+        *cy = y;
+        return 1;
+    }
+
+    if (mx != 0) {
+        if (mx > 0) {
+            mx = 1;
+        } else {
+            mx = -1;
+        }
+
+        for (i = 0; i < 10; i++) {
+            pos = TSLOOP(pos + mx, 10);
+            if (!cobj[pos].bMsk) {
+                x = pos % 5;
+                y = pos / 5;
+                *cx = x;
+                *cy = y;
+                ret = 0;
+                if (ocx != x || ocy != y) {
+                    ret = 1;
+                }
+                return ret;
+            }
+        }
+        return 0;
+    }
+
+    for (i = x; i < 5; i++) {
+        pos = y * 5 + i;
+        if (!cobj[pos].bMsk) {
+            *cx = pos % 5;
+            *cy = pos / 5;
+            return 1;
+        }
+    }
+
+    for (i = x; i >= 0; i--) {
+        pos = y * 5 + i;
+        if (!cobj[pos].bMsk) {
+            x = pos % 5;
+            y = pos / 5;
+            *cx = x;
+            *cy = y;
+            ret = 0;
+            if (ocx != x || ocy != y) {
+                ret = 1;
+            }
+            return ret;
+        }
+    }
+
+    return 0;
+}
+#endif
 
 /* static */ void _TsJKSetPadArrow(int sel, JUKECDOBJ *cobj) {
     int cx, cy;
