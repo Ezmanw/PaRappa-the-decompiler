@@ -43,7 +43,22 @@ void UpdateNoodlePositionData(PrNoodlePositionData *data) {
 
 INCLUDE_ASM("asm/nonmatchings/prlib/mendererdata", GetSynchronizeRatio__FPC20PrNoodlePositionData);
 
-INCLUDE_ASM("asm/nonmatchings/prlib/mendererdata", PrInitializeNoodlePolygonPosition__Fv);
+static int noodlePolygonOrder[115];
+
+void PrInitializeNoodlePolygonPosition() {
+    for (unsigned int i = 0; i < 115; i++) {
+        noodlePolygonOrder[i] = i;
+    }
+    for (unsigned int i = 0; i < 114; i++) {
+        unsigned int j = PrRandom() % (115 - i);
+        if (j != i) {
+            int tmp = noodlePolygonOrder[i];
+            noodlePolygonOrder[i] = noodlePolygonOrder[j];
+            noodlePolygonOrder[j] = tmp;
+        }
+    }
+    InitializeNoodlePositionData();
+}
 
 INCLUDE_ASM("asm/nonmatchings/prlib/mendererdata", PrGetNoodlePolygonPosition__FPt8NaVECTOR2Zfi4Ui);
 
