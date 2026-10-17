@@ -561,10 +561,10 @@
   "name": "ClearFrameBufferGifTag",
   "file": "os/syssub.c",
   "proto": 1058408,
-  "pal": null,
+  "pal": 1058424,
   "proto_size": 328,
   "est": 1058424,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "GGsSetLocalMoveImage",
@@ -678,19 +678,19 @@
   "name": "DrawGetFbpPos",
   "file": "os/syssub.c",
   "proto": 1060792,
-  "pal": null,
+  "pal": 1060488,
   "proto_size": 120,
   "est": 1060488,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "DrawGetTbpPos",
   "file": "os/syssub.c",
   "proto": 1060912,
-  "pal": null,
+  "pal": 1060608,
   "proto_size": 120,
   "est": 1060608,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "main",
@@ -705,28 +705,28 @@
   "name": "SetIopModule",
   "file": "os/system.c",
   "proto": 1061112,
-  "pal": null,
+  "pal": 1061096,
   "proto_size": 208,
   "est": 1061096,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "firstClrFrameBuffer",
   "file": "os/system.c",
   "proto": 1061320,
-  "pal": null,
+  "pal": 1061320,
   "proto_size": 304,
-  "est": 1061312,
-  "conf": "estimate"
+  "est": 1061320,
+  "conf": "anchored"
  },
  {
   "name": "initSystem",
   "file": "os/system.c",
   "proto": 1061624,
-  "pal": null,
+  "pal": 1061624,
   "proto_size": 688,
-  "est": 1061616,
-  "conf": "estimate"
+  "est": 1061624,
+  "conf": "anchored"
  },
  {
   "name": "exitSystem",
@@ -777,10 +777,10 @@
   "name": "mallocInit",
   "file": "os/system.c",
   "proto": 1062952,
-  "pal": null,
+  "pal": 1062912,
   "proto_size": 40,
   "est": 1062912,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "CmnGifInit",
@@ -1578,10 +1578,10 @@
   "name": "stDatFirstFileSearch",
   "file": "main/stdat.c",
   "proto": 1076672,
-  "pal": null,
+  "pal": 1075976,
   "proto_size": 360,
   "est": 1075976,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "GetCurrentTblNumber",
@@ -1722,28 +1722,28 @@
   "name": "vsTapdatSetMemorySave",
   "file": "main/scrctrl.c",
   "proto": 1079112,
-  "pal": null,
+  "pal": 1078424,
   "proto_size": 176,
   "est": 1078424,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "vsTapdatSetMemoryLoad",
   "file": "main/scrctrl.c",
   "proto": 1079288,
-  "pal": null,
+  "pal": 1078616,
   "proto_size": 152,
   "est": 1078616,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "vsTapdatSet",
   "file": "main/scrctrl.c",
   "proto": 1079440,
-  "pal": null,
+  "pal": 1078800,
   "proto_size": 552,
   "est": 1078800,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "vsTapdatSetMoto",
@@ -1821,10 +1821,10 @@
   "name": "ScrDrawTimeGetFrame",
   "file": "main/scrctrl.c",
   "proto": 1080696,
-  "pal": null,
+  "pal": 1080024,
   "proto_size": 184,
   "est": 1080024,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "KeyCntClear",
@@ -1839,10 +1839,10 @@
   "name": "ScrCtrlCurrentSearch",
   "file": "main/scrctrl.c",
   "proto": 1080928,
-  "pal": null,
+  "pal": 1080248,
   "proto_size": 176,
   "est": 1080248,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "ScrCtrlIndvInit",
@@ -1884,10 +1884,10 @@
   "name": "ScrCtrlIndvNextReadLine",
   "file": "main/scrctrl.c",
   "proto": 1081704,
-  "pal": null,
+  "pal": 1080976,
   "proto_size": 216,
   "est": 1080976,
-  "conf": "estimate?"
+  "conf": "anchored"
  },
  {
   "name": "getLvlTblRand",
@@ -1911,10 +1911,10 @@
   "name": "tapLevelChange",
   "file": "main/scrctrl.c",
   "proto": 1082176,
-  "pal": null,
+  "pal": 1081424,
   "proto_size": 512,
   "est": 1081424,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "ScrCtrlIndvNextRead",
@@ -2100,10 +2100,10 @@
   "name": "tapEventCheck",
   "file": "main/scrctrl.c",
   "proto": 1085792,
-  "pal": null,
+  "pal": 1084784,
   "proto_size": 2480,
   "est": 1084784,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "otehon_all_make",
@@ -2307,10 +2307,10 @@
   "name": "IndvGetTapSetAdrs",
   "file": "main/scrctrl.c",
   "proto": 1092184,
-  "pal": null,
+  "pal": 1091096,
   "proto_size": 80,
   "est": 1091096,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "nextExamTime",
@@ -2334,19 +2334,19 @@
   "name": "ExamScoreCheck",
   "file": "main/scrctrl.c",
   "proto": 1092520,
-  "pal": null,
+  "pal": 1091424,
   "proto_size": 1032,
   "est": 1091424,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "ExamScoreCheckSame",
   "file": "main/scrctrl.c",
   "proto": 1093552,
-  "pal": null,
+  "pal": 1092456,
   "proto_size": 504,
   "est": 1092456,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "levelChangeCheck",
@@ -2388,55 +2388,55 @@
   "name": "ScrExamSetCheck",
   "file": "main/scrctrl.c",
   "proto": 1095112,
-  "pal": null,
+  "pal": 1094008,
   "proto_size": 4328,
   "est": 1094008,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "subjobEvent",
   "file": "main/scrctrl.c",
   "proto": 1099440,
-  "pal": null,
+  "pal": 1098216,
   "proto_size": 1256,
-  "est": 1098208,
-  "conf": "estimate"
+  "est": 1098216,
+  "conf": "anchored"
  },
  {
   "name": "ScrCtrlIndvJob",
   "file": "main/scrctrl.c",
   "proto": 1100696,
-  "pal": null,
+  "pal": 1099456,
   "proto_size": 888,
-  "est": 1099448,
-  "conf": "estimate"
+  "est": 1099456,
+  "conf": "anchored"
  },
  {
   "name": "ScrTimeRenew",
   "file": "main/scrctrl.c",
   "proto": 1101584,
-  "pal": null,
+  "pal": 1100312,
   "proto_size": 544,
-  "est": 1100304,
-  "conf": "estimate"
+  "est": 1100312,
+  "conf": "anchored"
  },
  {
   "name": "ScrMbarReq",
   "file": "main/scrctrl.c",
   "proto": 1102128,
-  "pal": null,
+  "pal": 1100848,
   "proto_size": 416,
   "est": 1100848,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "allTimeCallbackTimeSetChanTempo",
   "file": "main/scrctrl.c",
   "proto": 1102544,
-  "pal": null,
+  "pal": 1101264,
   "proto_size": 272,
   "est": 1101264,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "SetIndvDrawTblLine",
@@ -2460,10 +2460,10 @@
   "name": "ScrCtrlMainLoop",
   "file": "main/scrctrl.c",
   "proto": 1103256,
-  "pal": null,
+  "pal": 1101976,
   "proto_size": 1424,
   "est": 1101976,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "GetTimeType",
@@ -2577,10 +2577,10 @@
   "name": "ScrEndCheckScore",
   "file": "main/scrctrl.c",
   "proto": 1106840,
-  "pal": null,
+  "pal": 1104984,
   "proto_size": 120,
   "est": 1104984,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "ScrEndCheckTitle",
@@ -2640,10 +2640,10 @@
   "name": "bngTapEventCheck",
   "file": "main/scrctrl.c",
   "proto": 1107120,
-  "pal": null,
+  "pal": 1105216,
   "proto_size": 192,
   "est": 1105216,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "bonusGameParaReq",
@@ -2694,10 +2694,10 @@
   "name": "bnNumberDisp",
   "file": "main/scrctrl.c",
   "proto": 1108288,
-  "pal": null,
+  "pal": 1106376,
   "proto_size": 560,
-  "est": 1106248,
-  "conf": "estimate"
+  "est": 1106376,
+  "conf": "anchored"
  },
  {
   "name": "bonusScoreDraw",
@@ -2721,10 +2721,10 @@
   "name": "LessonRoundDisp",
   "file": "main/scrctrl.c",
   "proto": 1109616,
-  "pal": null,
+  "pal": 1107712,
   "proto_size": 440,
   "est": 1107712,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "SprInit",
@@ -2865,10 +2865,10 @@
   "name": "SprWindowDf",
   "file": "main/sprite.c",
   "proto": 1112424,
-  "pal": null,
+  "pal": 1110576,
   "proto_size": 24,
   "est": 1110576,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "FadeCtrlMain",
@@ -2946,28 +2946,28 @@
   "name": "SubtCtrlInit",
   "file": "main/subt.c",
   "proto": 1114176,
-  "pal": null,
+  "pal": 1112328,
   "proto_size": 88,
   "est": 1112328,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "SubtCtrlPrint",
   "file": "main/subt.c",
   "proto": 1114264,
-  "pal": null,
+  "pal": 1112416,
   "proto_size": 200,
   "est": 1112416,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "SubtTapPrint",
   "file": "main/subt.c",
   "proto": 1114464,
-  "pal": null,
+  "pal": 1112616,
   "proto_size": 120,
   "est": 1112616,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "SubtMenuCtrlInit",
@@ -2982,10 +2982,10 @@
   "name": "SubtMenuCtrlPrint",
   "file": "main/subt.c",
   "proto": 1114624,
-  "pal": null,
+  "pal": 1112776,
   "proto_size": 104,
   "est": 1112776,
-  "conf": "estimate?"
+  "conf": "anchored"
  },
  {
   "name": "SubtMsgDataKaijyouCnt",
@@ -3009,19 +3009,19 @@
   "name": "SubtTapPrintWake",
   "file": "main/subt.c",
   "proto": 1115152,
-  "pal": null,
+  "pal": 1113304,
   "proto_size": 224,
   "est": 1113304,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "SubtCtrlPrintBoxyWipe",
   "file": "main/subt.c",
   "proto": 1115376,
-  "pal": null,
+  "pal": 1113528,
   "proto_size": 248,
   "est": 1113528,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "UseGsRegSet",
@@ -3918,10 +3918,10 @@
   "name": "CG_WaveInitEasy",
   "file": "main/effect.c",
   "proto": 1141624,
-  "pal": null,
+  "pal": 1139328,
   "proto_size": 168,
   "est": 1139328,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "UG_WaveDisp",
@@ -3945,10 +3945,10 @@
   "name": "UG_AlpDisp",
   "file": "main/effect.c",
   "proto": 1142648,
-  "pal": null,
+  "pal": 1140352,
   "proto_size": 744,
   "est": 1140352,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "CG_AlpDisp",
@@ -3963,10 +3963,10 @@
   "name": "UG_MozaikuDisp",
   "file": "main/effect.c",
   "proto": 1143488,
-  "pal": null,
+  "pal": 1141192,
   "proto_size": 480,
   "est": 1141192,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "CG_MozaikuDisp",
@@ -4809,10 +4809,10 @@
   "name": "GlobalInit",
   "file": "main/etc.c",
   "proto": 1162944,
-  "pal": null,
+  "pal": 1160632,
   "proto_size": 120,
   "est": 1160632,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "clearStageCheck",
@@ -4854,27 +4854,27 @@
   "name": "GlobalTimeJob",
   "file": "main/etc.c",
   "proto": 1163200,
-  "pal": null,
+  "pal": 1160880,
   "proto_size": 296,
   "est": 1160880,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "GlobalTimeGet",
   "file": "main/etc.c",
   "proto": 1163496,
-  "pal": 1161184,
+  "pal": 1161168,
   "proto_size": 16,
-  "est": 1161184,
+  "est": 1161168,
   "conf": "anchored"
  },
  {
   "name": "GlobalSndTimeGet",
   "file": "main/etc.c",
   "proto": 1163512,
-  "pal": 1161200,
+  "pal": 1161184,
   "proto_size": 16,
-  "est": 1161200,
+  "est": 1161184,
   "conf": "anchored"
  },
  {
@@ -4935,10 +4935,10 @@
   "name": "TimeCallback",
   "file": "main/etc.c",
   "proto": 1165088,
-  "pal": null,
+  "pal": 1162656,
   "proto_size": 56,
   "est": 1162656,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TimeCallbackSet",
@@ -4971,10 +4971,10 @@
   "name": "TimeCallbackTimeSetChanTempo",
   "file": "main/etc.c",
   "proto": 1165320,
-  "pal": null,
+  "pal": 1162856,
   "proto_size": 152,
   "est": 1162856,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TimeCallbackTimeGet",
@@ -5070,10 +5070,10 @@
   "name": "UsrPrSetScene",
   "file": "main/etc.c",
   "proto": 1165928,
-  "pal": null,
+  "pal": 1163448,
   "proto_size": 104,
   "est": 1163448,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "SpuBankSet",
@@ -5178,10 +5178,10 @@
   "name": "LocalBufCopy",
   "file": "main/wipe.c",
   "proto": 1167016,
-  "pal": null,
+  "pal": 1164472,
   "proto_size": 304,
   "est": 1164472,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "wipeTimeGetInWait",
@@ -5250,10 +5250,10 @@
   "name": "WipeLoadOutDisp",
   "file": "main/wipe.c",
   "proto": 1169288,
-  "pal": null,
+  "pal": 1166784,
   "proto_size": 360,
   "est": 1166784,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "WipeInReq",
@@ -5268,10 +5268,10 @@
   "name": "WipeLoadInDispSame",
   "file": "main/wipe.c",
   "proto": 1169728,
-  "pal": null,
+  "pal": 1167224,
   "proto_size": 168,
   "est": 1167224,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "WipeInReqSame",
@@ -5304,10 +5304,10 @@
   "name": "WipeYesNoDispTask",
   "file": "main/wipe.c",
   "proto": 1170104,
-  "pal": null,
+  "pal": 1167960,
   "proto_size": 368,
   "est": 1167960,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "wipeYesNoDispReq",
@@ -5817,10 +5817,10 @@
   "name": "cmnfTim2Trans",
   "file": "main/cmnfile.c",
   "proto": 1187328,
-  "pal": null,
+  "pal": 1183904,
   "proto_size": 128,
   "est": 1183904,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "cmnfGetFileAdrs",
@@ -5871,10 +5871,10 @@
   "name": "p3StrInit",
   "file": "main/p3str.c",
   "proto": 1187992,
-  "pal": null,
+  "pal": 1184656,
   "proto_size": 368,
   "est": 1184656,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "getTopSeekPos",
@@ -5952,10 +5952,10 @@
   "name": "p3StrPoll",
   "file": "main/p3str.c",
   "proto": 1190592,
-  "pal": null,
+  "pal": 1187200,
   "proto_size": 264,
   "est": 1187200,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "p3StrQuitSd",
@@ -6249,10 +6249,10 @@
   "name": "menuDrawReq",
   "file": "menu/menu.c",
   "proto": 1194544,
-  "pal": null,
+  "pal": 1191216,
   "proto_size": 48,
   "est": 1191216,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "menuDrawQuit",
@@ -6276,19 +6276,19 @@
   "name": "MenuCtrl",
   "file": "menu/menu.c",
   "proto": 1194744,
-  "pal": null,
+  "pal": 1191416,
   "proto_size": 656,
   "est": 1191416,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "P3LogInit",
   "file": "menu/menu.c",
   "proto": 1195400,
-  "pal": null,
+  "pal": 1192104,
   "proto_size": 16,
-  "est": 1192096,
-  "conf": "estimate"
+  "est": 1192104,
+  "conf": "anchored"
  },
  {
   "name": "MenuDataGetIconSysHed",
@@ -6492,37 +6492,37 @@
   "name": "MenuMsgPrintSub",
   "file": "menu/menudata.c",
   "proto": 1196808,
-  "pal": null,
+  "pal": 1193512,
   "proto_size": 32,
   "est": 1193512,
-  "conf": "estimate?"
+  "conf": "anchored"
  },
  {
   "name": "MenuMsgPrintMc",
   "file": "menu/menudata.c",
   "proto": 1196840,
-  "pal": null,
+  "pal": 1193552,
   "proto_size": 32,
   "est": 1193552,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "MenuMsgGetMessageMc",
   "file": "menu/menudata.c",
   "proto": 1196872,
-  "pal": null,
+  "pal": 1193592,
   "proto_size": 32,
   "est": 1193592,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "MenuMsgGetMessageSub",
   "file": "menu/menudata.c",
   "proto": 1196904,
-  "pal": null,
+  "pal": 1193592,
   "proto_size": 32,
-  "est": 1193624,
-  "conf": "estimate"
+  "est": 1193592,
+  "conf": "anchored"
  },
  {
   "name": "MenuRoundTim2Trans",
@@ -6582,10 +6582,10 @@
   "name": "MNScene_Init",
   "file": "menu/menu_mdl.c",
   "proto": 1197344,
-  "pal": null,
+  "pal": 1194184,
   "proto_size": 704,
   "est": 1194184,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "MNScene_End",
@@ -6915,10 +6915,10 @@
   "name": "TsBGMPlay",
   "file": "menu/menusub.c",
   "proto": 1205080,
-  "pal": null,
+  "pal": 1201920,
   "proto_size": 408,
   "est": 1201920,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TsBGMStop",
@@ -7365,10 +7365,10 @@
   "name": "MpCityHallParaStart",
   "file": "menu/menusub.c",
   "proto": 1227752,
-  "pal": null,
+  "pal": 1224696,
   "proto_size": 264,
-  "est": 1224688,
-  "conf": "estimate"
+  "est": 1224696,
+  "conf": "anchored"
  },
  {
   "name": "MpCityHallFPHSSoundMask",
@@ -7401,19 +7401,19 @@
   "name": "MpCityHallCharPosSet",
   "file": "menu/menusub.c",
   "proto": 1228672,
-  "pal": null,
+  "pal": 1225616,
   "proto_size": 240,
   "est": 1225616,
-  "conf": "estimate?"
+  "conf": "anchored"
  },
  {
   "name": "MpPopMenu_Flow",
   "file": "menu/menusub.c",
   "proto": 1228912,
-  "pal": null,
+  "pal": 1225856,
   "proto_size": 224,
-  "est": 1225752,
-  "conf": "estimate"
+  "est": 1225856,
+  "conf": "anchored"
  },
  {
   "name": "MpMapMenu_Flow",
@@ -7437,10 +7437,10 @@
   "name": "McErrorMess",
   "file": "menu/menusub.c",
   "proto": 1230712,
-  "pal": null,
+  "pal": 1227656,
   "proto_size": 512,
   "est": 1227656,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "McInitFlow",
@@ -7455,10 +7455,10 @@
   "name": "McStartCheckFlow",
   "file": "menu/menusub.c",
   "proto": 1231248,
-  "pal": null,
+  "pal": 1228192,
   "proto_size": 464,
   "est": 1228192,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "McUserCheckFlow",
@@ -7536,10 +7536,10 @@
   "name": "TsMCAMes_Flow",
   "file": "menu/menusub.c",
   "proto": 1236056,
-  "pal": null,
+  "pal": 1233000,
   "proto_size": 576,
   "est": 1233000,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TsMCAMes_Draw",
@@ -7977,10 +7977,10 @@
   "name": "TsUserList_SetCurTag",
   "file": "menu/menusub.c",
   "proto": 1261416,
-  "pal": null,
+  "pal": 1259152,
   "proto_size": 240,
   "est": 1259152,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TsUserList_Flow",
@@ -8130,28 +8130,28 @@
   "name": "TsSetCTransSpr",
   "file": "menu/menusub.c",
   "proto": 1272184,
-  "pal": null,
+  "pal": 1270240,
   "proto_size": 640,
   "est": 1270240,
-  "conf": "estimate?"
+  "conf": "anchored"
  },
  {
   "name": "TsSetSLTransSpr",
   "file": "menu/menusub.c",
   "proto": 1272824,
-  "pal": null,
+  "pal": 1270880,
   "proto_size": 480,
   "est": 1270880,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TsSetPNTransSpr",
   "file": "menu/menusub.c",
   "proto": 1273304,
-  "pal": null,
+  "pal": 1271360,
   "proto_size": 640,
   "est": 1271360,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TsPatTexFnc",
@@ -8166,10 +8166,10 @@
   "name": "_TsPatSetPrm",
   "file": "menu/menusub.c",
   "proto": 1273952,
-  "pal": null,
+  "pal": 1272008,
   "proto_size": 408,
   "est": 1272008,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TsPatPut",
@@ -8193,19 +8193,19 @@
   "name": "TsPatPutRZoom",
   "file": "menu/menusub.c",
   "proto": 1274544,
-  "pal": null,
+  "pal": 1272600,
   "proto_size": 384,
   "est": 1272600,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TsPatPutMZoom",
   "file": "menu/menusub.c",
   "proto": 1274928,
-  "pal": null,
+  "pal": 1272984,
   "proto_size": 288,
   "est": 1272984,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TsPatPutSwing",
@@ -8256,19 +8256,19 @@
   "name": "_TsCELBackObjDraw",
   "file": "menu/menusub.c",
   "proto": 1276208,
-  "pal": null,
+  "pal": 1274264,
   "proto_size": 1216,
   "est": 1274264,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "TsHosiPut",
   "file": "menu/menusub.c",
   "proto": 1277424,
-  "pal": null,
+  "pal": 1275480,
   "proto_size": 384,
   "est": 1275480,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "P3MC_GetIconSize",
@@ -9039,19 +9039,19 @@
   "name": "MENUSubtGetLine",
   "file": "menu/menufont.c",
   "proto": 1297712,
-  "pal": null,
+  "pal": 1295800,
   "proto_size": 112,
   "est": 1295800,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "MENUSubtPut",
   "file": "menu/menufont.c",
   "proto": 1297824,
-  "pal": null,
+  "pal": 1295912,
   "proto_size": 384,
   "est": 1295912,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "MENUFontPutL",
@@ -9102,19 +9102,19 @@
   "name": "_JPFont_GetSubtCode",
   "file": "menu/menufont.c",
   "proto": 1300480,
-  "pal": null,
+  "pal": 1298568,
   "proto_size": 440,
   "est": 1298568,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "_EGFont_GetSubtCode",
   "file": "menu/menufont.c",
   "proto": 1300920,
-  "pal": null,
+  "pal": 1298960,
   "proto_size": 352,
   "est": 1298960,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "codeKanjiCheck",
@@ -9516,19 +9516,19 @@
   "name": "PkMesh_Create",
   "file": "menu/pksprite.c",
   "proto": 1308208,
-  "pal": null,
+  "pal": 1306112,
   "proto_size": 152,
   "est": 1306112,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PkMesh_Delete",
   "file": "menu/pksprite.c",
   "proto": 1308360,
-  "pal": null,
+  "pal": 1306264,
   "proto_size": 80,
   "est": 1306264,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PkMesh_SetXYWH",
@@ -9660,10 +9660,10 @@
   "name": "PrInitializeDmaStripGifRegister__FG9sceGsZbuf",
   "file": "prlib/gifreg.cpp",
   "proto": 1311368,
-  "pal": null,
+  "pal": 1323864,
   "proto_size": 1304,
   "est": 1323864,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PrGetDmaStripGifRegister__F20PrSetGifRegisterMode",
@@ -9805,18 +9805,9 @@
   "file": "prlib/model.cpp",
   "proto": 1314240,
   "pal": 1326736,
-  "proto_size": 120,
+  "proto_size": 160,
   "est": 1326736,
   "conf": "anchored"
- },
- {
-  "name": "func_00140E38",
-  "file": "prlib/model.cpp",
-  "proto": 1314360,
-  "pal": null,
-  "proto_size": 40,
-  "est": 1326856,
-  "conf": "estimate"
  },
  {
   "name": "__16PrObjectDatabase",
@@ -10038,19 +10029,19 @@
   "name": "_GLOBAL_$D$prRenderStuff",
   "file": "prlib/renderstuff.cpp",
   "proto": 1316400,
-  "pal": null,
+  "pal": 1328896,
   "proto_size": 16,
   "est": 1328896,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "_GLOBAL_$I$prRenderStuff",
   "file": "prlib/renderstuff.cpp",
   "proto": 1316416,
-  "pal": null,
+  "pal": 1328912,
   "proto_size": 16,
   "est": 1328912,
-  "conf": "estimate?"
+  "conf": "anchored"
  },
  {
   "name": "AppendDmaTag__13PrRenderStuffPC10_sceDmaTag",
@@ -10650,36 +10641,36 @@
   "name": "PrGetVertexNum",
   "file": "prlib/prlib.cpp",
   "proto": 1318792,
-  "pal": null,
+  "pal": 1331304,
   "proto_size": 16,
-  "est": 1331288,
-  "conf": "estimate"
+  "est": 1331304,
+  "conf": "anchored"
  },
  {
   "name": "PrGetModelName",
   "file": "prlib/prlib.cpp",
   "proto": 1318808,
-  "pal": null,
+  "pal": 1331320,
   "proto_size": 16,
-  "est": 1331304,
-  "conf": "estimate"
+  "est": 1331320,
+  "conf": "anchored"
  },
  {
   "name": "PrGetAnimationName",
   "file": "prlib/prlib.cpp",
   "proto": 1318824,
-  "pal": null,
+  "pal": 1331336,
   "proto_size": 8,
-  "est": 1331320,
-  "conf": "estimate"
+  "est": 1331336,
+  "conf": "anchored"
  },
  {
   "name": "PrGetCameraName",
   "file": "prlib/prlib.cpp",
   "proto": 1318832,
-  "pal": 1331336,
+  "pal": 1331344,
   "proto_size": 8,
-  "est": 1331336,
+  "est": 1331344,
   "conf": "anchored"
  },
  {
@@ -10866,10 +10857,10 @@
   "name": "CalculateCurrentMatrix__13SpmFileHeaderP13PrModelObjectRCt8NaMATRIX3Zfi4i4",
   "file": "prlib/render.cpp",
   "proto": 1322832,
-  "pal": null,
+  "pal": 1335344,
   "proto_size": 128,
   "est": 1335344,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "CalculateCurrentMatrixAnimation__13SpmFileHeaderP13PrModelObjectRCt8NaMATRIX3Zfi4i4",
@@ -11028,10 +11019,10 @@
   "name": "ComposeGlobalMatrix__7SpmNodeP13PrModelObjectRCt8NaMATRIX3Zfi4i4",
   "file": "prlib/render.cpp",
   "proto": 1334744,
-  "pal": null,
+  "pal": 1348496,
   "proto_size": 120,
-  "est": 1348160,
-  "conf": "estimate"
+  "est": 1348496,
+  "conf": "anchored"
  },
  {
   "name": "func_00145E50",
@@ -11039,7 +11030,7 @@
   "proto": 1334864,
   "pal": null,
   "proto_size": 8,
-  "est": 1348352,
+  "est": 1348616,
   "conf": "estimate"
  },
  {
@@ -11048,7 +11039,7 @@
   "proto": 1334872,
   "pal": null,
   "proto_size": 888,
-  "est": 1348360,
+  "est": 1348624,
   "conf": "estimate"
  },
  {
@@ -11057,43 +11048,43 @@
   "proto": 1335760,
   "pal": null,
   "proto_size": 136,
-  "est": 1349240,
+  "est": 1349512,
   "conf": "estimate"
  },
  {
   "name": "RenderVertexEECoreBothface__13PrRenderStuff",
   "file": "prlib/renderee.cpp",
   "proto": 1335896,
-  "pal": null,
+  "pal": 1349648,
   "proto_size": 160,
-  "est": 1349376,
-  "conf": "estimate"
+  "est": 1349648,
+  "conf": "anchored"
  },
  {
   "name": "RenderVertexEECoreNormal__13PrRenderStuff",
   "file": "prlib/renderee.cpp",
   "proto": 1336056,
-  "pal": null,
+  "pal": 1349808,
   "proto_size": 192,
-  "est": 1349512,
-  "conf": "estimate"
+  "est": 1349808,
+  "conf": "anchored"
  },
  {
   "name": "RenderVertexEECoreRefmap__13PrRenderStuff",
   "file": "prlib/renderee.cpp",
   "proto": 1336248,
-  "pal": 1349796,
+  "pal": 1350000,
   "proto_size": 8,
-  "est": 1349796,
+  "est": 1350000,
   "conf": "anchored"
  },
  {
   "name": "RenderVertexEECoreContour__13PrRenderStuff",
   "file": "prlib/renderee.cpp",
   "proto": 1336256,
-  "pal": 1349796,
+  "pal": 1350008,
   "proto_size": 8,
-  "est": 1349796,
+  "est": 1350008,
   "conf": "anchored"
  },
  {
@@ -11102,7 +11093,7 @@
   "proto": 1336264,
   "pal": null,
   "proto_size": 816,
-  "est": 1349808,
+  "est": 1350016,
   "conf": "estimate"
  },
  {
@@ -11111,7 +11102,7 @@
   "proto": 1337080,
   "pal": null,
   "proto_size": 784,
-  "est": 1350824,
+  "est": 1350832,
   "conf": "estimate"
  },
  {
@@ -11120,7 +11111,7 @@
   "proto": 1337864,
   "pal": null,
   "proto_size": 8,
-  "est": 1351608,
+  "est": 1351616,
   "conf": "estimate"
  },
  {
@@ -11154,10 +11145,10 @@
   "name": "BlendTransactionWeight__12SpmShapeNodeP13PrModelObjectfUi",
   "file": "prlib/transition.cpp",
   "proto": 1338720,
-  "pal": null,
+  "pal": 1352472,
   "proto_size": 104,
   "est": 1352472,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "CalculateEntryPoint__Fv",
@@ -11262,10 +11253,10 @@
   "name": "SendDisplayHeader__12PrSPRAM_DATA",
   "file": "prlib/spram.cpp",
   "proto": 1342224,
-  "pal": null,
+  "pal": 1355976,
   "proto_size": 464,
   "est": 1355976,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "func_00147CE0",
@@ -11479,27 +11470,9 @@
   "file": "prlib/spadata.cpp",
   "proto": 1347640,
   "pal": 1361416,
-  "proto_size": 304,
+  "proto_size": 568,
   "est": 1361416,
   "conf": "anchored"
- },
- {
-  "name": "func_00149168",
-  "file": "prlib/spadata.cpp",
-  "proto": 1347944,
-  "pal": null,
-  "proto_size": 88,
-  "est": 1361720,
-  "conf": "estimate"
- },
- {
-  "name": "func_001491C0",
-  "file": "prlib/spadata.cpp",
-  "proto": 1348032,
-  "pal": null,
-  "proto_size": 176,
-  "est": 1361808,
-  "conf": "estimate"
  },
  {
   "name": "func_00149270",
@@ -11507,7 +11480,7 @@
   "proto": 1348208,
   "pal": null,
   "proto_size": 680,
-  "est": 1361984,
+  "est": 1361720,
   "conf": "estimate"
  },
  {
@@ -11559,10 +11532,10 @@
   "name": "GetValue__Ct8SpaTrack1Zt8NaMATRIX3Zfi4i4f",
   "file": "prlib/spadata.cpp",
   "proto": 1354416,
-  "pal": null,
+  "pal": 1368192,
   "proto_size": 304,
   "est": 1368192,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "func_0014ABE0",
@@ -11677,27 +11650,9 @@
   "file": "prlib/scene.cpp",
   "proto": 1357776,
   "pal": 1371552,
-  "proto_size": 440,
+  "proto_size": 520,
   "est": 1371552,
   "conf": "anchored"
- },
- {
-  "name": "func_0014B988",
-  "file": "prlib/scene.cpp",
-  "proto": 1358216,
-  "pal": null,
-  "proto_size": 40,
-  "est": 1371992,
-  "conf": "estimate"
- },
- {
-  "name": "func_0014B9B0",
-  "file": "prlib/scene.cpp",
-  "proto": 1358256,
-  "pal": null,
-  "proto_size": 40,
-  "est": 1372032,
-  "conf": "estimate"
  },
  {
   "name": "_$_t11PrObjectSet1Z13PrModelObject",
@@ -11721,10 +11676,10 @@
   "name": "AddShapePosition__12SpmShapeNodeUif",
   "file": "prlib/shape.cpp",
   "proto": 1359128,
-  "pal": null,
+  "pal": 1372904,
   "proto_size": 168,
   "est": 1372904,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "RenderShapeNode__12SpmShapeNodeP13PrModelObject",
@@ -11749,26 +11704,8 @@
   "file": "prlib/billboard.cpp",
   "proto": 1360824,
   "pal": null,
-  "proto_size": 304,
+  "proto_size": 568,
   "est": 1374600,
-  "conf": "estimate"
- },
- {
-  "name": "func_0014C4E8",
-  "file": "prlib/billboard.cpp",
-  "proto": 1361128,
-  "pal": null,
-  "proto_size": 88,
-  "est": 1374904,
-  "conf": "estimate"
- },
- {
-  "name": "func_0014C540",
-  "file": "prlib/billboard.cpp",
-  "proto": 1361216,
-  "pal": null,
-  "proto_size": 176,
-  "est": 1374992,
   "conf": "estimate"
  },
  {
@@ -12036,37 +11973,37 @@
   "name": "InitializeNoodleStripRendering__FUiUiUiUi",
   "file": "prlib/menderer.cpp",
   "proto": 1366592,
-  "pal": null,
+  "pal": 1380368,
   "proto_size": 88,
   "est": 1380368,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "GetRandom__Fv",
   "file": "prlib/menderer.cpp",
   "proto": 1366680,
-  "pal": null,
+  "pal": 1380456,
   "proto_size": 104,
   "est": 1380456,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "StageIndexForColor__Fv",
   "file": "prlib/menderer.cpp",
   "proto": 1366784,
-  "pal": null,
+  "pal": 1380560,
   "proto_size": 48,
   "est": 1380560,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "PushNoodleColor__FPUl",
   "file": "prlib/menderer.cpp",
   "proto": 1366832,
-  "pal": null,
+  "pal": 1380608,
   "proto_size": 944,
   "est": 1380608,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "DrawNoodleStripChunk__FRCt8NaMATRIX3Zfi4i4",
@@ -12090,10 +12027,10 @@
   "name": "PreDrawNoodleStrip__Fv",
   "file": "prlib/menderer.cpp",
   "proto": 1370320,
-  "pal": null,
+  "pal": 1384120,
   "proto_size": 160,
   "est": 1384120,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "DrawNoodleStrip__Fff",
@@ -12101,17 +12038,17 @@
   "proto": 1370480,
   "pal": null,
   "proto_size": 304,
-  "est": 1384320,
-  "conf": "estimate"
+  "est": 1384280,
+  "conf": "estimate?"
  },
  {
   "name": "StartNoodleRotation__Fv",
   "file": "prlib/menderer.cpp",
   "proto": 1370784,
-  "pal": null,
+  "pal": 1384584,
   "proto_size": 32,
   "est": 1384584,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "UpdateNoodleRotation__Fv",
@@ -12802,26 +12739,8 @@
   "file": "prlib/camera.cpp",
   "proto": 1390736,
   "pal": null,
-  "proto_size": 576,
+  "proto_size": 840,
   "est": 1404704,
-  "conf": "estimate"
- },
- {
-  "name": "func_00153AD0",
-  "file": "prlib/camera.cpp",
-  "proto": 1391312,
-  "pal": null,
-  "proto_size": 88,
-  "est": 1405280,
-  "conf": "estimate"
- },
- {
-  "name": "func_00153B28",
-  "file": "prlib/camera.cpp",
-  "proto": 1391400,
-  "pal": null,
-  "proto_size": 176,
-  "est": 1405368,
   "conf": "estimate"
  },
  {
@@ -12846,10 +12765,10 @@
   "name": "SaveContour__14SpmComplexNodeP13PrModelObject",
   "file": "prlib/contour.cpp",
   "proto": 1392424,
-  "pal": null,
+  "pal": 1406392,
   "proto_size": 368,
   "est": 1406392,
-  "conf": "estimate"
+  "conf": "anchored"
  },
  {
   "name": "ResetContour__13PrModelObject",
@@ -12874,36 +12793,9 @@
   "file": "prlib/dma.cpp",
   "proto": 1393640,
   "pal": 1407608,
-  "proto_size": 192,
+  "proto_size": 496,
   "est": 1407608,
   "conf": "anchored"
- },
- {
-  "name": "func_001544A8",
-  "file": "nalib/navector.cpp",
-  "proto": 1393832,
-  "pal": null,
-  "proto_size": 176,
-  "est": 1407800,
-  "conf": "estimate-xfile"
- },
- {
-  "name": "func_00154558",
-  "file": "nalib/navector.cpp",
-  "proto": 1394008,
-  "pal": null,
-  "proto_size": 40,
-  "est": 1407976,
-  "conf": "estimate-xfile"
- },
- {
-  "name": "func_00154580",
-  "file": "nalib/navector.cpp",
-  "proto": 1394048,
-  "pal": null,
-  "proto_size": 88,
-  "est": 1408016,
-  "conf": "estimate-xfile"
  },
  {
   "name": "func_001545D8",
