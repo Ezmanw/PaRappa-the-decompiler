@@ -131,6 +131,17 @@ public:
     void RenderContour(PrModelObject *model);
 };
 
+class SpmClusterGeometryNode {
+public:
+    void RenderClusterNode(PrModelObject *model);
+};
+
+class SpmShapeNode {
+public:
+    void AddShapePosition(u_int arg0, float arg1);
+    void RenderShapeNode(PrModelObject *model);
+};
+
 class PrModelObject {
 public:
     PrModelObject(SpmFileHeader *spm);

@@ -1,10 +1,12 @@
 #include "render.h"
 
 #include "dma.h"
+#include "gifreg.h"
 #include "model.h"
 #include "renderstuff.h"
 #include "scene.h"
 #include "spram.h"
+#include "vu0mat.h"
 
 #include <nalib/namatrix.h>
 
@@ -20,7 +22,7 @@ INCLUDE_ASM("asm/nonmatchings/prlib/render", Render__13PrSceneObject);
 
 #ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/prlib/render", InitializeVu1__13PrSceneObject);
-#else /* Uses tail call? */
+#else /* Retail is not a tail call; a0/a1 move order differs */
 void PrSceneObject::InitializeVu1() {
     PrVu1InitPacket *packet = (PrVu1InitPacket*)PR_UNCACHED(&initVu1DmaPacket);
     packet->zbuf     = prRenderStuff.m_zbuf;
@@ -34,10 +36,30 @@ void PrSceneObject::InitializeVu1() {
     chan->chcr.TTE = 0; /* Don't transfer the DMAtag */
 
     sceDmaSend(chan, &initVu1DmaPacket);
+    asm volatile("");
 }
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/prlib/render", PrepareScreenModelRender__13PrSceneObject);
+void PrSceneObject::PrepareScreenModelRender() {
+    prRenderStuff.StartRender(this);
+    prRenderStuff.m_transmit_array_size = 0;
+
+    PrDmaStripForSetGifRegister *strip = PrGetDmaStripGifRegister(eGifRegisterMode_Unk3);
+    prRenderStuff.AppendDmaTag(&strip->m_tag);
+
+    for (PrModelObject *model = m_screen_model_list; model != NULL; model = model->m_list.next) {
+        if (model->m_flags & 0x1) {
+            prSpramData->InitializeModel(model);
+            model->RenderScreenModelNode();
+        }
+    }
+
+    strip = PrGetDmaStripGifRegister(eGifRegisterMode_Unk1);
+    prRenderStuff.AppendDmaTag(&strip->m_tag);
+
+    prRenderStuff.SortTransmitDmaArray();
+    prRenderStuff.MergeRender();
+}
 
 INCLUDE_ASM("asm/nonmatchings/prlib/render", CalculateCurrentMatrix__13PrModelObject);
 

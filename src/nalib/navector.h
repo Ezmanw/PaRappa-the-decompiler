@@ -31,7 +31,7 @@ public:
         return false;
     }
 
-    static NaVECTOR<float, 4>& Copy(NaVECTOR<float, 4>& lhs, NaVECTOR<float, 4>& rhs) {
+    static NaVECTOR<float, 4>& Copy(NaVECTOR<float, 4>& lhs, const NaVECTOR<float, 4>& rhs) {
         asm volatile("
             lq $6, 0(%1)
             sq $6, 0(%0)
@@ -40,7 +40,7 @@ public:
         return lhs;
     }
 
-    NaVECTOR<float, 4>& operator=(NaVECTOR<float, 4>& rhs) {
+    NaVECTOR<float, 4>& operator=(const NaVECTOR<float, 4>& rhs) {
         return Copy(*this, rhs);
     }
 
