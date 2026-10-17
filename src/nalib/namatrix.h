@@ -42,7 +42,12 @@ public:
             sq $8, 0x20(%0)
             sq $9, 0x30(%0)
         " : : "r"(&lhs), "r"(&rhs)
+#ifdef VERSION_PAL
+        /* Retail lets loads be scheduled across the copy (no memory clobber). */
+        : "$6", "$7", "$8", "$9");
+#else
         : "$6", "$7", "$8", "$9", "memory");
+#endif
         return lhs;
     }
 
