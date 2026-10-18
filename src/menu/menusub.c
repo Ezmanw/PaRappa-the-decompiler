@@ -5073,7 +5073,177 @@ static void TsNAMEINBox_GetName(NAMEINW *pfw, u_char *name) {
     *name = '\0';
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsNAMEINBox_Flow);
+extern u_char *UserName_InitialStr2;
+
+/* static */ int TsNAMEINBox_Flow(int flg, NAMEINW *pfw, u_int tpad) {
+    int state;
+    int anm;
+    int pos;
+    int isMaru;
+    int chr;
+    int i;
+
+    if (flg == 1) {
+        TsANIME_Init(&pfw->awork);
+        pfw->isOn = 1;
+        pfw->isCan = 1;
+        pfw->nameMsk = 0;
+        pfw->onTime = 0;
+        pfw->desname = (char *)tpad;
+        pfw->state = 0;
+        pfw->dispType = 0;
+        if (pfw->desname[0] != '\0') {
+            pfw->curnpos = 8;
+        } else {
+            pfw->curnpos = 0;
+        }
+        pfw->curchrmode = 0;
+        return 0;
+    }
+
+    if (flg == 2) {
+        pfw->isOn = 0;
+        pfw->state = 0;
+        pfw->nameMsk = 0;
+        pfw->onTime = 0;
+        TsANIME_Init(&pfw->awork);
+        return 0;
+    }
+
+    if (flg == 3) {
+        if (pfw->isOn != 0 && pfw->state <= 0xff2f) {
+            TsANIME_Init(&pfw->awork);
+            pfw->nameMsk = 0;
+            pfw->state = 0xff30;
+        }
+        return 0;
+    }
+
+    anm = TsANIME_Poll(&pfw->awork);
+    state = pfw->state;
+
+    switch (state) {
+    case 0:
+        TsNAMEINBox_SetName(pfw, (u_char *)pfw->desname);
+        state = 0x80;
+        pfw->isOn = 1;
+        pfw->nameMsk = 1;
+        TsANIME_Start(&pfw->awork, 2, 15);
+        anm = TsANIME_Poll(&pfw->awork);
+        /* fallthrough */
+    case 0x80:
+        if (anm != 0) {
+            break;
+        }
+        /* fallthrough */
+    case 0x1000:
+        state = 0x4100;
+        /* fallthrough */
+    case 0x4100:
+        pos = pfw->curnpos;
+        if (tpad & 0x8000) {
+            pos--;
+        }
+        if (tpad & 0x2000) {
+            pos++;
+        }
+        if (pos < 8 && (tpad & 0x40)) {
+            pos++;
+            tpad &= ~0x40;
+        }
+        isMaru = tpad & 0x40;
+
+        if (pfw->curnpos != pos) {
+            pos = TSLOOP(pos, 9);
+            pfw->curnpos = pos;
+            pfw->curchrmode = pfw->curnchr[pos] >> 12;
+            TSSNDPLAY(VSND_MVCUS_LR);
+        }
+
+        if (pos < 8) {
+            pos = pfw->curchrmode;
+            if (tpad & 0x100) {
+                pos++;
+            }
+            if (pfw->curchrmode != pos) {
+                pfw->curchrmode = TSLOOP(pos, 2);
+                pfw->curnchr[pfw->curnpos] = (pfw->curnchr[pfw->curnpos] & 0xfff) | ((u_short)pfw->curchrmode << 12);
+                TSSNDPLAY(VSND_MVCUS_UD);
+            }
+
+            pos = pfw->curnchr[pfw->curnpos] & 0xfff;
+            chr = pos;
+            if (tpad & 0x1000) {
+                pos++;
+            }
+            if (tpad & 0x4000) {
+                pos--;
+            }
+            if (chr != pos) {
+                pfw->curnchr[pfw->curnpos] = TSLOOP(pos, UserName_CharSet[pfw->curchrmode].len - 1) | ((u_short)pfw->curchrmode << 12);
+                TSSNDPLAY(VSND_MVCUS_UD);
+            }
+        }
+
+        if (isMaru && pfw->curnpos == 8) {
+            pfw->onTime = 30;
+            TsNAMEINBox_GetName(pfw, (u_char *)pfw->desname);
+            state = 0xff00;
+            TSSNDPLAY(VSND_SELPOPUP);
+        }
+
+        if (pfw->isCan != 0 && (tpad & 0x10)) {
+            state = 0xff20;
+            TSSNDPLAY(VSND_CANCEL);
+        }
+
+        if (tpad & 0x80) {
+            for (i = 7; i >= 0; i--) {
+                TsNAMEINBox_SetName(pfw, UserName_InitialStr2);
+                pfw->curnpos = 0;
+            }
+            TSSNDPLAY(VSND_CANCEL);
+        }
+        break;
+    case 0xff00:
+        if (pfw->onTime != 0) {
+            pfw->onTime--;
+            break;
+        }
+        /* fallthrough */
+    case 0xff10:
+        pfw->nameMsk = 2;
+        TsANIME_Start(&pfw->awork, 3, 15);
+        state = 0xff18;
+        anm = TsANIME_Poll(&pfw->awork);
+        /* fallthrough */
+    case 0xff18:
+        if (anm != 0) {
+            break;
+        }
+        pfw->isOn = 0;
+        return 1;
+    case 0xff20:
+        TsNAMEINBox_Flow(3, pfw, 0);
+        return -2;
+    case 0xff30:
+        pfw->onTime = 0;
+        pfw->nameMsk = 0;
+        TsANIME_Start(&pfw->awork, 3, 15);
+        state = 0xff38;
+        anm = TsANIME_Poll(&pfw->awork);
+        /* fallthrough */
+    case 0xff38:
+        if (anm != 0) {
+            break;
+        }
+        pfw->isOn = 0;
+        return -1;
+    }
+
+    pfw->state = state;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsNAMEINBox_Draw);
 
