@@ -11478,10 +11478,10 @@
   "name": "func_00149270",
   "file": "prlib/spadata.cpp",
   "proto": 1348208,
-  "pal": null,
+  "pal": 1361984,
   "proto_size": 680,
-  "est": 1361720,
-  "conf": "estimate"
+  "est": 1361984,
+  "conf": "anchored"
  },
  {
   "name": "GetSprineValue__Ct8SpaTrack1ZfUif",
