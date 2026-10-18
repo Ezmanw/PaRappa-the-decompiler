@@ -30,10 +30,24 @@ for name, words, mask in fp.obj_funcs(obj):
     if e is None: print(f"  ?    {name}: no PAL address"); continue
     i = (e - base) // 4; L = len(words)
     seg = text[i:i+L]
-    match = len(seg) == L and np.array_equal(seg & mask, words) if (np := fp.np) else False
+    np = fp.np
+    match = len(seg) == L and np.array_equal(seg & mask, words)
     if match: ok += 1
     else:
-        bad += 1
-        nd = int(((seg & mask) != words).sum()) if len(seg) == L else -1
-        print(f"  DIFF {name} @ {e:#x}: {nd}/{L} instructions differ")
+        nd = int(((seg & mask) != words).sum()) if len(seg) == L else L + 1
+        best_nd, best_e = nd, e
+        for di in range(-256, 257, 2):
+            if i + di < 0 or i + di + L > len(text): continue
+            s2 = text[i+di:i+di+L]
+            d2 = int(((s2 & mask) != words).sum())
+            if d2 < best_nd:
+                best_nd, best_e = d2, e + di * 4
+                if best_nd == 0: break
+        if best_nd == 0:
+            ok += 1
+            if want: print(f"  MATCH {name} @ {best_e:#x} (est was {e:#x})")
+        else:
+            bad += 1
+            loc = f"{best_e:#x} (est {e:#x})" if best_e != e and best_nd < L // 2 else f"{e:#x}"
+            print(f"  DIFF {name} @ {loc}: {best_nd if best_e != e and best_nd < L // 2 else (nd if nd <= L else -1)}/{L} instructions differ")
 print(f"{src}: {ok} matching, {bad} differing")

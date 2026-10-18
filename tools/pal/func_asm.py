@@ -18,7 +18,7 @@ end = None
 for j in range(i + 1, len(m)):
     if m[j]['est'] is not None and m[j]['conf'] in ('anchored', 'estimate'):
         end = m[j]['est']; break
-if end is None or end - o['est'] > 4 * (o['proto_size'] or 0x4000):
+if end is None or end <= o['est'] or end - o['est'] > 4 * (o['proto_size'] or 0x4000):
     end = o['est'] + (o['proto_size'] or 0x400) + 0x40
 print(f"# {o['name']} ({o['file']}) PAL {o['est']:#x}..{end:#x} [{o['conf']}] proto {o['proto']:#x} size {o['proto_size']:#x}")
 out = subprocess.run(['mips-linux-gnu-objdump', '-d', '-z', '-m', 'mips:5900', '-EL', '-j', '.text',
