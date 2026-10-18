@@ -1531,7 +1531,76 @@ static void TsSetRanking2UData(USER_DATA *puser, P3MC_STAGERANK *wkRank) {
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsSetSaveData);
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsRestoreSaveData);
+typedef struct {
+    /* 0x00 */ GAME_STATUS base;
+#ifdef VERSION_PAL
+    /* 0xd0 */ long pad_pal;
+#endif
+} GAME_STATUS_PAL;
+
+typedef struct {
+    /* 0x000 */ int nRound;
+    /* 0x004 */ char name[12];
+    /* 0x010 */ char name1[12];
+    /* 0x01c */ char name2[12];
+    /* 0x028 */ u_int clrFlg[4];
+    /* 0x038 */ int clrCount[8];
+    /* 0x058 */ int clrVSCOM1[8];
+    /* 0x078 */ int clrCOOL[8];
+    /* 0x098 */ u_int logCOOL[8];
+#ifdef VERSION_PAL
+    /* 0x0b8 */ u_int game_status[54];
+#else
+    /* 0x0b8 */ GAME_STATUS game_status;
+#endif
+} P3LOG_VAL_PAL;
+
+/* static */ void TsRestoreSaveData(MCRWDATA_HDL *pDataW, int mode) {
+    int i;
+
+    if (pDataW->pMemTop == NULL) {
+        return;
+    }
+
+    switch (mode) {
+    case 1:
+        *UserWork = pDataW->pHead->user;
+        *(P3LOG_VAL_PAL *)pP3GameState->pLog = *(P3LOG_VAL_PAL *)pDataW->pData;
+        *(GAME_STATUS_PAL *)pP3GameState->pGameStatus = *(GAME_STATUS_PAL *)&pP3GameState->pLog->game_status;
+
+        CurFileInfo.logFileNo = pDataW->pHead->user.fileNo;
+        memcpy(CurFileInfo.logDate, &pDataW->pHead->user.date_day, 8);
+
+        for (i = 0; i < 8; i++) {
+            pCStageRank[i] = UserWork->stageRank[i];
+        }
+        break;
+    case 2:
+        *pP3GameState->pReplayArea = *(MC_REP_STR *)pDataW->pData;
+
+        switch (pDataW->pHead->user.isVs) {
+        case 0:
+            pP3GameState->nMode = 0;
+            pP3GameState->vsLev = 0;
+            break;
+        case 1:
+            pP3GameState->nMode = pDataW->pHead->user.isVs;
+            pP3GameState->vsLev = 0;
+            break;
+        case 2:
+            pP3GameState->nMode = pDataW->pHead->user.isVs;
+            pP3GameState->vsLev = pDataW->pHead->user.vsLev;
+            if (pP3GameState->vsLev >= 4) {
+                pP3GameState->vsLev = 3;
+            }
+            break;
+        }
+        pP3GameState->nStage = pDataW->pHead->user.stageNo;
+        CurFileInfo.repFileNo = pDataW->pHead->user.fileNo;
+        memcpy(CurFileInfo.repDate, &pDataW->pHead->user.date_day, 8);
+        break;
+    }
+}
 
 int DateChgInt(u_int n) {
     /* Convert BCD to decimal */
@@ -4096,7 +4165,84 @@ static int TsANIME_GetRate(ANIME_WK *wk, float *rt0, float *rt1, float *rt2) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsGetRankingList);
+extern u_char *UserName_RankingNoSave;
+extern RANKLIST RankLst[20];
+
+/* static */ RANKLIST* TsGetRankingList(int flag, int vsLev, int stageNo, int *nrank) {
+    P3MC_RANKSCORE *ptRank[20];
+    int             i;
+    int             n;
+    int             cnt;
+    USER_DATA      *puser;
+    int             nRank;
+    P3MC_RANKSCORE *pRank;
+
+    for (i = 19; i >= 0; i--) {
+        ptRank[i] = NULL;
+    }
+
+    if (flag == 0) {
+        nRank = pCStageRank[stageNo].nSplay;
+        pRank = pCStageRank[stageNo].splay;
+    } else {
+        nRank = pCStageRank[stageNo].nVplay[vsLev];
+        pRank = pCStageRank[stageNo].vplay[vsLev];
+    }
+    _TsSortSetRanking(ptRank, nRank, pRank, 1);
+
+    n = P3MC_SortUser(UserLst, 1, 0);
+    for (i = 0; i < n; i++) {
+        puser = UserLst->pUserTbl[i];
+        if (puser->flg == 1) {
+            int nRank2;
+            P3MC_RANKSCORE *pRank2;
+            if (flag == 0) {
+                nRank2 = puser->stageRank[stageNo].nSplay;
+                pRank2 = puser->stageRank[stageNo].splay;
+            } else {
+                nRank2 = puser->stageRank[stageNo].nVplay[vsLev];
+                pRank2 = puser->stageRank[stageNo].vplay[vsLev];
+            }
+            _TsSortSetRanking(ptRank, nRank2, pRank2, 1);
+        }
+    }
+
+    n = P3MC_SortUser(UserLst, 2, 0);
+    for (i = 0; i < n; i++) {
+        puser = UserLst->pUserTbl[i];
+        if (puser->flg == 1) {
+            int nRank3;
+            P3MC_RANKSCORE *pRank3;
+            if (flag == 0) {
+                if (puser->isVs != 0) {
+                    continue;
+                }
+                nRank3 = puser->stageRank[stageNo].nSplay;
+                pRank3 = puser->stageRank[stageNo].splay;
+            } else {
+                if (puser->isVs != 2) {
+                    continue;
+                }
+                nRank3 = puser->stageRank[stageNo].nVplay[vsLev];
+                pRank3 = puser->stageRank[stageNo].vplay[vsLev];
+            }
+            _TsSortSetRanking(ptRank, nRank3, pRank3, 0);
+        }
+    }
+
+    cnt = 0;
+    for (i = 0; i < 20 && ptRank[i] != NULL; i++, cnt++) {
+        RankLst[i].score = ptRank[i]->score;
+        memcpy(RankLst[i].name, ptRank[i]->name, 8);
+        RankLst[i].name[8] = '\0';
+        if (RankLst[i].name[0] == '\0') {
+            strcpy(RankLst[i].name, UserName_RankingNoSave);
+        }
+    }
+
+    *nrank = cnt;
+    return RankLst;
+}
 
 void TsPopCusAOff(POPCTIM *pfw) {
     POPCOFF *poff;

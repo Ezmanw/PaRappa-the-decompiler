@@ -980,14 +980,13 @@ static int DrawObjStrDisp(SCENE_OBJDATA *scn_pp, int num, u_int time, int sw) {
         objstr_pp->loop_pp = NULL;
     }
 
-    objctrl_pp = objstr_pp->objctrl_pp;
-
-    if (time <= objstr_pp->PRtime) {
-        time = 0;
-    } else {
+    if (time > objstr_pp->PRtime) {
         time -= objstr_pp->PRtime;
+    } else {
+        time = 0;
     }
 
+    objctrl_pp = objstr_pp->objctrl_pp;
     tmp_time = time;
 
     for (i = 0; i < objstr_pp->size; i++, objctrl_pp++) {
@@ -1201,11 +1200,7 @@ static int DrawObjStrDisp(SCENE_OBJDATA *scn_pp, int num, u_int time, int sw) {
                 endflag = TRUE;
                 ret = TRUE;
                 break;
-            case OCTRL_TCTRL:
-            case OCTRL_BTHROW:
-            case OCTRL_BHIT:
-            case OCTRL_ANIPOSXX:
-            case OCTRL_MOZAIKU:
+            default:
                 break;
             }
 
