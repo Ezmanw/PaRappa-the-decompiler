@@ -20,7 +20,11 @@ extern "C" void func_0014CD38(NaGifPacket *p) {
     func_0014CDA8(p, 63, 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/depthfield", func_0014CD48);
+#include <libgifpk.h>
+
+extern "C" void func_0014CD48(NaGifPacket *p, bool ate, int atst, u_char aref, int afail, bool date, int datm, bool zte, int ztst) {
+    func_0014CDA8(p, SCE_GS_TEST_1, SCE_GS_SET_TEST_1(ate, atst, aref, afail, date, datm, zte, ztst));
+}
 
 INCLUDE_ASM("asm/nonmatchings/prlib/depthfield", func_0014CDA0);
 

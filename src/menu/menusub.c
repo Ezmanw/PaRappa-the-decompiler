@@ -983,6 +983,8 @@ static inline int PrBcdInt(u_int n) {
     return (((n / 16) * 10) + (n % 16));
 }
 
+void sceScfGetLocalTimefromRTC(sceCdCLOCK *rtc);
+
 static void TsMENU_GetMapTimeState(int flg) {
     /* sdata 3997d4 */ extern int nTim; /* static */
     int         err;
@@ -1013,6 +1015,9 @@ static void TsMENU_GetMapTimeState(int flg) {
     err = sceCdReadClock(&clock);
     mptim->date_pad = rand() % 200;
     if (err != 0 && clock.stat == 0) {
+#ifdef VERSION_PAL
+        sceScfGetLocalTimefromRTC(&clock);
+#endif
         mptim->date_second = clock.second;
         mptim->date_minute = clock.minute;
         mptim->date_hour = clock.hour;
@@ -1178,6 +1183,8 @@ void TsMenu_RankingClear(void) {
     }
 }
 
+u_int UsrMemEndAlloc(int size);
+
 void TsMenu_Init(int iniflg, P3GAMESTATE *pstate) {
     int   i;
     void *ptim2;
@@ -1186,11 +1193,19 @@ void TsMenu_Init(int iniflg, P3GAMESTATE *pstate) {
 
     PrSetStage(0);
 
+#ifdef VERSION_PAL
+    P3MC_SetCheckSaveSize(1, 0x8c, 0x190);
+#else
     P3MC_SetCheckSaveSize(1, 0x8c, 0x188);
+#endif
     P3MC_SetCheckSaveSize(2, 0xa0, 0x4528);
 
     if (!iniflg) {
+#ifdef VERSION_PAL
+        MENUSubt_PadFontSw(1);
+#else
         MENUSubt_PadFontSw(0);
+#endif
         TsMemCardCheck_Flow(1, 0);
     } else {
         MENUSubt_PadFontSw(1);
@@ -1213,9 +1228,15 @@ void TsMenu_Init(int iniflg, P3GAMESTATE *pstate) {
             MNScene_DispSw(&MNS_StgCounter[i], 0);
         }
 
+#ifdef VERSION_PAL
+        tblTex = (TSTEX_INF*)UsrMemEndAlloc(sizeof(TSTEX_INF) * 108);
+
+        for (i = 0; i < 108; i++) {
+#else
         tblTex = (TSTEX_INF*)malloc(sizeof(TSTEX_INF) * 104);
 
         for (i = 0; i < 104; i++) {
+#endif
             switch (TexTable[i].flg) {
             case 0:
                 TsGetTm2HedTex(TexTable[i].fno, &tblTex[i]);
@@ -1233,11 +1254,19 @@ void TsMenu_Init(int iniflg, P3GAMESTATE *pstate) {
         }
     }
 
+#ifdef VERSION_PAL
+    UserLst = (P3MC_USRLST*)UsrMemEndAlloc(sizeof(P3MC_USRLST));
+#else
     UserLst = (P3MC_USRLST*)memalign(16, sizeof(P3MC_USRLST));
+#endif
     memset(UserLst, 0, sizeof(*UserLst));
     P3MC_CheckChangeSet();
 
+#ifdef VERSION_PAL
+    UserDispWork = (MN_USERLST_WORK*)UsrMemEndAlloc(sizeof(MN_USERLST_WORK));
+#else
     UserDispWork = (MN_USERLST_WORK*)memalign(16, sizeof(MN_USERLST_WORK));
+#endif
     memset(UserDispWork, 0, sizeof(*UserDispWork));
 
     TsInitUPacket(&MnPkt, NULL, 0x20000);
@@ -2166,7 +2195,224 @@ INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsMakeUserWork);
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", MpSave_Flow);
+extern USERLISTTYPE_TABLE ULTypeT_SAVE_LOG;
+extern USERLISTTYPE_TABLE ULTypeT_SAVE_REPLAY;
+
+/* static */ int MpSave_Flow(int flg, u_int tpad, u_int tpad2) {
+    extern int state_tmp_mpsave;
+    extern int saveMode_tmp_mpsave;
+    extern int waitTime_tmp_mpsave;
+    int ret;
+    int chkMode;
+
+    if (flg == 1) {
+        if (tpad == 0) {
+            saveMode_tmp_mpsave = 1;
+        } else {
+            saveMode_tmp_mpsave = tpad;
+        }
+        CurMapOldFlg = -1;
+        MNScene_DispSw(&MNS_CityHall, 0);
+        MNScene_DispSw(&MNS_StageMap, 1);
+        TsMENU_SetMapScreen(0);
+        TsCMPMes_SetMes(-1);
+        state_tmp_mpsave = 0;
+        return 0;
+    }
+
+    switch (state_tmp_mpsave) {
+    case 0:
+        state_tmp_mpsave = 0x1000;
+        /* fallthrough */
+    case 0x1000:
+        TsSaveMenu_Flow(1, saveMode_tmp_mpsave - 1);
+        TsUserList_Flow(1, 0, 0);
+        state_tmp_mpsave = 0x1010;
+        /* fallthrough */
+    case 0x1010:
+        ret = TsSaveMenu_Flow(0, tpad);
+        if (ret != 0) {
+            saveMode_tmp_mpsave = ret;
+            if (ret < 3) {
+                if (ret > 0) {
+                    state_tmp_mpsave = 0x2000;
+                    break;
+                }
+            }
+            state_tmp_mpsave = 0xf000;
+        }
+        break;
+    case 0x2000:
+        TsCMPMes_SetMes(-1);
+        McInitFlow();
+        state_tmp_mpsave = 0x2010;
+        /* fallthrough */
+    case 0x2010:
+        if (saveMode_tmp_mpsave != 1) {
+            chkMode = 2;
+        } else {
+            chkMode = 1;
+        }
+        ret = McUserCheckFlow(2, chkMode, NULL);
+        if (ret < 0) {
+            break;
+        }
+        if (ret > 0 && ret < 3) {
+            TsMENU_GetMapTimeState(1);
+            MpSave_Flow(1, saveMode_tmp_mpsave, 0);
+            if (UserList_Sw != 0) {
+                state_tmp_mpsave = 0x5000;
+            } else {
+                state_tmp_mpsave = 0;
+            }
+            break;
+        }
+        state_tmp_mpsave = 0x2020;
+        break;
+    case 0x2020:
+        if (saveMode_tmp_mpsave != 1) {
+            chkMode = 2;
+        } else {
+            chkMode = 1;
+        }
+        TsMakeUserWork(chkMode);
+        state_tmp_mpsave = 0x2030;
+        /* fallthrough */
+    case 0x2030:
+        if (TsSCFADE_Set(2, 0x14, 0)) {
+            return 0;
+        }
+        state_tmp_mpsave = 0x2040;
+        /* fallthrough */
+    case 0x2040:
+        MNScene_DispSw(&MNS_CityHall, 0);
+        MNScene_DispSw(&MNS_StageMap, 0);
+        if (saveMode_tmp_mpsave == 1) {
+            TsUserList_SetType(&ULTypeT_SAVE_LOG, pP3GameState->nMode, 0);
+        } else {
+            TsUserList_SetType(&ULTypeT_SAVE_REPLAY, pP3GameState->nMode, 0);
+        }
+        UserList_Sw = 1;
+        state_tmp_mpsave = 0x2050;
+        /* fallthrough */
+    case 0x2050:
+        if (TsSCFADE_Set(1, 0x14, 0) >= 9) {
+            break;
+        }
+        state_tmp_mpsave = 0x2060;
+        /* fallthrough */
+    case 0x2060:
+        ret = TsUserList_Flow(0, tpad, tpad2);
+        if (ret == 0) {
+            return 0;
+        }
+        McInitFlow();
+        switch (ret) {
+        case 1:
+            state_tmp_mpsave = 0x3100;
+            break;
+        case -1:
+            state_tmp_mpsave = 0x5000;
+            break;
+        case -3:
+            state_tmp_mpsave = 0x2200;
+            break;
+        default:
+            return 0;
+        }
+        break;
+    case 0x2200:
+        state_tmp_mpsave = 0x2210;
+        /* fallthrough */
+    case 0x2210:
+        state_tmp_mpsave = 0x2000;
+        break;
+    case 0x3100:
+        UserWork->fileNo = TsUserList_GetCurFileNo(NULL);
+        state_tmp_mpsave = 0x3110;
+        /* fallthrough */
+    case 0x3110:
+        ret = McUserSaveFlow(UserWork);
+        if (ret < 0) {
+            TsUserList_SetCurDispUserData(UserWork);
+            return 0;
+        }
+        if (ret != 0) {
+            if (ret == 1) {
+                state_tmp_mpsave = 0x2020;
+            }
+            if (ret == 2) {
+                state_tmp_mpsave = 0x5000;
+            }
+            if (ret == 4) {
+                state_tmp_mpsave = 0x2200;
+                break;
+            }
+            return 0;
+        }
+        /* fallthrough */
+    case 0x4000:
+    case 0x4010:
+        if (saveMode_tmp_mpsave == 1) {
+            saveMode_tmp_mpsave = 2;
+        } else {
+            saveMode_tmp_mpsave = 1;
+        }
+        TsSaveSuccessProc();
+        waitTime_tmp_mpsave = 0;
+        state_tmp_mpsave = 0x4020;
+        /* fallthrough */
+    case 0x4020:
+        TsCMPMes_SetMes(-1);
+        if (++waitTime_tmp_mpsave >= 35) {
+            waitTime_tmp_mpsave = 0;
+            state_tmp_mpsave = 0x5000;
+        } else {
+            break;
+        }
+        /* fallthrough */
+    case 0x5000:
+        if (TsSCFADE_Set(2, 0x14, 0)) {
+            return 0;
+        }
+        TsUserList_Flow(2, 0, 0);
+        UserList_Sw = 0;
+        TsMENU_GetMapTimeState(1);
+        MpSave_Flow(1, saveMode_tmp_mpsave, 0);
+        state_tmp_mpsave = 0x5020;
+        /* fallthrough */
+    case 0x5020:
+        if (TsSCFADE_Set(1, 0x14, 0) < 9) {
+            state_tmp_mpsave = 0;
+            break;
+        }
+        return 0;
+    case 0xf000:
+        if (pP3GameState->pAutoMove == NULL) {
+            TsBGMMute(20);
+        }
+        state_tmp_mpsave = 0xf005;
+        /* fallthrough */
+    case 0xf005:
+        if (TsSCFADE_Set(2, 0x1e, 0) >= 2) {
+            break;
+        }
+        state_tmp_mpsave = 0xf010;
+        /* fallthrough */
+    case 0xf010:
+        if (pP3GameState->pLog->name[0] != 0) {
+            TsSetRankingName(pCStageRank, pP3GameState->pLog->name);
+            TsSetRanking2UData(UserWork, pCStageRank);
+        } else if (pP3GameState->pLog->name1[0] != 0) {
+            TsSetRankingName(pCStageRank, pP3GameState->pLog->name1);
+            TsSetRanking2UData(UserWork, pCStageRank);
+        }
+        TsMENU_GetMapTimeState(1);
+        return 1;
+    }
+
+    return 0;
+}
 
 static int MpCityHall_Flow(int flg, u_int tpad, u_int tpad2) {
     /* TODO: Fix names once made static. */
@@ -2558,6 +2804,14 @@ static int MpCityHall_Flow(int flg, u_int tpad, u_int tpad2) {
         if (++waitTime_tmp_271 >= 35) {
             waitTime_tmp_271 = 0;
             TsSet_ParappaCapColor();
+#ifdef VERSION_PAL
+            {
+                void func_00103028(void);
+                void MenuLangTim2Trans(int lang);
+                func_00103028();
+                MenuLangTim2Trans(game_status.language_type);
+            }
+#endif
             if (MapCHall_tmp_272.curPos == 2) {
                 state_tmp_270 = 0xf010;
             } else {
@@ -2908,7 +3162,202 @@ static int MpPopMenu_Flow(int flg, u_int tpad) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", MpMapMenu_Flow);
+/* static */ int MpMapMenu_Flow(int flg, MAPPOS *mpw, u_int tpad) {
+    int       state;
+    int       posNo;
+    int       dir;
+    int       anmNo;
+    MNMAPPOS *mpos;
+
+    if (flg == 1) {
+        mpw->state = 0;
+        mpw->anmStop = 0;
+        mpw->bMove = 0;
+        mpw->curPos = 0;
+        mpw->mvFlag = 0;
+        MENUSubt_PadFontArrowSet(0);
+        return 0;
+    }
+
+    if (flg == 3) {
+        mpw->curPos = tpad;
+        if (mpw->mnmap != NULL) {
+            mpos = &mpw->mnmap[tpad];
+            mpw->mvFlag = _MapGetMovableDir(mpw);
+            MENUSubt_PadFontArrowSet(mpw->mvFlag);
+            TsCMPMes_SetMes(mpos->cmpmes);
+            if (mpw->pscene != NULL) {
+                if (mpw->panime != NULL) {
+                    anmNo = mpos->posanm0;
+                    mpw->anmBit = 0x80000000;
+                    if (anmNo != -1) {
+                        mpw->anmBit |= MNScene_StartAnime(mpw->pscene, -1, &mpw->panime[anmNo]);
+                    }
+                    anmNo = mpos->posanm1;
+                    if (anmNo != -1) {
+                        mpw->anmBit |= MNScene_StartAnime(mpw->pscene, -1, &mpw->panime[anmNo]);
+                    }
+                    MNScene_SetAnimeEnd(mpw->pscene);
+                }
+            }
+        }
+        mpw->anmtrg = 0;
+        return 0;
+    }
+
+    if (flg == 4) {
+        anmNo = mpw->curPos;
+        if (mpw->mnmap == NULL) {
+            return 0;
+        }
+        mpos = &mpw->mnmap[anmNo];
+        for (dir = 0; dir < 4; dir++) {
+            if (tpad == mpos->mapdir[dir].mapNo) {
+                break;
+            }
+        }
+        if (dir >= 4) {
+            return 0;
+        }
+        posNo = mpos->mapdir[dir].mapNo & ~0x8000;
+        if (mpw->lmtPos != 0) {
+            if (posNo >= mpw->lmtPos) {
+                return 0;
+            }
+            if (mpos->mapdir[dir].mapNo & 0x8000) {
+                if (anmNo == (mpw->lmtPos - 1) || posNo == (mpw->lmtPos - 1)) {
+                    return 0;
+                }
+            }
+        }
+        mpw->curPos = posNo;
+        mpw->anmLtim = mpos->mapdir[dir].anmLtim;
+        if (mpw->pscene != NULL && mpw->panime != NULL) {
+            anmNo = mpos->movanm1;
+            mpw->bMove = 1;
+            mpw->anmBit = 0x80000000;
+            if (anmNo != -1) {
+                mpw->anmBit |= MNScene_StartAnime(mpw->pscene, -1, &mpw->panime[anmNo]);
+            }
+            anmNo = mpos->mapdir[dir].anmNo;
+            if (anmNo != -1) {
+                mpw->anmBit |= MNScene_StartAnime(mpw->pscene, -1, &mpw->panime[anmNo]);
+            }
+        }
+        mpw->anmtrg = mpos->mapdir[dir].exflg;
+        mpw->sndtrg = 1;
+        mpw->state = 0x1100;
+        return 0;
+    }
+
+    if (mpw->mnmap == NULL) {
+        return 0;
+    }
+
+    state = mpw->state;
+    posNo = mpw->curPos;
+    mpw->anmtrg = 0;
+    mpw->sndtrg = 0;
+    mpw->anmStop = 0;
+
+    switch (state) {
+    case 0:
+        mpw->bMove = 0;
+        state = 0x1000;
+        /* fallthrough */
+    case 0x1000:
+        mpos = &mpw->mnmap[posNo];
+        if (mpw->bMove != 0) {
+            if (!TsAnimeWait_withKeySkip(tpad, mpw->pscene, 0, mpw->anmBit)) {
+                mpw->bMove = 0;
+                if (mpw->pscene != NULL && mpw->panime != NULL) {
+                    anmNo = mpos->posanm0;
+                    mpw->anmBit = 0x80000000;
+                    if (anmNo != -1) {
+                        mpw->anmBit |= MNScene_StartAnime(mpw->pscene, -1, &mpw->panime[anmNo]);
+                    }
+                    anmNo = mpos->posanm1;
+                    if (anmNo != -1) {
+                        mpw->anmBit |= MNScene_StartAnime(mpw->pscene, -1, &mpw->panime[anmNo]);
+                    }
+                    MNScene_SetAnimeBankEnd(mpw->pscene, mpw->anmBit);
+                }
+            }
+        }
+
+        dir = -1;
+        mpw->mvFlag = _MapGetMovableDir(mpw);
+        MENUSubt_PadFontArrowSet(mpw->mvFlag);
+        TsCMPMes_SetMes(mpos->cmpmes);
+
+        if (tpad & 0x40) {
+            mpw->sndtrg = 2;
+            state = 0x1200;
+        } else if (tpad & 0x10) {
+            mpw->sndtrg = 3;
+            state = 0x1f00;
+        }
+
+        if (tpad & 0x8000) {
+            dir = 0;
+        } else if (tpad & 0x2000) {
+            dir = 1;
+        } else if (tpad & 0x1000) {
+            dir = 2;
+        } else if (tpad & 0x4000) {
+            dir = 3;
+        }
+
+        if (dir >= 0) {
+            if ((mpw->mvFlag >> dir) & 1) {
+                posNo = mpos->mapdir[dir].mapNo;
+                if (posNo != -1) {
+                    posNo &= ~0x8000;
+                    mpw->curPos = posNo;
+                    mpw->anmLtim = mpos->mapdir[dir].anmLtim;
+                    if (mpw->pscene != NULL && mpw->panime != NULL) {
+                        anmNo = mpos->movanm1;
+                        mpw->bMove = 1;
+                        mpw->anmBit = 0x80000000;
+                        if (anmNo != -1) {
+                            mpw->anmBit |= MNScene_StartAnime(mpw->pscene, -1, &mpw->panime[anmNo]);
+                        }
+                        anmNo = mpos->mapdir[dir].anmNo;
+                        if (anmNo != -1) {
+                            mpw->anmBit |= MNScene_StartAnime(mpw->pscene, -1, &mpw->panime[anmNo]);
+                        }
+                    }
+                    mpw->anmtrg = mpos->mapdir[dir].exflg;
+                    mpw->sndtrg = 1;
+                    state = 0x1100;
+                }
+            }
+        }
+        break;
+    case 0x1100:
+        if (!TsAnimeWait_withKeySkip(tpad, mpw->pscene, mpw->anmLtim, mpw->anmBit)) {
+            mpw->anmStop = 1;
+            state = 0x1000;
+        }
+        break;
+    case 0x1200:
+        state = 0x2000;
+        break;
+    case 0x2000:
+    case 0xf000:
+        mpw->state = 0;
+        MENUSubt_PadFontArrowSet(0);
+        return 1;
+    case 0x1f00:
+    case 0xf010:
+        mpw->state = 0;
+        MENUSubt_PadFontArrowSet(0);
+        return -1;
+    }
+
+    mpw->state = state;
+    return 0;
+}
 
 static int _MapGetMovableDir(MAPPOS *mpw) {
     int       posNo, ret, DirMask;
@@ -3313,7 +3762,83 @@ static void TsMCAMes_Flow(u_int tpad) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsMCAMes_Draw);
+extern PATPOS PAT_ALERT_WIN_ABOVE;
+extern PATPOS PAT_ALERT_WIN_CENTER;
+extern PATPOS PAT_ALERT_WIN_BELOW;
+extern PATPOS PAT_ALERT_WIN_FFACE[];
+
+/* static */ void TsMCAMes_Draw(SPR_PKT pk, SPR_PRM *spr) {
+    MCMES_WORK *pmesw = &MCMesWork;
+    int         px, py;
+    int         x, y;
+    float       fLine, fH;
+    float       oy0;
+    u_int       col;
+
+    if (pmesw->btton != 0) {
+        spr->rgba0 = pmesw->btton << 24;
+        spr->zy = 1.0f;
+        spr->zx = 1.0f;
+        SetSprScreenXYWH(spr);
+        PkCRect_Add(pk, spr, 0);
+    }
+
+    if (pmesw->mesflg < 0) {
+        return;
+    }
+
+    px = pmesw->px;
+    py = pmesw->py;
+
+    if (pmesw->Dline <= 4096) {
+        fH = 0.0f;
+        fLine = 0.0f;
+    } else {
+        fLine = (float)(pmesw->Dline - 4096) / 4096.0f;
+        fH = (fLine * 12.0f) - 2.0f;
+    }
+
+    if (pmesw->backSw != 0) {
+        x = px - 292;
+        y = py + 5;
+        oy0 = spr->ofsy;
+        spr->zx = 1.0f;
+        spr->zy = 0.5f;
+        spr->rgba0 = 0x80808080;
+        spr->ofsy = oy0 - ((fH * 0.5f) + 36.0f);
+
+        TsPatPut(pk, spr, &PAT_ALERT_WIN_ABOVE, x, y);
+        spr->ofsy += 35.5f;
+
+        if (fH > 0.0f) {
+            spr->zy = fLine * 0.5f;
+            TsPatPut(pk, spr, &PAT_ALERT_WIN_CENTER, x, y);
+            spr->ofsy += fH - 1.0f;
+        }
+
+        spr->zy = 0.5f;
+        TsPatPut(pk, spr, &PAT_ALERT_WIN_BELOW, x, py + 1);
+
+        if (pmesw->faceNo > 0) {
+            TsPatPut(pk, spr, &PAT_ALERT_WIN_FFACE[pmesw->faceNo - 1], px + 204, y);
+        }
+
+        spr->ofsy = oy0;
+    }
+
+    if (pmesw->mesflg >= 0) {
+        y = py - ((pmesw->line * 13) >> 1);
+        col = 0x80220061;
+        switch (pmesw->color) {
+        case 0:
+            break;
+        case 1:
+            col = 0x807f7f7f;
+            break;
+        }
+        _PkMCMsgPut(pk, spr, pmesw->mesflg & 0xffff, px, y, col);
+    }
+}
 
 void TsCMPMes_SetPos(int x, int y) {
     CMPMES_WORK *pmesw = &CmpMesWork;
@@ -4133,7 +4658,44 @@ INCLUDE_RODATA("asm/nonmatchings/menu/menusub", D_00396120);
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsUser_PanelDraw);
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsNAMEINBox_SetName);
+extern u_char *UserName_InitialStr;
+
+static void TsNAMEINBox_SetName(NAMEINW *pfw, u_char *name) {
+    int            i, j, k;
+    u_short       *pcode;
+    u_char        *ptbl;
+    USERNAME_CSET *pcset;
+
+    pcode = pfw->curnchr;
+    if (name == NULL || *name == '\0') {
+        name = UserName_InitialStr;
+    }
+
+    for (i = 0; i < PR_ARRAYSIZE(pfw->curnchr); i++, pcode++) {
+        if (*name == '\0') {
+            *pcode = 0x26;
+        } else {
+            pcset = UserName_CharSet;
+            for (j = 0; j < 2; j++, pcset++) {
+                ptbl = pcset->ptbl;
+                for (k = 0; k < pcset->len; k++, ptbl++) {
+                    if (*name == *ptbl) {
+                        break;
+                    }
+                }
+                if (k < pcset->len) {
+                    break;
+                }
+            }
+            if (j >= 2) {
+                *pcode = 0x26;
+            } else {
+                *pcode = k | (j << 12);
+            }
+            name++;
+        }
+    }
+}
 
 static void TsNAMEINBox_GetName(NAMEINW *pfw, u_char *name) {
     u_short *pcode = pfw->curnchr;

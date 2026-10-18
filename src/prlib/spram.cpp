@@ -1,3 +1,5 @@
+#include <nalib/namatrix.h>
+
 #include "spram.h"
 
 #include "prpriv.h"
@@ -108,40 +110,100 @@ float* func_00147D90(float* self, const float& a0, const float& a1, const float&
     return self;
 }
 
-/* prlib/spram.cpp */
 extern "C" void _GLOBAL_$I$Initialize__12PrSPRAM_DATAP13PrSceneObject() {
-    NaMATRIX<float, 4, 4> a;
-    NaMATRIX<float, 4, 4> b;
+    asm volatile(
+        "li $2, 3\n\t"
+        "li $3, -1\n\t"
+        "1:\n\t"
+        "addiu $2, $2, -1\n\t"
+        "bne $2, $3, 1b\n\t"
+        "li $3, 3\n\t"
+        "2:\n\t"
+        "addiu $3, $3, -1\n\t"
+        "li $2, -1\n\t"
+        "bne $3, $2, 2b\n\t"
+    : : : "$2", "$3");
 }
 
-/* nalib/navector.h */
-INCLUDE_ASM("asm/nonmatchings/prlib/spram", func_00147E38);
+struct Mat44 {
+    Mat44(
+        const float& a0, const float& a1, const float& a2, const float& a3,
+        const float& a4, const float& a5, const float& a6, const float& a7,
+        const float& a8, const float& a9, const float& a10, const float& a11,
+        const float& a12, const float& a13, const float& a14, const float& a15
+    ) {
+        Set(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15);
+    }
+
+    Mat44& Set(
+        const float& a0, const float& a1, const float& a2, const float& a3,
+        const float& a4, const float& a5, const float& a6, const float& a7,
+        const float& a8, const float& a9, const float& a10, const float& a11,
+        const float& a12, const float& a13, const float& a14, const float& a15
+    ) asm("func_00145DB0");
+
+    NaVECTOR<float, 4> m[4];
+};
+
+inline Mat44 MakeTrans44(const float& x, const float& y, const float& z) {
+    return Mat44(
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        x, y, z, 1.0f
+    );
+}
+
+Mat44* func_00147E38(Mat44* self, const float& x, const float& y, const float& z) asm("func_00147E38");
+Mat44* func_00147E38(Mat44* self, const float& x, const float& y, const float& z) {
+    const Mat44& tmp = MakeTrans44(x, y, z);
+    asm volatile(
+        "lqc2     $vf4,   0x0(%0)       \n\t"
+        "lqc2     $vf5,  0x10(%0)       \n\t"
+        "lqc2     $vf6,  0x20(%0)       \n\t"
+        "lqc2     $vf7,  0x30(%0)       \n\t"
+    : : "r"(&tmp));
+    asm volatile(
+        "lqc2     $vf8,   0x0(%1)       \n\t"
+        "vmulax   ACC,    $vf4,   $vf8  \n\t"
+        "vmadday  ACC,    $vf5,   $vf8  \n\t"
+        "vmaddaz  ACC,    $vf6,   $vf8  \n\t"
+        "vmaddw   $vf9,   $vf7,   $vf8  \n\t"
+        "sqc2     $vf9,   0x0(%0)       \n\t"
+        "lqc2     $vf8,  0x10(%1)       \n\t"
+        "vmulax   ACC,    $vf4,   $vf8  \n\t"
+        "vmadday  ACC,    $vf5,   $vf8  \n\t"
+        "vmaddaz  ACC,    $vf6,   $vf8  \n\t"
+        "vmaddw   $vf9,   $vf7,   $vf8  \n\t"
+        "sqc2     $vf9,  0x10(%0)       \n\t"
+        "lqc2     $vf8,  0x20(%1)       \n\t"
+        "vmulax   ACC,    $vf4,   $vf8  \n\t"
+        "vmadday  ACC,    $vf5,   $vf8  \n\t"
+        "vmaddaz  ACC,    $vf6,   $vf8  \n\t"
+        "vmaddw   $vf9,   $vf7,   $vf8  \n\t"
+        "sqc2     $vf9,  0x20(%0)       \n\t"
+        "lqc2     $vf8,  0x30(%1)       \n\t"
+        "vmulax   ACC,    $vf4,   $vf8  \n\t"
+        "vmadday  ACC,    $vf5,   $vf8  \n\t"
+        "vmaddaz  ACC,    $vf6,   $vf8  \n\t"
+        "vmaddw   $vf9,   $vf7,   $vf8  \n\t"
+        "sqc2     $vf9,  0x30(%0)       \n\t"
+    : : "r"(self), "r"(self));
+    return self;
+}
 
 INCLUDE_ASM("asm/nonmatchings/prlib/spram", func_00147FB8);
 
-typedef NaMATRIX<float, 4, 4> Mat44;
-extern Mat44* SetMat44Raw(Mat44* self,
-    const float& a0, const float& a1, const float& a2, const float& a3,
-    const float& a4, const float& a5, const float& a6, const float& a7,
-    const float& a8, const float& a9, const float& a10, const float& a11,
-    const float& a12, const float& a13, const float& a14, const float& a15) asm("func_00145DB0");
-
-static inline Mat44* SetMat44(Mat44* self,
-    const float& a0, const float& a1, const float& a2, const float& a3,
-    const float& a4, const float& a5, const float& a6, const float& a7,
-    const float& a8, const float& a9, const float& a10, const float& a11,
-    const float& a12, const float& a13, const float& a14, const float& a15) {
-    PR_VU0_WAIT();
-    return SetMat44Raw(self, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15);
-}
-
 INCLUDE_ASM("asm/nonmatchings/prlib/spram", func_00148140);
 
-Mat44* func_00148248(Mat44* self, const float& x, const float& y, const float& z) asm("func_00148248");
-Mat44* func_00148248(Mat44* self, const float& x, const float& y, const float& z) {
-    float f0 = 1.0f, f1 = 0.0f, f2 = 0.0f, f3 = 0.0f, f4 = 0.0f, f5 = 1.0f, f6 = 0.0f, f7 = 0.0f, f8 = 0.0f, f9 = 0.0f, f10 = 1.0f, f11 = 0.0f, f15 = 1.0f;
-    SetMat44(self, f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, x, y, z, f15);
-    return self;
+Mat44 func_00148248(const float& x, const float& y, const float& z) asm("func_00148248");
+Mat44 func_00148248(const float& x, const float& y, const float& z) {
+    return Mat44(
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        x, y, z, 1.0f
+    );
 }
 
 INCLUDE_RODATA("asm/nonmatchings/prlib/spram", D_00396790);

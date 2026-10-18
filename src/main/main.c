@@ -1,3 +1,8 @@
+#ifdef VERSION_PAL
+#define selPlayDisp selPlayDisp_ntsc
+#define selPlayDispType selPlayDispType_ntsc
+#define CdctrlMemIntgDecode CdctrlMemIntgDecode_ntsc
+#endif
 #include "main/main.h"
 
 #include "dbug/dbgmsg.h"
@@ -28,6 +33,19 @@
 #include <math.h>
 #include <stdio.h>
 
+#ifdef VERSION_PAL
+#undef selPlayDisp
+#undef selPlayDispType
+#undef CdctrlMemIntgDecode
+int selPlayDisp(int sel_stage, int sel_disp, int firstf, int key);
+int selPlayDispType(int sel_stage, int sel_disp, CANCEL_TYPE_ENUM canseltype, int key);
+int CdctrlMemIntgDecode(u_int rbuf, u_int setbuf);
+int langSelDisp(void);
+void WipeInReqSame2(int time);
+int CdctrlMoviePlay(FILE_STR *fstr_pp);
+extern FILE_STR file_str_movie_file;
+#endif
+
 static int urawaza_skip_bottun = FALSE;
 static int urawaza_levelsel_bottun = -1;
 
@@ -38,6 +56,7 @@ DBG_SELECT_STR dbg_select_str = {
     .non_play     = FALSE
 };
 
+#ifndef VERSION_PAL
 static u_char *dbg_tbl_msg[] = {
     "AUTO", "BASE",
     "LV1",  "LV2",  "LV3",  "LV4",
@@ -80,11 +99,13 @@ static DBG_MODE_STR dbg_mode_str[] = {
         .selmsg_pp = dbg_score_msg
     },
 };
+#endif
 
 int overlay_loadaddr = 0x01ca0000; /* TODO: Don't hardcode */
 
 static MENU_STR menu_str;
 
+#ifndef VERSION_PAL
 static void dbg_select_disp(void) {
     int           selpos;
     DBG_MODE_STR *dbg_pp;
@@ -404,8 +425,13 @@ static void dummyPlay(int retTitle) {
         break;
     }
 }
+#endif
 
+#ifdef VERSION_PAL
+int selPlayDisp(int sel_stage, int sel_disp, int firstf, int key) {
+#else
 int selPlayDisp(int sel_stage, int sel_disp, int firstf) {
+#endif
     STDAT_DAT *stdat_dat_pp;
     int        ret = 0;
 
@@ -476,7 +502,11 @@ int selPlayDisp(int sel_stage, int sel_disp, int firstf) {
     while (1) {
         MtcWait(1);
 
+#ifdef VERSION_PAL
+        if ((pad[0].one & key) && WipeEndCheck()) {
+#else
         if ((pad[0].one & SCE_PADstart) && WipeEndCheck()) {
+#endif
             ret = 1;
             break;
         }
@@ -581,6 +611,12 @@ int selPlayDispTitleDisp(int sel_stage, int sel_disp, int ovl_load) {
         }
     }
 
+#ifdef VERSION_PAL
+    while (!WipeEndCheck()) {
+        MtcWait(1);
+    }
+#endif
+
     ScrCtrlGoLoop();
     WipeOutReq();
 
@@ -607,6 +643,7 @@ int selPlayDispTitleDisp(int sel_stage, int sel_disp, int ovl_load) {
 
         SpHatChangeSub();
 
+#ifndef VERSION_PAL
         if (pad[0].one & SCE_PADLdown) {
             dbg_select_str.debug_on ^= 1;
         }
@@ -622,6 +659,7 @@ int selPlayDispTitleDisp(int sel_stage, int sel_disp, int ovl_load) {
             DbgMsgPrintUserPkt("DEBUG", 1730, 1948, &dbgPk);
             CmnGifCloseCmnPk(&dbgPk, 7);
         }
+#endif
     }
 
     if (ret != 0) {
@@ -739,6 +777,18 @@ static void uramenFileSearchEnd(void) {
 /* note: has inline from 'data/logo/logo_tm2.h' */
 void startUpDisp(void) {
     /* Splash screens TIM2 data */
+#ifdef VERSION_PAL
+    static TIM2_DAT tim2spr_tbl[8] = {
+        { .GsTex0 = 0x20050a462531a800ULL, .GsTex1 = 0x260ULL, .w = 320, .h = 224 },
+        { .GsTex0 = 0x200516655540a850ULL, .GsTex1 = 0x260ULL, .w = 32,  .h = 32  },
+        { .GsTex0 = 0x20150ac621312968ULL, .GsTex1 = 0x260ULL, .w = 200, .h = 200 },
+        { .GsTex0 = 0x20150b0621312a59ULL, .GsTex1 = 0x260ULL, .w = 200, .h = 200 },
+        { .GsTex0 = 0x20150b4621312b4aULL, .GsTex1 = 0x260ULL, .w = 200, .h = 200 },
+        { .GsTex0 = 0x20150b8621312c3bULL, .GsTex1 = 0x260ULL, .w = 200, .h = 200 },
+        { .GsTex0 = 0x20150bc621312d2cULL, .GsTex1 = 0x260ULL, .w = 200, .h = 200 },
+        { .GsTex0 = 0x20151625a5422e2dULL, .GsTex1 = 0x260ULL, .w = 512, .h = 56  },
+    };
+#else
     static TIM2_DAT tim2spr_tbl[2] = {
         /* NanaOn-Sha */
         {
@@ -755,11 +805,17 @@ void startUpDisp(void) {
             .h = 52
         },
     };
+#endif
 
     /* Splash screens sprite data */
     SPR_PRIM spr_prim[2] = {
+#ifdef VERSION_PAL
         { .x = 2048, .y = 2048, .scalex = 256, .scaley = 128 },
         { .x = 2048, .y = 2048, .scalex = 512, .scaley = 256 }
+#else
+        { .x = 2048, .y = 2048, .scalex = 256, .scaley = 128 },
+        { .x = 2048, .y = 2048, .scalex = 512, .scaley = 256 }
+#endif
     };
 
     UsrMemClear();
@@ -769,10 +825,23 @@ void startUpDisp(void) {
     CdctrlReadWait();
 
     SprInit();
+#ifdef VERSION_PAL
+    game_status.language_type = langSelDisp();
+    printf("lang:%d\n", game_status.language_type);
+    {
+        int lang_tim2_no[5] = { 2, 4, 3, 5, 6 };
+
+        Tim2Trans(GetIntAdrsCurrent(lang_tim2_no[game_status.language_type]));
+    }
+#endif
     MenuMemCardCheck();
 
     uramenFileSearchSet();
+#ifdef VERSION_PAL
+    logoDispOne(&spr_prim[0], &tim2spr_tbl[7]);
+#else
     logoDispOne(&spr_prim[0], &tim2spr_tbl[1]);
+#endif
     logoDispOne(&spr_prim[1], &tim2spr_tbl[0]);
     uramenFileSearchEnd();
 
@@ -780,7 +849,11 @@ void startUpDisp(void) {
     SpuBankSet();
 }
 
+#ifdef VERSION_PAL
+int selPlayDispType(int sel_stage, int sel_disp, CANCEL_TYPE_ENUM canseltype, int key) {
+#else
 int selPlayDispType(int sel_stage, int sel_disp, CANCEL_TYPE_ENUM canseltype) {
+#endif
     STDAT_DAT  *stdat_dat_pp;
     int         ret;
     int         yn_disp_on;
@@ -843,7 +916,11 @@ int selPlayDispType(int sel_stage, int sel_disp, CANCEL_TYPE_ENUM canseltype) {
                     btn |= pad[1].one;
                 }
 
+#ifdef VERSION_PAL
+                if ((btn & key) && WipeEndCheck() && !ScrEndWaitLoop()) {
+#else
                 if ((btn & SCE_PADstart) && WipeEndCheck() && !ScrEndWaitLoop()) {
+#endif
                     ret = TRUE;
                     break;
                 }
@@ -902,6 +979,16 @@ int selPlayDispType(int sel_stage, int sel_disp, CANCEL_TYPE_ENUM canseltype) {
                 btn |= pad[1].one;
             }
 
+#ifdef VERSION_PAL
+            if (btn & SCE_PADRdown) {
+                yn_disp_on = FALSE;
+                break;
+            }
+            if (btn & SCE_PADRup) {
+                yn_disp_on = TRUE;
+                break;
+            }
+#else
             if (btn & SCE_PADRright) {
                 yn_disp_on = FALSE;
                 break;
@@ -910,6 +997,7 @@ int selPlayDispType(int sel_stage, int sel_disp, CANCEL_TYPE_ENUM canseltype) {
                 yn_disp_on = TRUE;
                 break;
             }
+#endif
         }
 
         if (!yn_disp_on) {
@@ -951,20 +1039,39 @@ int selPlayDispSetPlay(int sel_stage) {
         stdat_dat_pp = &stdat_rec[sel_stage].stdat_dat_pp[i];
 
         if (stdat_dat_pp->play_step == PSTEP_XTR) {
+#ifdef VERSION_PAL
+            ret = selPlayDispType(sel_stage, i, CBE_NORMAL, SCE_PADstart | SCE_PADRdown);
+#else
             ret = selPlayDispType(sel_stage, i, CBE_NORMAL);
+#endif
         } else {
             int decp = UsrMemAllocEndNext();
 
             UsrMemEndFree();
 
+#ifdef VERSION_PAL
+            while (1) {
+                UsrMemClearTop();
+                if (!CdctrlMemIntgDecode(decp, UsrMemAllocNext())) {
+                    break;
+                }
+                CdctrlReadOne(&stdat_dat_pp->intfile, decp, NULL);
+                CdctrlReadWait();
+            }
+#else
             CdctrlMemIntgDecode(decp, UsrMemAllocNext());
+#endif
 
             cmnfTim2Trans();
 
             if (stdat_dat_pp->play_step == PSTEP_HOOK) {
                 GLOBAL_PLY *gply_pp = &global_data.global_ply[0];
 
+#ifdef VERSION_PAL
+                ret = selPlayDispType(sel_stage, i, CBE_HOOK, SCE_PADstart);
+#else
                 ret = selPlayDispType(sel_stage, i, CBE_HOOK);
+#endif
 
                 ingame_common_str.HookClrCnt = gply_pp->exam_tbl_up - (gply_pp->exam_tbl_dw / 2);
                 if (ingame_common_str.HookClrCnt < 0) {
@@ -977,11 +1084,19 @@ int selPlayDispSetPlay(int sel_stage) {
                 DPRINTF("HOOK cnt:%d\n", ingame_common_str.HookClrCnt);
             } else {
                 if (global_data.play_modeL == PLAY_MODE_SINGLE) {
+#ifdef VERSION_PAL
+                    ret = selPlayDispType(sel_stage, i, CBE_SINGLE, SCE_PADstart);
+                } else if (global_data.play_modeL == PLAY_MODE_VS_MAN) {
+                    ret = selPlayDispType(sel_stage, i, CBE_VS_MAN, SCE_PADstart);
+                } else if (global_data.play_modeL == PLAY_MODE_VS_COM) {
+                    ret = selPlayDispType(sel_stage, i, CBE_VS_COM, SCE_PADstart);
+#else
                     ret = selPlayDispType(sel_stage, i, CBE_SINGLE);
                 } else if (global_data.play_modeL == PLAY_MODE_VS_MAN) {
                     ret = selPlayDispType(sel_stage, i, CBE_VS_MAN);
                 } else if (global_data.play_modeL == PLAY_MODE_VS_COM) {
                     ret = selPlayDispType(sel_stage, i, CBE_VS_COM);
+#endif
                 }
             }
         }
@@ -1007,8 +1122,6 @@ int selPlayDispSetPlay(int sel_stage) {
 }
 
 #ifdef VERSION_PAL
-extern int selPlayDispType4(int, int, CANCEL_TYPE_ENUM, int) __asm__("selPlayDispType");
-#define SEL_TYPE4 selPlayDispType4
 int selPlayDispSetPlayOne(int sel_stage) {
     int        i;
     STDAT_DAT *stdat_dat_pp;
@@ -1037,7 +1150,7 @@ int selPlayDispSetPlayOne(int sel_stage) {
 
     while (1) {
         UsrMemClearTop();
-        if (!((int (*)(u_int, u_int))CdctrlMemIntgDecode)(decp, UsrMemAllocNext())) {
+        if (!CdctrlMemIntgDecode(decp, UsrMemAllocNext())) {
             break;
         }
         CdctrlReadOne(&stdat_dat_pp->intfile, mem, NULL);
@@ -1047,13 +1160,13 @@ int selPlayDispSetPlayOne(int sel_stage) {
     cmnfTim2Trans();
 
     if (stdat_dat_pp->play_step == PSTEP_HOOK) {
-        ret = SEL_TYPE4(sel_stage, i, CBE_HOOK, 2048);
+        ret = selPlayDispType(sel_stage, i, CBE_HOOK, SCE_PADstart);
     } else if (global_data.play_modeL == PLAY_MODE_SINGLE) {
-        ret = SEL_TYPE4(sel_stage, i, CBE_SINGLE, 2048);
+        ret = selPlayDispType(sel_stage, i, CBE_SINGLE, SCE_PADstart);
     } else if (global_data.play_modeL == PLAY_MODE_VS_MAN) {
-        ret = SEL_TYPE4(sel_stage, i, CBE_VS_MAN, 2048);
+        ret = selPlayDispType(sel_stage, i, CBE_VS_MAN, SCE_PADstart);
     } else if (global_data.play_modeL == PLAY_MODE_VS_COM) {
-        ret = SEL_TYPE4(sel_stage, i, CBE_VS_COM, 2048);
+        ret = selPlayDispType(sel_stage, i, CBE_VS_COM, SCE_PADstart);
     }
 #else
 int selPlayDispSetPlayOne(int sel_stage) {
@@ -1119,6 +1232,7 @@ int gamePlayDisp(void) {
     if (global_data.demo_flagL == DEMOF_REPLAY) {
         mccGlobalLocalCopy();
     } else {
+#ifndef VERSION_PAL
         if (dbg_select_str.debug_on) {
             if (dbg_select_str.use_line < 0) {
                 global_data.tapLevelCtrl = LM_AUTO;
@@ -1126,7 +1240,9 @@ int gamePlayDisp(void) {
                 global_data.tapLevel = dbg_select_str.use_line;
                 global_data.tapLevelCtrl = LM_FIX;
             }
-        } else {
+        } else
+#endif
+        {
             if (urawaza_levelsel_bottun >= 0) {
                 global_data.tapLevelCtrl = LM_FIX;
                 global_data.tapLevel = urawaza_levelsel_bottun;
@@ -1142,12 +1258,26 @@ int gamePlayDisp(void) {
         sel_stage += 10;
     }
 
+#ifdef VERSION_PAL
+    if (global_data.demo_flagL == DEMOF_DEMO) {
+        SpuBankSet();
+        UsrMemClear();
+
+        ret = selPlayDisp(sel_stage, stdat_rec[sel_stage].stdat_dat_num - 1, FALSE, 0xffff);
+    } else if (global_data.demo_flagL != DEMOF_OFF) {
+        SpuBankSet();
+        UsrMemClear();
+
+        ret = selPlayDisp(sel_stage, stdat_rec[sel_stage].stdat_dat_num - 1, FALSE, SCE_PADstart);
+    } else {
+#else
     if (global_data.demo_flagL != DEMOF_OFF) {
         SpuBankSet();
         UsrMemClear();
 
         ret = selPlayDisp(sel_stage, stdat_rec[sel_stage].stdat_dat_num - 1, FALSE);
     } else {
+#endif
         if (urawaza_skip_bottun) {
             cancel_flag = selPlayDispSetPlayOne(sel_stage);
         } else {
@@ -1196,7 +1326,11 @@ int gamePlayDisp(void) {
                     WipeInReq();
                     MtcWait(2);
 
+#ifdef VERSION_PAL
+                    selPlayDisp(9, 0, FALSE, SCE_PADstart | SCE_PADRdown);
+#else
                     selPlayDisp(9, 0, FALSE);
+#endif
                 } else if (
                     game_status.endingFlag == 2 ||
                     game_status.endingFlag == 3 ||
@@ -1210,7 +1344,11 @@ int gamePlayDisp(void) {
                     WipeInReq();
                     MtcWait(2);
 
+#ifdef VERSION_PAL
+                    selPlayDisp(10, 0, FALSE, SCE_PADstart);
+#else
                     selPlayDisp(10, 0, FALSE);
+#endif
 
                     game_status.bonusG = ingame_common_str.BonusScore;
                 }
@@ -1266,6 +1404,13 @@ void titleDisp(int firstf) {
     int        fsize, decp;
     int        loop;
     int        deramode;
+#ifdef VERSION_PAL
+    int        cnt;
+    int        tbl[4] = { 8, 6, 4, 2 };
+    int        mem;
+
+    cnt = 0;
+#endif
 
     deramode = 0;
     loop = 0;
@@ -1282,20 +1427,41 @@ void titleDisp(int firstf) {
         fsize = CdctrlGetFileSize(&stdat_dat_pp->intfile);
         fsize = ((fsize + 2047) / 2048) * 2048;
 
+#ifdef VERSION_PAL
+        mem = UsrMemEndAlloc(fsize);
+        CdctrlReadOne(&stdat_dat_pp->intfile, mem, NULL);
+#else
         CdctrlReadOne(&stdat_dat_pp->intfile, UsrMemEndAlloc(fsize), NULL);
+#endif
         CdctrlReadWait();
 
         if (loop == 0) {
+#ifdef VERSION_PAL
+            selPlayDisp(0, 0, firstf, SCE_PADstart | SCE_PADRdown);
+#else
             selPlayDisp(0, 0, firstf);
+#endif
             WipeInReqSame();
             SetBackColor(0xff, 0xff, 0xff);
         }
         MtcWait(2);
 
         decp = UsrMemAllocEndNext();
+#ifdef VERSION_PAL
+        UsrMemEndFree();
+        while (1) {
+            UsrMemClearTop();
+            if (!CdctrlMemIntgDecode(decp, UsrMemAllocNext())) {
+                break;
+            }
+            CdctrlReadOne(&stdat_dat_pp->intfile, mem, NULL);
+            CdctrlReadWait();
+        }
+#else
         UsrMemClearTop();
         UsrMemEndFree();
         CdctrlMemIntgDecode(decp, UsrMemAllocNext());
+#endif
 
         game_status.demo_flagG = DEMOF_OFF;
         GlobalLobcalCopy();
@@ -1305,6 +1471,38 @@ void titleDisp(int firstf) {
             break;
         }
 
+#ifdef VERSION_PAL
+        SetBackColor(0, 0, 0);
+        cnt++;
+        if (cnt >= tbl[game_status.roundG]) {
+            WipeInReqSame2(30);
+            while (!WipeEndCheck()) {
+                MtcWait(1);
+            }
+            SpuBankSet();
+            UsrMemClear();
+            cnt = 0;
+
+            loop = CdctrlMoviePlay(&file_str_movie_file);
+
+            WipeInReq();
+            MtcWait(2);
+        } else {
+            WipeInReq();
+            MtcWait(2);
+
+            SpuBankSet();
+            UsrMemClear();
+
+            game_status.demo_flagG = DEMOF_DEMO;
+
+            loop = gamePlayDisp();
+            WipeInReq();
+            MtcWait(2);
+        }
+        deramode ^= 1;
+        firstf = FALSE;
+#else
         firstf = FALSE;
         SetBackColor(0, 0, 0);
         deramode ^= 1;
@@ -1320,6 +1518,7 @@ void titleDisp(int firstf) {
         loop = gamePlayDisp();
         WipeInReq();
         MtcWait(2);
+#endif
     }
 }
 
@@ -1426,11 +1625,17 @@ void mainStart(void *xx) {
 
     CdctrlReadWait();
     DPRINTF("int read end\n");
+#ifdef VERSION_PAL
+    printf("movie test out\n");
+#endif
 
     startUpDisp();
 
     while (1) {
         urawaza_levelsel_bottun = -1;
+#ifdef VERSION_PAL
+        game_status.play_typeG = PLAY_TYPE_NORMAL;
+#endif
         titleDisp(first_f);
 
         WipeInReq();
@@ -1535,18 +1740,24 @@ void mainStart(void *xx) {
                 }
             }
 
+#ifndef VERSION_PAL
             if (dbg_select_str.debug_on && !retTitle) {
                 dbg_select_disp();
             }
+#endif
 
             WipeInReq();
             UsrMemClear();
             SpuBankSet();
+#ifdef VERSION_PAL
+            MtcWait(2);
+#endif
 
             if (retTitle) {
                 break;
             }
 
+#ifndef VERSION_PAL
             if (dbg_select_str.debug_on && dbg_select_str.non_play) {
                 while (!WipeEndCheck()) {
                     MtcWait(1);
@@ -1554,7 +1765,9 @@ void mainStart(void *xx) {
                 WipeOutReq();
 
                 dummyPlay(retTitle);
-            } else {
+            } else
+#endif
+            {
                 gamePlayDisp();
             }
 
