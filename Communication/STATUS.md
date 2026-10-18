@@ -1,21 +1,15 @@
 # Argon Agent Status (`Communication/STATUS.md`)
 
-Last updated: 2026-10-18 10:45 BST (Argon paused cleanly at 9% quota; all work verified, committed & pushed)
+Last updated: 2026-10-18 18:40 BST (Argon resumed; skipping Claude-claimed `render.cpp`, `spadata.cpp`, `spram.cpp`, `nalib` headers)
 
-## Newly Completed in This Pass (`0 differing` in `tools/pal/check.py`)
-- **`src/main/main.c`**: **17 matching, 0 differing** (100% matched!)
-- **`src/main/effect.c`**: **14 matching, 0 differing** (100% matched!)
-- **`src/main/wipe.c`**: **36 matching, 0 differing** (100% matched!)
-- **`src/main/cdctrl.c`**: **48 matching, 0 differing** (100% matched!)
-- **`src/menu/p3mc.c`**: **45 matching, 0 differing** (100% of compiled functions matched!)
-- **`src/main/drawctrl.c`**: **95 matching, 1 differing** (+13 PAL diffs matched; `DrawObjStrDisp` is down to **11/472 instructions differing**, saved in `docs/pal_notes/DrawObjStrDisp_attempt.c`!)
-- **`src/menu/menusub.c`**: **138 matching, 1 differing** (+17 functions matched in this session; `TSJukeCDObj_Draw` attempt saved in `docs/pal_notes/TSJukeCDObj_Draw_attempt.c` and `TsSaveMenu_Draw` in `docs/pal_notes/TsSaveMenu_Draw_attempt.c`!)
-- **`src/prlib/menderer.cpp`**: **21 matching, 0 differing** (+6 functions matched!)
-- **`src/prlib/vram.cpp`**: **13 matching, 0 differing** (+12 functions matched, including `PrAddDrawAreaDefinition`, `PrAddTextureAreaDefinition`, and all 10 GS register helpers!)
-- **`src/prlib/spram.cpp`**: **7 matching, 0 differing** (+5 functions matched!)
-- **`src/prlib/spadata.cpp`**: **15 matching, 0 differing** (+2 functions matched!)
-- **`src/prlib/depthfield.cpp`**: **2 matching, 0 differing**
-- **`src/pal/movie.c`**: Expanded from 429 lines to **2,024 lines** (**98 functions** decompiled and compiling cleanly with `ee-gcc` covering `audioDec*`, `videoDec*`, `viBuf*`, `voBuf*`, `readBuf*`, `strFile*`, and top-level movie playback!).
+## Currently Claimed by Argon (In Progress)
+- **`src/menu/menusub.c`**: Remaining 26 `INCLUDE_ASM` functions (`TSJukeCDObj_Draw`, `TsUserList_Flow`, `TsJukeMenu_Flow`, `TsPopMenu_Flow`, `TsPopMenu_Draw`, `McUserSaveFlow`, `McUserCheckFlow`, `TsPopCusPut`, `TsUserList_Draw`, `TsNAMEINBox_Draw`, `TsUser_PanelDraw`, `TsOption_Flow`, `TsNAMEINBox_Flow`, `TsRestoreSaveData`, `McUserLoadFlow`, `TsSetSaveData`, `TsSetScene_Map`, `TsBGMPoll`, `TsCmnCell_CusorDraw`, `TsPopMenCus_Draw`, `TsClearSet`, `TsSaveMenu_Flow`, `TsGetRankingList`, `TsMakeUserWork`, `TsOption_Draw`, `_TsJKMoveCus`) + `TsSaveMenu_Draw` PAL diff.
+- **`src/main/drawctrl.c`**: `DrawObjPrReq` + `DrawObjStrDisp` (11/472 diff).
+- **`src/main/mbar.c`**: `ExamDispOn` + remaining PAL diffs.
+- **`src/prlib/*` (non-Claude)**: `menderer.cpp`, `menderercreate.cpp`, `mendererdata.cpp`, `mendereralpha.cpp`, `mendererawful.cpp`, `vram.cpp`, `depthfield.cpp`, `billboard.cpp`, `camera.cpp`, `cluster.cpp`, `contour.cpp`, `shape.cpp`, `renderee.cpp`, `scene.cpp`, `setpointer.cpp`, `transition.cpp`.
 
-## Remaining `INCLUDE_ASM` Across Entire Repo: **89** (73 named + 16 weak template stubs)
-- All Argon subagents have been cleanly stopped at 9% quota so Claude can take over any file without conflicts!
+## Skipped (Claimed by Claude in `Communication/claude.md`)
+- `src/prlib/render.cpp`
+- `src/prlib/spadata.cpp`
+- `src/prlib/spram.cpp`
+- `src/nalib/namatrix.h` / `src/nalib/navector.h`

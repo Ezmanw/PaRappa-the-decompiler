@@ -2160,7 +2160,108 @@ static int TsMap_Flow(int flg, u_int tpad, u_int tpad2) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsMakeUserWork);
+extern u_char *TeachersName_Tbl[];
+
+/* static */ void TsMakeUserWork(int mode) {
+    int stageNo;
+    int i;
+    int roundNo;
+    int score;
+
+    stageNo = pP3GameState->nStage;
+    if (stageNo < 0) {
+        stageNo = 0;
+    }
+    if (stageNo >= 9) {
+        stageNo = 8;
+    }
+    memset(UserWork, 0, sizeof(*UserWork));
+
+    memcpy(UserWork->name, pP3GameState->pLog->name, sizeof(UserWork->name));
+    UserWork->name[11] = '\0';
+
+    if (mode == 2) {
+        memcpy(UserWork->name1, pP3GameState->pLog->name1, sizeof(UserWork->name1));
+        UserWork->name1[11] = '\0';
+
+        if (pP3GameState->nMode == 2) {
+            int stg = stageNo;
+            if (stg >= 9) {
+                stg = 8;
+            }
+            if (stg > 0) {
+                stg--;
+            }
+            memcpy(UserWork->name2, TeachersName_Tbl[stg], sizeof(UserWork->name2));
+            UserWork->name2[11] = '\0';
+        } else {
+            memcpy(UserWork->name2, pP3GameState->pLog->name2, sizeof(UserWork->name2));
+            UserWork->name2[11] = '\0';
+        }
+    }
+
+    UserWork->mode = mode;
+    UserWork->flg = 1;
+
+    roundNo = pP3GameState->pLog->nRound;
+    for (i = 0; i < 8; i++) {
+        if (roundNo < pP3GameState->pLog->clrCount[i]) {
+            break;
+        }
+    }
+
+    if (i >= 8) {
+        roundNo--;
+    }
+
+    UserWork->stageNo = stageNo;
+    score = pP3GameState->score;
+    if (score < 0) {
+        score = 0;
+    }
+    UserWork->score = score;
+    if (roundNo < 0) {
+        roundNo = 0;
+    }
+    if (roundNo >= 99) {
+        roundNo = 98;
+    }
+    UserWork->roundNo = roundNo;
+    UserWork->score2 = pP3GameState->score2P;
+
+    if (pP3GameState->nMode == 1 || pP3GameState->nMode == 2) {
+        UserWork->winner = pP3GameState->winPlayer;
+    } else {
+        UserWork->winner = 0;
+    }
+
+    UserWork->fileNo = 0;
+    if (UserWork->mode == 1) {
+        int mn = TsMENU_GetMapNo(NULL) - 1;
+        if (mn <= 0) {
+            mn = 0;
+        }
+        UserWork->stageNo = mn;
+    }
+
+    switch (pP3GameState->nMode) {
+    case 0:
+        UserWork->isVs = 0;
+        UserWork->vsLev = 0;
+        break;
+    case 1:
+        UserWork->isVs = 1;
+        UserWork->vsLev = 0;
+        break;
+    case 2:
+        UserWork->isVs = 2;
+        UserWork->vsLev = pP3GameState->vsLev;
+        if (UserWork->vsLev >= 4) {
+            UserWork->vsLev = 3;
+        }
+        break;
+    }
+}
 
 /* static */ void TsSaveSuccessProc(void) {
     TsUserList_SetCurUserData(UserWork);
@@ -4073,7 +4174,133 @@ INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPopMenu_Draw);
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPopMenCus_Draw);
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsSaveMenu_Flow);
+/* data 18cb00 */ extern int SaveMenu_CmpMesNo[]; /* static */
+
+/* static */ int TsSaveMenu_Flow(int flg, u_int tpad) {
+    SAVE_MENU *pfw;
+    int        state;
+    int        bAni;
+    int        sel;
+
+    pfw = &SaveMenu;
+
+    if (flg == 1) {
+        if (tpad < 2) {
+            pfw->selno = tpad;
+        } else {
+            pfw->selno = 0;
+        }
+        pfw->state = 0;
+        TsANIME_Init(&pfw->awork);
+        TsPopCusInit(&pfw->cani, 0);
+        SaveMenu_Sw = 1;
+        return 0;
+    }
+
+    if (flg == 2) {
+        SaveMenu_Sw = 0;
+        return 0;
+    }
+
+    state = pfw->state;
+    bAni = TsANIME_Poll(&pfw->awork);
+    TsPopCusFlow(&pfw->cani);
+
+    switch (state) {
+    case 0:
+        state = 0x100;
+        TsANIME_Start(&pfw->awork, 2, 15);
+        bAni = TsANIME_Poll(&pfw->awork);
+        /* fallthrough */
+    case 0x100:
+        if (bAni != 0) {
+            break;
+        }
+        /* fallthrough */
+    case 0x1000:
+        pfw->exitflg = 0;
+        state = 0x1010;
+        break;
+    case 0x1010:
+        TsCMPMes_SetMes(SaveMenu_CmpMesNo[pfw->selno]);
+        if (TsCheckTimeMapChange()) {
+            break;
+        }
+
+        sel = pfw->selno;
+        if (tpad & 0x8000) {
+            sel--;
+        }
+        if (tpad & 0x2000) {
+            sel++;
+        }
+
+        if (pfw->selno != sel) {
+            sel = TSLOOP(sel, 2);
+            pfw->selno = sel;
+            TsPopCusAOff(&pfw->cani);
+            pfw->cani.onTNo = sel;
+            pfw->cani.onTim = 10;
+            TSSNDPLAY(2);
+            TsCMPMes_SetMes(SaveMenu_CmpMesNo[pfw->selno]);
+        }
+
+        if (tpad & 0x10) {
+            pfw->exitflg = 1;
+            TSSNDPLAY(9);
+            state = 0xf020;
+        } else if (tpad & 0x40) {
+            pfw->exitflg = 0;
+            MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[3]);
+            state = 0xf000;
+            TSSNDPLAY(6);
+        }
+        break;
+    case 0xf000:
+        pfw->cani.okTim = 25;
+        state = 0xf010;
+        pfw->cani.onTNo = pfw->selno;
+        /* fallthrough */
+    case 0xf010:
+        if (pfw->cani.okTim != 0) {
+            break;
+        }
+        /* fallthrough */
+    case 0xf020:
+        state = 0xf080;
+        TsANIME_Start(&pfw->awork, 3, 20);
+        bAni = TsANIME_Poll(&pfw->awork);
+        /* fallthrough */
+    case 0xf080:
+        if (bAni != 0) {
+            break;
+        }
+        /* fallthrough */
+    case 0xf100:
+        SaveMenu_Sw = 0;
+        if (pfw->exitflg != 0) {
+            state = 0xff20;
+            break;
+        }
+        switch (pfw->selno) {
+        case 0:
+            ret = 1;
+            break;
+        case 1:
+            ret = 2;
+            break;
+        default:
+            ret = 3;
+            break;
+        }
+        return ret;
+    case 0xff20:
+        return -1;
+    }
+
+    pfw->state = state;
+    return 0;
+}
 
 void TsSaveMenu_Draw(SPR_PKT pk, SPR_PRM *spr) {
     SAVE_MENU *pfw;
@@ -4284,19 +4511,15 @@ static int TsJukeIsObjAnime(int isComp) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", _TsJKMoveCus);
-#if 0
-// TODO: nonmatching (regalloc / tail merging)
 /* static */ int _TsJKMoveCus(int *cx, int *cy, int mx, int my, JUKECDOBJ *cobj) {
     int ocx, ocy;
     int x, y, pos;
     int i, ret;
 
     ocy = *cy;
-    ocx = *cx;
+    x = ocx = *cx;
 
     y = TSLOOP(ocy + my, 2);
-    x = ocx;
     pos = y * 5 + ocx;
 
     if (mx != 0) {
@@ -4338,8 +4561,9 @@ INCLUDE_ASM("asm/nonmatchings/menu/menusub", _TsJKMoveCus);
     for (i = x; i < 5; i++) {
         pos = y * 5 + i;
         if (!cobj[pos].bMsk) {
+            y = pos / 5;
             *cx = pos % 5;
-            *cy = pos / 5;
+            *cy = y;
             return 1;
         }
     }
@@ -4351,17 +4575,12 @@ INCLUDE_ASM("asm/nonmatchings/menu/menusub", _TsJKMoveCus);
             y = pos / 5;
             *cx = x;
             *cy = y;
-            ret = 0;
-            if (ocx != x || ocy != y) {
-                ret = 1;
-            }
-            return ret;
+            return (ocx != x || ocy != y);
         }
     }
 
     return 0;
 }
-#endif
 
 /* static */ void _TsJKSetPadArrow(int sel, JUKECDOBJ *cobj) {
     int cx, cy;
