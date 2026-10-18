@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# usage: d.py SRC FUNC [ADDR [TARGETLEN]] [-q]  -> aligned diff
+# usage: tools/pal/aligndiff.py SRC FUNC [ADDR [TARGETLEN]] [-q]  -> aligned diff
 import sys, os, subprocess, json, tempfile, difflib, re
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT + '/tools/pal')
 import fingerprint as fp
 import numpy as np
