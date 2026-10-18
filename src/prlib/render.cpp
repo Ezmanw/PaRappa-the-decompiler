@@ -356,7 +356,87 @@ void SpmFileHeader::RenderContext2Model(PrModelObject *model) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/render", RenderContext2Node__7SpmNodeP13PrModelObject);
+void SpmNode::RenderContext2Node(PrModelObject *model) {
+    if (!(m_flags & 0x2000)) {
+        return;
+    }
+    if (!(m_flags & 0x4000)) {
+        return;
+    }
+    if (AwfulStatus && !(m_flags & 0x400000)) {
+        return;
+    }
+
+    prRenderStuff.m_statistics.opaque_context2_node_num++;
+
+    if (m_flags & 0x10) {
+        reinterpret_cast<SpmClusterGeometryNode*>(this)->RenderClusterNode(model);
+    } else if (m_flags & 0x20) {
+        reinterpret_cast<SpmShapeNode*>(this)->RenderShapeNode(model);
+    } else {
+        PrVuNodeHeaderDmaPacket *packet = unk16C[0];
+        if (packet != NULL) {
+            PrVuNodeHeaderDmaPacket *p = (PrVuNodeHeaderDmaPacket*)((u_int)packet | 0x30000000);
+            p->unk10 = unk40;
+            p->unk68 = prSpramData->m_disturbance;
+            prRenderStuff.RenderNodeEECore((PrVuNodeHeaderDmaPacket*)((u_int)p & 0x0fffffff));
+        }
+
+        PrVuNodeHeaderDmaPacket *packet2 = unk16C[1];
+        if (packet2 != NULL) {
+            packet2 = (PrVuNodeHeaderDmaPacket*)((u_int)packet2 | 0x30000000);
+            packet2->unk10 = unk40;
+            packet2->unk68 = prSpramData->m_disturbance;
+
+            NaVECTOR<float, 4> v;
+            PrRawMat m;
+            {
+                PrRawMat r;
+                const PrMat44 *vp = &prSpramData->m_view_projection_matrix;
+                {
+                    int w = 3;
+                    do { w--; } while (w != -1);
+                }
+                LDA(vp);
+                MUL((PrMat44*)&r, &unk40);
+                {
+                    int w = 3;
+                    do { w--; } while (w != -1);
+                }
+                MatCopy((PrMat44*)&m, (PrMat44*)&r);
+            }
+            {
+                NaVECTOR<float, 4> t;
+                asm volatile(
+                    "lqc2     $vf4,   0x0(%1)       \n\t"
+                    "lqc2     $vf5,  0x10(%1)       \n\t"
+                    "lqc2     $vf6,  0x20(%1)       \n\t"
+                    "lqc2     $vf7,  0x30(%1)       \n\t"
+                    "lqc2     $vf8,   0x0(%2)       \n\t"
+                    "vmulax.xyzw   ACC,    $vf4,   $vf8  \n\t"
+                    "vmadday.xyzw  ACC,    $vf5,   $vf8  \n\t"
+                    "vmaddaz.xyzw  ACC,    $vf6,   $vf8  \n\t"
+                    "vmaddw.xyzw   $vf9,   $vf7,   $vf8  \n\t"
+                    "sqc2     $vf9,   0x0(%0)       \n\t"
+                : : "r"(&t), "r"(&m), "r"(&unk140));
+                asm volatile("lq $6, 0(%1)\n\tsq $6, 0(%0)" : : "r"(&v), "r"(&t) : "$6");
+            }
+
+            float z = v[2] / v[3];
+            u_int tm = unk188;
+            if (v[3] == 0.0f) {
+                z = v[2] * 3.4028235e+38f;
+            }
+
+            prRenderStuff.AppendTransmitDmaTag((sceDmaTag*)((u_int)packet2 & 0x0fffffff), tm, z);
+        }
+    }
+
+    if (m_flags & 0x40) {
+        reinterpret_cast<SpmComplexNode*>(this)->RenderContour(model);
+    }
+}
+
 
 /* nalib/navector.h */
 extern "C" float *func_00145DB0(float *d, const float& a0, const float& a1, const float& a2, const float& a3, const float& a4, const float& a5, const float& a6, const float& a7, const float& a8, const float& a9, const float& a10, const float& a11, const float& a12, const float& a13, const float& a14, const float& a15) {
