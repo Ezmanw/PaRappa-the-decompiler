@@ -76,9 +76,101 @@ void PrSetSpriteDefinitionZ(unsigned int z) {
     g_SpriteDefinitionZ = z;
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/vram", PrAddSpriteDefinition__FP11NaGifPacketRC11PrVRAM_RECTT1b);
+static inline int ClampZero(int x) {
+    if (x <= 0) {
+        return 0;
+    }
+    return x;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/vram", PrAddSpriteDefinitionSuperSampled__FP11NaGifPacketRC11PrVRAM_RECTT1);
+static inline int ClampZeroFirst(int x) {
+    register int zero asm("$0");
+    if (x <= zero) {
+        return 0;
+    }
+    return x;
+}
+
+int PrAddSpriteDefinition(NaGifPacket *p, const PrVRAM_RECT &r0, const PrVRAM_RECT &r1, bool abe) {
+    register int s4_zero asm("s4") = 0;
+    u_int x0 = r0.x;
+    u_int y0 = r0.y & 0x1f;
+    u_int w0 = r0.w;
+    u_int h0 = r0.h;
+    int x1 = r1.x;
+    u_int y1 = r1.y & 0x1f;
+    int w1 = r1.w;
+    int h1 = r1.h;
+
+    func_0014D7D0(p, 6, 0, true, false, abe, false, 1, 0, false);
+
+    func_0014D8D8(p, SCE_GS_UV, SCE_GS_SET_UV(ClampZeroFirst((x1 << 4) + 8), (y1 << 4) + 8));
+    func_0014D8D8(p, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(x0 << 4, y0 << 4, g_SpriteDefinitionZ << 4));
+
+    int u1 = ((x1 + w1) << 4) + 8;
+    int v1 = ((y1 + h1) << 4) + 8;
+    if (u1 <= s4_zero) u1 = 0;
+    if (v1 <= s4_zero) v1 = 0;
+    func_0014D8D8(p, SCE_GS_UV, SCE_GS_SET_UV(u1, v1));
+    func_0014D8D8(p, SCE_GS_XYZ2, SCE_GS_SET_XYZ2((x0 + w0) << 4, (y0 + h0) << 4, g_SpriteDefinitionZ << 4));
+
+    return 5;
+}
+
+int PrAddSpriteDefinitionSuperSampled(NaGifPacket *p, const PrVRAM_RECT &r0, const PrVRAM_RECT &r1) {
+    u_int x0 = r0.x;
+    u_int y0 = r0.y & 0x1f;
+    u_int w0 = r0.w;
+    u_int h0 = r0.h;
+    int x1 = r1.x;
+    u_int y1 = r1.y & 0x1f;
+    int w1 = r1.w;
+    int h1 = r1.h;
+
+    u_int du = (w1 << 2) / w0;
+    u_int dv = (h1 << 1) / h0;
+
+    int u0 = x1 << 4;
+    int v0 = y1 << 4;
+    int u_step = (du >> 2) + 8;
+    int v_step = dv + 8;
+
+    func_0014D7D0(p, 6, 0, true, false, true, false, 1, 0, false);
+    func_0014D8A8(p, 0, 2, 2, 2, 33);
+
+    int u_off0 = u_step - du;
+    int v_off0 = v_step - dv;
+
+    func_0014D8D8(p, SCE_GS_UV, SCE_GS_SET_UV(ClampZero(u0 + u_off0), ClampZero(v0 + v_off0)));
+    func_0014D8D8(p, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(x0 << 4, y0 << 4, g_SpriteDefinitionZ << 4));
+
+    int u1 = (x1 + w1) << 4;
+    int v1 = (y1 + h1) << 4;
+    func_0014D8D8(p, SCE_GS_UV, SCE_GS_SET_UV(ClampZero(u1 + u_off0), ClampZero(v1 + v_off0)));
+    func_0014D8D8(p, SCE_GS_XYZ2, SCE_GS_SET_XYZ2((x0 + w0) << 4, (y0 + h0) << 4, g_SpriteDefinitionZ << 4));
+
+    int u_off1 = u_step + du;
+    int v_off1 = v_step + dv;
+
+    func_0014D8A8(p, 0, 2, 2, 1, 33);
+
+    func_0014D8D8(p, SCE_GS_UV, SCE_GS_SET_UV(ClampZero(u0 + u_off1), ClampZero(v0 + v_off0)));
+    func_0014D8D8(p, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(x0 << 4, y0 << 4, g_SpriteDefinitionZ << 4));
+    func_0014D8D8(p, SCE_GS_UV, SCE_GS_SET_UV(ClampZero(u1 + u_off1), ClampZero(v1 + v_off0)));
+    func_0014D8D8(p, SCE_GS_XYZ2, SCE_GS_SET_XYZ2((x0 + w0) << 4, (y0 + h0) << 4, g_SpriteDefinitionZ << 4));
+
+    func_0014D8D8(p, SCE_GS_UV, SCE_GS_SET_UV(ClampZero(u0 + u_off0), ClampZero(v0 + v_off1)));
+    func_0014D8D8(p, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(x0 << 4, y0 << 4, g_SpriteDefinitionZ << 4));
+    func_0014D8D8(p, SCE_GS_UV, SCE_GS_SET_UV(ClampZero(u1 + u_off0), ClampZero(v1 + v_off1)));
+    func_0014D8D8(p, SCE_GS_XYZ2, SCE_GS_SET_XYZ2((x0 + w0) << 4, (y0 + h0) << 4, g_SpriteDefinitionZ << 4));
+
+    func_0014D8D8(p, SCE_GS_UV, SCE_GS_SET_UV(ClampZero(u0 + u_off1), ClampZero(v0 + v_off1)));
+    func_0014D8D8(p, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(x0 << 4, y0 << 4, g_SpriteDefinitionZ << 4));
+    func_0014D8D8(p, SCE_GS_UV, SCE_GS_SET_UV(ClampZero(u1 + u_off1), ClampZero(v1 + v_off1)));
+    func_0014D8D8(p, SCE_GS_XYZ2, SCE_GS_SET_XYZ2((x0 + w0) << 4, (y0 + h0) << 4, g_SpriteDefinitionZ << 4));
+
+    return 19;
+}
 
 /* nalib/napacket.h */
 extern "C" void func_0014D668(NaGifPacket *p, u_int ofx, u_int ofy) {
