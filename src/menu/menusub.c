@@ -58,8 +58,8 @@
 // /* data 18bcc0 */ static PATPOS PAT_ALERT_WIN_CENTER;
 // /* data 18bcd0 */ static PATPOS PAT_ALERT_WIN_BELOW;
 // /* data 18bce0 */ static PATPOS PAT_ALERT_WIN_FFACE[0];
-// /* data 18bd10 */ static PATPOS SAVE_MENU_SELPAT[0];
-// /* data 18bd28 */ static PTPOS SAVEWZoom_CXY[0];
+/* data 18bd10 */ extern PATPOS SAVE_MENU_SELPAT[]; /* static */
+/* data 18bd28 */ extern PTPOS SAVEWZoom_CXY[]; /* static */
 // /* data 18bd30 */ static PATPOS LG_SCROLL_MARK[0];
 // /* data 18bd48 */ static PATPOS RP_SCROLL_MARK[0];
 // /* data 18bd60 */ static PATPOS LLG_SCROLL_MARK[0];
@@ -111,8 +111,8 @@
 /* data 18c5b0 */ extern PATPOS JUKEJKT_Pat[]; /* static */
 // /* data 18c628 */ static float JUKEWAV_INITBL[0];
 /* data 18c650 */ extern PATPOS JUKEJKT_PatS; /* static */
-// /* data 18c660 */ static PATPOS JUKEREC_Pat[0];
-// /* data 18c6d8 */ static PATPOS JUKEREC_PatS[0];
+/* data 18c660 */ extern PATPOS JUKEREC_Pat[]; /* static */
+/* data 18c6d8 */ extern PATPOS JUKEREC_PatS; /* static */
 /* data 18c6e8 */ extern u_int HosiColor[][8]; /* static */
 /* data 18c748 */ extern HOSI_TYPE hTypeTable[17];
 /* sdata 3997bc */ extern TSTEX_INF *tblTex; /* static */
@@ -177,7 +177,14 @@
 /* bss 1c7f7c8 */ extern CMPMES_WORK CmpMesWork; /* static */
 // /* bss 1c7f7e0 */ static RANKLIST RankLst[20];
 // /* bss 1c7f970 */ static POPUP_MENU PopupMenu;
-// /* bss 1c7fa88 */ static SAVE_MENU SaveMenu;
+typedef struct {
+    /* 0x00 */ int state;
+    /* 0x04 */ int exitflg;
+    /* 0x08 */ int selno;
+    /* 0x0c */ ANIME_WK awork;
+    /* 0x20 */ POPCTIM cani;
+} SAVE_MENU;
+/* bss 1c7fa88 */ extern SAVE_MENU SaveMenu; /* static */
 /* bss 1c7fb48 */ extern JUKE_MENU JukeMenu; /* static */
 // /* bss 1c80f60 */ static OPTION_MENU OptionMenu;
 /* bss 1c80fb0 */ extern USERLIST_MENU UserListMenu; /* static */
@@ -3433,7 +3440,68 @@ INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPopMenCus_Draw);
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsSaveMenu_Flow);
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsSaveMenu_Draw);
+void TsSaveMenu_Draw(SPR_PKT pk, SPR_PRM *spr) {
+    SAVE_MENU *pfw;
+    float      fRate;
+    float      rt0, rt1, rt2;
+    int        ton;
+    int        i;
+    int        dmy;
+    int        bPut, bState;
+    PATPOS    *ppat;
+
+    pfw = &SaveMenu;
+
+    fRate = (MNSceneGetMusicFitTimer() % 72) / 72.0f;
+    fRate = -sinf(fRate * 6.2831855f);
+    dmy = MNSceneGetMusicFitTimer() % 180;
+    pfw->cani.fswing = fRate;
+
+    if (TsANIME_GetRate(&pfw->awork, &rt0, &rt1, &rt2)) {
+        spr->zoom.centerX = SAVEWZoom_CXY[0].x;
+        spr->zoom.centerY = SAVEWZoom_CXY[0].y;
+        spr->zoom.zoomX = rt1;
+        spr->zoom.zoomY = rt0;
+        spr->zoom.isOn = TRUE;
+        ton = (int)(rt0 * 256.0f);
+    } else {
+        spr->zoom.isOn = FALSE;
+        ton = 256;
+    }
+
+    spr->zx = 1.0f;
+    spr->zy = 0.5f;
+    PkALPHA_Add(pk, 0x44);
+
+    spr->rgba0 = GetDToneColor(0x404040, 0x80808080, ton);
+    pfw->cani.habgr = GetDToneColor(0x404040, 0x80ffffff, ton);
+    pfw->cani.nabgr = GetDToneColor(0x404040, 0x80808080, ton);
+    ppat = SAVE_MENU_SELPAT;
+
+    for (i = 0; i < 2; i++, ppat++) {
+        bPut = 0;
+        bState = 0;
+        if (i == pfw->selno) {
+            if (pfw->cani.okTim != 0) {
+                bPut = 2;
+                bState = 2;
+            } else {
+                bPut = 1;
+                bState = (pfw->cani.onTim != 0) ? 3 : 1;
+            }
+        }
+
+        if (bPut == 0) {
+            spr->rgba0 = pfw->cani.nabgr;
+        } else if (bPut == 1) {
+            spr->rgba0 = pfw->cani.habgr;
+        }
+
+        TsPopCusPut(pk, spr, 3, &pfw->cani, bState, i, ppat, 0, 0);
+    }
+
+    spr->zoom.isOn = FALSE;
+}
 
 static void TSJukeCDObj_Init(JUKECDOBJ *pw, int pno) {
     memset(pw, 0, sizeof(*pw));
@@ -3441,9 +3509,38 @@ static void TSJukeCDObj_Init(JUKECDOBJ *pw, int pno) {
     pw->patNo = pno;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", _TsJkJacketPut);
+void _TsJkJacketPut(SPR_PKT pk, SPR_PRM *spr, JUKECDOBJ *pw, int px, int py, float zx, float rot, u_int abgr, u_int abgrs) {
+    if (pw->vrate == 0.0f) {
+        spr->rgba0 = abgrs;
+        TsPatPutRZoom(pk, spr, &JUKEJKT_PatS, px + 10, py + 5, zx, rot);
+        spr->rgba0 = abgr;
+        TsPatPutRZoom(pk, spr, &JUKEJKT_Pat[pw->patNo], px, py, zx, rot);
+    } else {
+        spr->rgba0 = abgrs;
+        TsPatPutMZoom(pk, spr, &JUKEJKT_PatS, px + 10, py + 5, zx + pw->vrate, zx + pw->vrate, 8, 8, pw->vrate, pw->vrate);
+        spr->rgba0 = abgr;
+        TsPatPutMZoom(pk, spr, &JUKEJKT_Pat[pw->patNo], px, py, zx + pw->vrate, zx + pw->vrate, 8, 8, pw->vrate, pw->vrate);
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", _TsJkRecordPut);
+void _TsJkRecordPut(SPR_PKT pk, SPR_PRM *spr, JUKECDOBJ *pw, int px, int py, float zr, float rrot, u_int abgr, u_int abgrs) {
+    float ox, oy;
+
+    if (pw->rox == 0.0f && pw->roy == 0.0f) {
+        return;
+    }
+
+    ox = spr->ofsx;
+    oy = spr->ofsy;
+    spr->ofsx = ox + pw->rox;
+    spr->rgba0 = abgrs;
+    spr->ofsy = oy + pw->roy;
+    TsPatPutRZoom(pk, spr, &JUKEREC_PatS, px + 10, py + 5, zr, rrot);
+    spr->rgba0 = abgr;
+    TsPatPutRZoom(pk, spr, &JUKEREC_Pat[pw->patNo], px, py, zr, rrot);
+    spr->ofsx = ox;
+    spr->ofsy = oy;
+}
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TSJukeCDObj_Draw);
 

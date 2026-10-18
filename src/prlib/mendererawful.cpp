@@ -37,7 +37,9 @@ extern float D_003719B0[4];
 
 float GetAwfulRotation() {
     if (awfulRotationState == 0 || awfulRotationState == 2) {
-        if (--awfulChangeTimer == 0) {
+        u_int t = awfulChangeTimer - 1;
+        awfulChangeTimer = t;
+        if (t == 0) {
             awfulChangeTimer = 0;
             awfulRotationState = (awfulRotationState + 1) % 4;
             SetNextSwitchRotationTimer();
@@ -112,21 +114,16 @@ void PrUpdateAwfulMenderer() {
     if (prAwfulMendererPause != 0) {
         return;
     }
-
     float angle = awfulBackgroundAngle + prAwfulMendererSpeed * GetAwfulRotation();
-    float a = angle;
-    if (a >= 6.2831855f) {
-        angle = a - 6.2831855f;
-        a = angle;
+    if (angle >= 6.2831855f) {
+        angle -= 6.2831855f;
     }
     if (angle < 0.0f) {
-        a = angle + 6.2831855f;
+        angle += 6.2831855f;
     }
-    awfulBackgroundAngle = a;
-
+    awfulBackgroundAngle = angle;
     WaveCtrlUpdate(&awfulWave, prAwfulMendererSpeed);
 }
-
 
 /* nalib/navector.h */
 INCLUDE_ASM("asm/nonmatchings/prlib/mendererawful", func_00150CE8);
