@@ -3,7 +3,12 @@
  * NoXf() int helper gives the loop-hoisted int 1 + movn (target: movz v1,s7,v0 with v1=0 default).
  * Remaining: 1.0f still hoisted into f21 (its two compares are matched as one loop movable; target hoists int 1 instead --
  * replacing one 1.0f by 2.0f gives the target's s7/no-f21 layout, so the fix is to stop the two 1.0f loads matching),
- * movn vs movz form, regalloc of MulMV r/out/mats (target r=a0,out=t2,&unk7C=t4, computed before the wait loop). */
+ * movn vs movz form, regalloc of MulMV r/out/mats (target r=a0,out=t2,&unk7C=t4, computed before the wait loop).
+ * loop.c analysis (-da .loop dump, loop of 232 insns): movables are considered in insn order and the threshold
+ * shrinks with each reg moved. IDENT (2 regs) moves, then the two matched 1.0f loads (savings 2, life 2) move,
+ * then the int 1 for the movz (savings 2, life 2) is "not desirable" (moved only on the loop rerun). The target
+ * fits exactly if the two 1.0f loads are NOT matched (savings 1 each -> never hoisted) -- find out what keeps
+ * them from matching (combine_movables needs n_times_set==1, !global, equal src). */
 static inline int NoXf(const SpaNodeAnimation *na) { if (na->unk8 == 0) return 1; return 0; }
 
 static inline void MulMV2(const PrMat44 *a, const PrMat44 *b, PrMat44 *out) {
