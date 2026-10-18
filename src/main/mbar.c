@@ -640,11 +640,6 @@ float examScore2Level(long score) {
     return ret_lvl;
 }
 
-INCLUDE_RODATA("asm/nonmatchings/main/mbar", D_00393450);
-
-#ifndef NON_MATCHING
-INCLUDE_ASM("asm/nonmatchings/main/mbar", ExamDispOn);
-#else
 static void ExamDispOn(void) {
     int met_time;
     int i;
@@ -715,7 +710,8 @@ static void ExamDispOn(void) {
             } else {
                 moto_p = scr_tenmetu_col[2];
             }
-            perd = exam_disp_cursor_timer * 16;
+            perd = exam_disp_cursor_timer;
+            perd *= 16;
             if (perd & 0x100) {
                 perd ^= 0xff;
             }
@@ -726,7 +722,6 @@ static void ExamDispOn(void) {
         }
     }
 }
-#endif
 
 static u_long hex2dec(u_long data) {
     u_long ret = 0;

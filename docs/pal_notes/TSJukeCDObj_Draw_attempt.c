@@ -1,4 +1,7 @@
-extern float JUKEWAV_INITBL[];
+    TsPatPutRZoom(pk, spr, &JUKEREC_Pat[pw->patNo], px, py, zr, rrot);
+    spr->ofsx = ox;
+    spr->ofsy = oy;
+}
 
 void TSJukeCDObj_Draw(SPR_PKT pk, SPR_PRM *spr, JUKECDOBJ *pw, int px, int py, int anmtime) {
     int     jx, jy;
@@ -20,19 +23,12 @@ void TSJukeCDObj_Draw(SPR_PKT pk, SPR_PRM *spr, JUKECDOBJ *pw, int px, int py, i
     py += pw->patPos->y;
     ppat = &JUKEJKT_Pat[pw->patNo];
 
-    jzr = 1.0f;
     ox = spr->ofsx;
-    rzr = 1.0f;
-    zrate = 1.0f;
-    wvrate = 1.0f;
     oy = spr->ofsy;
+    wvrate = zrate = rzr = jzr = 1.0f;
+    rrot = aox = rot = aoy = 0.0f;
 
     PkALPHA_Add(pk, 0x44);
-
-    rot = 0.0f;
-    aox = 0.0f;
-    rrot = 0.0f;
-    aoy = 0.0f;
 
     switch (pw->state) {
     case TSJKCUS_MSK:
@@ -45,9 +41,9 @@ void TSJukeCDObj_Draw(SPR_PKT pk, SPR_PRM *spr, JUKECDOBJ *pw, int px, int py, i
     case TSJKCUS_CUR:
     case TSJKCUS_SELOK:
         abgr = 0x80c0c0c0;
-        abgrs = 0x30808080;
         zrate = 1.25f;
         pw->vrate = 0.0f;
+        abgrs = 0x30808080;
         break;
     case TSJKCUS_ON:
         pw->time++;
@@ -77,8 +73,8 @@ void TSJukeCDObj_Draw(SPR_PKT pk, SPR_PRM *spr, JUKECDOBJ *pw, int px, int py, i
         break;
     default:
         abgr = 0x80c0c0c0;
-        abgrs = 0x30808080;
         pw->vrate = 0.0f;
+        abgrs = 0x30808080;
         break;
     }
 
@@ -94,8 +90,8 @@ void TSJukeCDObj_Draw(SPR_PKT pk, SPR_PRM *spr, JUKECDOBJ *pw, int px, int py, i
     switch (pw->anime) {
     case TSJKANM_IN:
         if (pw->atime != 0) {
-            pw->innm = 0x200;
             pw->atime--;
+            pw->innm = 0x200;
             return;
         }
         pw->innm = TSNumMov(pw->innm, 0, 5);
@@ -128,10 +124,10 @@ void TSJukeCDObj_Draw(SPR_PKT pk, SPR_PRM *spr, JUKECDOBJ *pw, int px, int py, i
         fRate = 1.0f - (pw->innm / 256.0f);
         rot = fRate * -9.424778f;
         aox = fRate * ((pw->dir != 0) ? -200.0f : 200.0f);
-        if (pw->dir2 == 0) {
-            aoy = fRate * -20.0f;
-        } else {
+        if (pw->dir2 != 0) {
             aoy = fRate * 20.0f;
+        } else {
+            aoy = fRate * -20.0f;
         }
         ton = (int)(fRate * 256.0f);
         abgr = GetDToneColor(abgr, 0xffffff, ton);
@@ -208,9 +204,10 @@ void TSJukeCDObj_Draw(SPR_PKT pk, SPR_PRM *spr, JUKECDOBJ *pw, int px, int py, i
             fRate = 1.0f - fRate;
         }
         wvrate = 1.0f - fRate;
-        fSin = fRate * 0.5f * 3.1415927f;
+        fSin = fRate * 0.5f;
         rabgr = abgr;
         rabgrs = abgrs;
+        fSin *= 3.1415927f;
         pw->rox = (1.0f - cosf(fSin)) * fx * zrate * jzr;
         pw->roy = sinf(fSin) * fy * zrate * jzr;
         if (pw->innm == 0) {
@@ -229,7 +226,7 @@ void TSJukeCDObj_Draw(SPR_PKT pk, SPR_PRM *spr, JUKECDOBJ *pw, int px, int py, i
     case TSJKANM_ROTATE:
         wvrate = 0.0f;
         if (pw->atime == 0) {
-            pw->innm = pw->innm2 = 0x400;
+            pw->innm2 = pw->innm = 0x400;
             pw->atime = 1;
             pw->rrot = 0.0f;
         } else {
@@ -295,7 +292,7 @@ void TSJukeCDObj_Draw(SPR_PKT pk, SPR_PRM *spr, JUKECDOBJ *pw, int px, int py, i
             pw->rrot += (float)(pw->atime - 20);
             rrot = pw->rrot * 0.005f;
         } else {
-            rot = 0.0f;
+            rrot = 0.0f;
         }
         pw->innm = TSNumMov(pw->innm, 0, 6);
         fRate = pw->innm / 1024.0f;
@@ -325,7 +322,7 @@ void TSJukeCDObj_Draw(SPR_PKT pk, SPR_PRM *spr, JUKECDOBJ *pw, int px, int py, i
         break;
 
     default:
-        pw->oy = pw->rot = pw->ox = 0.0f;
+        pw->rot = pw->ox = pw->oy = 0.0f;
         break;
     }
 
@@ -344,6 +341,9 @@ void TSJukeCDObj_Draw(SPR_PKT pk, SPR_PRM *spr, JUKECDOBJ *pw, int px, int py, i
         _TsJkJacketPut(pk, spr, pw, px, py, jzr, rot, abgr, abgrs);
     }
 
-    spr->ofsx = ox;
     spr->ofsy = oy;
+    spr->ofsx = ox;
 }
+
+static int TsJukeIsObjAnime(int isComp) {
+    int        i;
