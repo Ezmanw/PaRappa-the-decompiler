@@ -47,3 +47,23 @@ NaMATRIX<float, 4, 4>* func_0014ACE8(NaMATRIX<float, 4, 4>* self, int axis, cons
     }
     return self;
 }
+
+/* --- Update (Opus pass 2) ---
+ * Root cause of the Z-branch diff found: cse2 (rerun after loop) follows the bnez/bne jumps
+ * (-fcse-follow-jumps) and replaces each `s` load with $f0 in ALL three branches. In the target the
+ * Z branch is NOT on a followed path, so it reloads s (lwc1 104(sp)) and reorg puts that load in a
+ * bnel delay slot (NE predicted taken). cse only follows a jump when LABEL_NUSES(target)==1 and the
+ * label is preceded by a BARRIER, so the original likely had a second reference to the Z label
+ * (e.g. switch `case 2: default:` gives the reload but a tree dispatch, 184/190 eq).
+ * Volatile-read hack below gives 186/190 aligned-equal (only the bnel/bne delay slot + nop shift differ,
+ * because a volatile load can't go in a delay slot). Not a match.
+ */
+#if 0
+NaMATRIX<float, 4, 4>* func_0014ACE8(NaMATRIX<float, 4, 4>* self, int axis, const float* angle) asm("func_0014ACE8");
+NaMATRIX<float, 4, 4>* func_0014ACE8(NaMATRIX<float, 4, 4>* self, int axis, const float* angle) {
+    float c = cosf(*angle);
+    float s = sinf(*angle);
+if (axis == 0) { SetMat44(self, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, c, s, 0.0f, 0.0f, -s, c, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f); } else if (axis == 1) { SetMat44(self, c, 0.0f, -s, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, s, 0.0f, c, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f); } else { float ns = -*(volatile float*)&s; SetMat44(self, c, s, 0.0f, 0.0f, ns, c, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f); }
+    return self;
+}
+#endif

@@ -153,6 +153,15 @@
  *      }
  *  
  */
+/* Update (Opus pass 2): reproduced GetLinearValue at 284 vs 274, 176 aligned-equal. The extra
+ * `move tX,tY` is the copy integrate.c (gcc 2.95 expand_inline_function) makes for an inline
+ * parameter / struct-return address whose actual argument is not a REG_USERVAR_P pseudo
+ * (copy_to_mode_reg + const-equiv). Copy-ctor variants (Copy(*this,r), *this=r, asm on m, asm
+ * on this, implicit) make no difference (implicit -> elementwise loop, worse). Probably the
+ * original passed pointer/reference *variables* to the operators; see PrSPRAM_DATA_Initialize_attempt.cpp.
+ * Note the in-file class copies at the top of spadata.cpp are what must be edited (spadata.cpp
+ * defines NALIB_NAMATRIX_H/NALIB_NAVECTOR_H itself), not src/nalib/*.h.
+ */
 typedef NaVECTOR<float, 4> Vec4;
 typedef NaMATRIX<float, 4, 4> Mat44;
 

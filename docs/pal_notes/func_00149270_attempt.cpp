@@ -52,3 +52,43 @@ NaMATRIX<float, 4, 4>* func_00149270(NaMATRIX<float, 4, 4>* self, const float* a
 }
 
 /* prlib/spadata.cpp */
+/* --- Update (Opus pass 2) ---
+ * Return-by-value + NaMATRIX 16-ref ctor (the stall loop is the NaVECTOR m[4] array-ctor loop)
+ * gives the right loop registers (li t9,-1 / li v0,3 / bne v0,t9) and the arg-passing tail:
+ * 104/170 aligned-equal (was 94). Remaining diff is purely the FP block: target loads the shared
+ * 0.0f into $f1 early (sched1 places it right after a*t), ours gets $f0 after c dies -> zeros stored
+ * last. 2500 random source reorderings (locals/subexpr temps) never moved it; ordering of ref
+ * temporaries (incl. emulated right-to-left) doesn't either (zero pseudo is created late by cse/gcse).
+ */
+#if 0
+NaMATRIX<float, 4, 4> func_00149270(const float* axis, const float& angle_) asm("func_00149270");
+NaMATRIX<float, 4, 4> func_00149270(const float* axis, const float& angle_) {
+    const float* angle = &angle_;
+
+    float yz = axis[1] * axis[1] + axis[2] * axis[2];
+    float len = sqrtf(axis[0] * axis[0] + yz);
+    float r = sqrtf(yz);
+    float sy, cz;
+
+    if (r < FLT_EPSILON) {
+        sy = 0.0f;
+        cz = 1.0f;
+    } else {
+        sy = axis[1] / r;
+        cz = axis[2] / r;
+    }
+
+    float a = r / len;
+    float b = -axis[0] / len;
+    float s = sinf(*angle);
+    float c = cosf(*angle);
+    float t = a * (c - 1.0f);
+
+    return NaMATRIX<float, 4, 4>(
+        a * t + 1.0f, sy * b * t + cz * a * s, cz * b * t - sy * a * s, 0.0f,
+        sy * b * t - cz * a * s, -sy * sy * a * t + c, -sy * cz * a * t - b * s, 0.0f,
+        cz * b * t + sy * a * s, -sy * cz * a * t + b * s, -cz * cz * a * t + c, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f);
+}
+
+/* prlib/spadata.cpp */#endif

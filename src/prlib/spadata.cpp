@@ -222,7 +222,63 @@ int* SpaTrack<int>::GetValue(float arg0) const {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/spadata", GetMatrix__C12SpaTransformf);
+template <> NaVECTOR<float, 4>* SpaTrack<NaVECTOR<float, 4> >::GetValue(float) const;
+template <> float* SpaTrack<float>::GetValue(float) const;
+template <> NaMATRIX<float, 4, 4>* SpaTrack<NaMATRIX<float, 4, 4> >::GetValue(float) const;
+NaMATRIX<float, 4, 4> func_0014AFE0(const NaVECTOR<float, 4>& v) asm("func_0014AFE0");
+NaMATRIX<float, 4, 4> func_00149270(const NaVECTOR<float, 4>& axis, const float& angle) asm("func_00149270");
+NaMATRIX<float, 4, 4> func_0014ACE8(int axis, const float& angle) asm("func_0014ACE8");
+NaMATRIX<float, 4, 4> func_0014ABE0(const NaVECTOR<float, 3>& v) asm("func_0014ABE0");
+extern NaMATRIX<float, 4, 4>* func_00145DB0(NaMATRIX<float, 4, 4>* self,
+    const float& a0, const float& a1, const float& a2, const float& a3,
+    const float& a4, const float& a5, const float& a6, const float& a7,
+    const float& a8, const float& a9, const float& a10, const float& a11,
+    const float& a12, const float& a13, const float& a14, const float& a15) asm("func_00145DB0");
+
+NaMATRIX<float, 4, 4>* SpaTransform::GetMatrix(float time) const {
+    static NaVECTOR<float, 4> vec;
+    static NaMATRIX<float, 4, 4> return_buffer;
+
+    switch (this->unk0) {
+    case 0:
+        vec = *((SpaTransform*)this)->GetTrack<NaVECTOR<float, 4> >()->GetValue(time);
+        vec[3] = 1.0f;
+        return_buffer = func_0014AFE0(vec);
+        return &return_buffer;
+    case 1:
+        vec = *((SpaTransform*)this)->GetTrack<NaVECTOR<float, 4> >()->GetValue(time);
+        {
+            float angle = vec[3];
+            vec[3] = 1.0f;
+            return_buffer = func_00149270(vec, angle);
+        }
+        return &return_buffer;
+    case 2:
+    case 3:
+    case 4:
+        {
+            float angle = *((SpaTransform*)this)->GetTrack<float>()->GetValue(time);
+            return_buffer = func_0014ACE8(this->unk0 - 2, angle);
+        }
+        return &return_buffer;
+    case 5:
+        vec = *((SpaTransform*)this)->GetTrack<NaVECTOR<float, 4> >()->GetValue(time);
+        return_buffer = func_0014ABE0(*(NaVECTOR<float, 3>*)&vec);
+        return &return_buffer;
+    case 6:
+        return ((SpaTransform*)this)->GetTrack<NaMATRIX<float, 4, 4> >()->GetValue(time);
+    case 7:
+        vec = *((SpaTransform*)this)->GetTrack<NaVECTOR<float, 4> >()->GetValue(time);
+        func_00145DB0(&return_buffer,
+            1.0f, 0.0f, 0.0f, 0.0f,
+            vec[0], 1.0f, 0.0f, 0.0f,
+            vec[1], vec[2], 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f);
+        return &return_buffer;
+    default:
+        return &NaMATRIX<float, 4, 4>::IDENT;
+    }
+}
 
 NaMATRIX<float, 4, 4>* SpaNodeAnimation::GetMatrix(float time) const {
     static NaMATRIX<float, 4, 4> return_buffer;
