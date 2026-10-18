@@ -66,7 +66,7 @@ static inline void ComposeNoVis(SpmNode *node, PrModelObject *model, const NaMAT
             spram = prSpramData;
             *(PrMat44*)spram = NODE_MAT(node, 0);
         }
-        if (spram->m_model_transaction_blend_ratio != 2.0f) {
+        if (spram->m_model_transaction_blend_ratio != 1.0f) {
             node->BlendTransitionMatrix(model, *(PrMat44*)spram);
             spram = prSpramData;
         }
