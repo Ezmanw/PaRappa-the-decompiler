@@ -5,15 +5,12 @@
 
 #include <float.h>
 
-INCLUDE_ASM("asm/nonmatchings/prlib/scene", __13PrSceneObjectP13sceGsDrawEnv1PCcUi);
-#if 0
-// TODO: nonmatching (instruction scheduling / store order)
 PrSceneObject::PrSceneObject(sceGsDrawEnv1 *draw_env, const char *name, u_int fbp) {
     unkC = 0x19832b1a;
     unk94 = fbp;
-    m_default_depth_level = 3;
     m_camera_time = 0.0f;
     m_name = "(noname)";
+    m_default_depth_level = 3;
     m_list.next = NULL;
     m_list.prev = NULL;
     m_obj_set = NULL;
@@ -23,9 +20,9 @@ PrSceneObject::PrSceneObject(sceGsDrawEnv1 *draw_env, const char *name, u_int fb
     unk90 = NULL;
     unk70 = draw_env;
     unk50 = draw_env->frame1;
-    unk74 = unk50.FBW * 64;
     unk58 = draw_env->xyoffset1;
-    unk78 = (2048 - ((u_int)draw_env->xyoffset1.OFY >> 4)) * 2;
+    unk74 = unk50.FBW * 64;
+    unk78 = (2048 - (int)(draw_env->xyoffset1.OFY >> 4)) * 2;
 
     m_default_camera.position.Set(0.0f, 0.0f, 1000.0f, 1.0f);
     m_default_camera.interest.Set(0.0f, 0.0f, 0.0f, 1.0f);
@@ -39,7 +36,6 @@ PrSceneObject::PrSceneObject(sceGsDrawEnv1 *draw_env, const char *name, u_int fb
     m_screen_model_list = NULL;
     unk98 = NULL;
 }
-#endif
 
 PrSceneObject::~PrSceneObject() {
 }
