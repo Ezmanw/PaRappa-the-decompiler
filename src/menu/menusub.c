@@ -648,7 +648,107 @@ void TsBGMChangePos(int no) {
     pbgm->chgReq = no + 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsBGMPoll);
+/* static */ void TsBGMPoll(void) {
+    BGMSTATE *pbgm = &TsBGMState;
+    int       vol;
+
+    MNSceneMusicFitTimerFrame();
+    if (pbgm->state == 0) {
+        return;
+    }
+
+    if (pbgm->wtLoad != 0) {
+        MNSceneMusicFitTimerClear();
+        if (MenuVoiceBankSet(-1) != 0) {
+            return;
+        }
+        pbgm->wtLoad = 0;
+        TsBGMPlay(pbgm->wtNo, pbgm->wtTim);
+    }
+
+    tsBGMONEflow();
+
+    if (pbgm->chgReq != 0 && (pbgm->wbgm[0].tim % 36) == 0) {
+        pbgm->oldno  = pbgm->sndno;
+        pbgm->sndno  = pbgm->chgReq - 1;
+        pbgm->ctim   = 1;
+        pbgm->cstate = 0;
+        pbgm->chgReq = 0;
+    } else if (pbgm->ctim != 0) {
+        if (pbgm->ctim == 75) {
+            tsBGMONEVol(0, 0);
+            MenuVoiceSetVol(3, 23, 0);
+            tsBGMONEVol(pbgm->oldno, 0);
+            tsBGMONEVol(pbgm->sndno, pbgm->vol);
+            pbgm->ctim = 0;
+        } else {
+            if (pbgm->ctim < 2) {
+                vol = pbgm->ctim;
+                tsBGMONEVol(0, vol * pbgm->vol);
+            } else if (pbgm->ctim == 72) {
+                tsBGMONEVol(0, 0);
+                MenuVoicePlay(3, 23);
+            } else if (pbgm->ctim > 72) {
+                vol = 75 - pbgm->ctim;
+                MenuVoiceSetVol(3, 23, (vol * pbgm->vol) / 3);
+            }
+
+            if (pbgm->ctim < 2) {
+                vol = 1 - pbgm->ctim;
+                tsBGMONEVol(pbgm->oldno, vol * pbgm->vol);
+            } else if (pbgm->ctim == 72) {
+                if (pbgm->sndno == 10) {
+                    tsBGMONETop(pbgm->sndno, pbgm->vol);
+                } else {
+                    tsBGMONETop(pbgm->sndno, 0);
+                }
+            } else if (pbgm->ctim > 72) {
+                if (pbgm->sndno != 10) {
+                    vol = pbgm->ctim - 72;
+                    tsBGMONEVol(pbgm->sndno, (vol * pbgm->vol) / 72);
+                }
+            }
+            pbgm->ctim++;
+        }
+    }
+
+    if (pbgm->ttim0 != 0) {
+        pbgm->ttim++;
+        if (pbgm->ttim > pbgm->ttim0) {
+            pbgm->ttim0 = 0;
+            pbgm->ttim  = 0;
+            if (pbgm->state & 4) {
+                pbgm->vol    = 0x100;
+                pbgm->state  = 1;
+                pbgm->cstate = 0;
+                pbgm->ctim   = 0;
+                tsBGMONEVol(pbgm->sndno, 0x100);
+            } else {
+                pbgm->vol    = 0;
+                pbgm->ttim0  = 0;
+                pbgm->ttim   = 0;
+                pbgm->cstate = 0;
+                pbgm->ctim   = 0;
+                if (!(pbgm->state & 9)) {
+                    pbgm->state = 0;
+                    TsBGMStop(0);
+                } else {
+                    pbgm->state = 9;
+                    tsBGMONEVol(pbgm->sndno, 0);
+                }
+            }
+        } else {
+            vol = (pbgm->ttim << 8) / pbgm->ttim0;
+            pbgm->vol = vol;
+            if (!(pbgm->state & 4)) {
+                pbgm->vol = 0x100 - vol;
+            }
+            if (pbgm->ctim == 0) {
+                tsBGMONEVol(pbgm->sndno, pbgm->vol);
+            }
+        }
+    }
+}
 
 static void* TsCmnPkOpen(sceGifPacket *pgifpk) {
     CmnGifOpenCmnPk(pgifpk);
@@ -4449,6 +4549,7 @@ INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPopMenCus_Draw);
 }
 
 void TsSaveMenu_Draw(SPR_PKT pk, SPR_PRM *spr) {
+    register PATPOS *ppat asm("$16");
     SAVE_MENU *pfw;
     float      fRate;
     float      rt0, rt1, rt2;
@@ -4456,7 +4557,6 @@ void TsSaveMenu_Draw(SPR_PKT pk, SPR_PRM *spr) {
     int        i;
     int        dmy;
     int        bPut, bState;
-    PATPOS    *ppat;
 
     pfw = &SaveMenu;
 
@@ -4481,28 +4581,34 @@ void TsSaveMenu_Draw(SPR_PKT pk, SPR_PRM *spr) {
     spr->zy = 0.5f;
     PkALPHA_Add(pk, 0x44);
 
-    spr->rgba0 = GetDToneColor(0x404040, 0x80808080, ton);
+    {
+        u_int c = GetDToneColor(0x404040, 0x80808080, ton);
+        ppat = SAVE_MENU_SELPAT;
+        spr->rgba0 = c;
+    }
     pfw->cani.habgr = GetDToneColor(0x404040, 0x80ffffff, ton);
     pfw->cani.nabgr = GetDToneColor(0x404040, 0x80808080, ton);
-    ppat = SAVE_MENU_SELPAT;
 
     for (i = 0; i < 2; i++, ppat++) {
         bPut = 0;
         bState = 0;
         if (i == pfw->selno) {
+            bPut = 1;
             if (pfw->cani.okTim != 0) {
-                bPut = 2;
                 bState = 2;
+                bPut = 2;
             } else {
-                bPut = 1;
                 bState = (pfw->cani.onTim != 0) ? 3 : 1;
             }
         }
 
-        if (bPut == 0) {
+        switch (bPut) {
+        case 0:
             spr->rgba0 = pfw->cani.nabgr;
-        } else if (bPut == 1) {
+            break;
+        case 1:
             spr->rgba0 = pfw->cani.habgr;
+            break;
         }
 
         TsPopCusPut(pk, spr, 3, &pfw->cani, bState, i, ppat, 0, 0);
