@@ -339,7 +339,11 @@ static void TSSNDPLAY(int n) {
 
             pchan->pSeq = pSeq->pSeqTop;
             pchan->bMsk = bMsk;
+#ifdef VERSION_PAL
+        } else if (n < 0x39) {
+#else
         } else if (n < 0x38) {
+#endif
             ptap  = &TsVoiceTbl[n];
             pchan = &TsSndChan[ptap->chanNo];
 
@@ -371,7 +375,11 @@ static void TSSND_SKIPSTOP(int n) {
     TSVOICE_TBL *ptap;
     TSSND_CHAN  *pchan;
 
+#ifdef VERSION_PAL
+    if (n >= 0x39) {
+#else
     if (n >= 0x38) {
+#endif
         return;
     }
 
@@ -388,7 +396,11 @@ static void TSSND_SKIPPLAY(int n) {
     TSVOICE_TBL *ptap;
     TSSND_CHAN  *pchan;
 
+#ifdef VERSION_PAL
+    if (n >= 0x39) {
+#else
     if (n >= 0x38) {
+#endif
         return;
     }
 
@@ -665,7 +677,11 @@ int _P3DATA_SIZE(int mode) {
 
     switch (mode) {
     case 1:
+#ifdef VERSION_PAL
+        size = 0x190;
+#else
         size = 0x188;
+#endif
         break;
     case 2:
         size = 0x4528;
@@ -1249,6 +1265,8 @@ void TsMenu_Init(int iniflg, P3GAMESTATE *pstate) {
     TsMENU_GetMapTimeState(1);
 }
 
+void UsrMemEndFree(void);
+
 void TsMenu_End(void) {
     int i;
 
@@ -1270,6 +1288,22 @@ void TsMenu_End(void) {
     MNScene_End(&MNS_StageMap);
     MNScene_End(&MNS_CityHall);
 
+#ifdef VERSION_PAL
+    if (tblTex != NULL) {
+        UsrMemEndFree();
+    }
+    tblTex = NULL;
+
+    if (UserDispWork != NULL) {
+        UsrMemEndFree();
+    }
+
+    if (UserLst != NULL) {
+        UsrMemEndFree();
+    }
+    UserDispWork = NULL;
+    UserLst = NULL;
+#else
     if (tblTex != NULL) {
         free(tblTex);
     }
@@ -1281,6 +1315,7 @@ void TsMenu_End(void) {
     if (UserLst != NULL) {
         free(UserLst);
     }
+#endif
 }
 
 void TsMenu_InitFlow(P3GAMESTATE *pstate) {
@@ -1407,10 +1442,18 @@ void TsMenu_Draw(void) {
     pkt = (u_long128*)MnPkt.ptop;
 
     PkSprPkt_SetDefault(pk, spr, DrawGetDrawEnvP(DNUM_DRAW));
+#ifdef VERSION_PAL
+    TsCMPMes_SetPos(0x140, 0xd6);
+#else
     TsCMPMes_SetPos(0x140, 0xba);
+#endif
     TsCMPMes_Draw(pk, spr);
     TsSCFADE_Draw(pk, spr, 1);
+#ifdef VERSION_PAL
+    TsMCAMes_SetPos(0x140, 0x74);
+#else
     TsMCAMes_SetPos(0x140, 0x65);
+#endif
 
     TsMCAMes_Draw(pk, spr);
     MnPkt.ptop = (u_int)pkt;
@@ -1484,7 +1527,74 @@ void GetRankScoreID(MAP_TIME *mptim, u_int *dat) {
     dat[1] = ((rand() % 0x10000) << 8) + mptim->date_pad;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsRanking_Set);
+extern P3MC_RANKSCORE CurRankScore;
+
+/* static */ int TsRanking_Set(void) {
+    P3GAMESTATE    *pstate = pP3GameState;
+    int             stageNo = pstate->nStage;
+    int             ret, i;
+    int             maxRank;
+    u_int           score;
+    int            *pnRank;
+    P3MC_RANKSCORE *pRank;
+
+    memset(&CurRankScore, 0, sizeof(CurRankScore));
+
+    if (stageNo <= 0 || stageNo > 8) {
+        return -1;
+    }
+    if (pstate->nMode == 1) {
+        return -1;
+    }
+
+    if (pstate->nMode == 2) {
+        pRank   = pCStageRank[stageNo - 1].vplay[pstate->vsLev];
+        pnRank  = &pCStageRank[stageNo - 1].nVplay[pstate->vsLev];
+        score   = pstate->score;
+        maxRank = 10;
+        if (pstate->winPlayer > 0) {
+            return -1;
+        }
+    } else {
+        score   = pstate->score + pstate->bonusG;
+        maxRank = 20;
+        pRank   = pCStageRank[stageNo - 1].splay;
+        pnRank  = &pCStageRank[stageNo - 1].nSplay;
+    }
+
+    GetRankScoreID(&MapTime, CurRankScore.scDate);
+    CurRankScore.score = score;
+    CurRankScore.name[0] = 0;
+
+    i = 0;
+    ret = *pnRank;
+    if (ret < maxRank) {
+        for (; i < ret; i++) {
+            if (pRank[i].score < score) {
+                break;
+            }
+        }
+        (*pnRank)++;
+    } else {
+        for (; i < maxRank; i++) {
+            if (pRank[i].score < score) {
+                break;
+            }
+        }
+    }
+
+    if (i < maxRank) {
+        ret = i;
+        for (i = maxRank - 1; ret < i; i--) {
+            pRank[i] = pRank[i - 1];
+        }
+        pRank[ret] = CurRankScore;
+    } else {
+        ret = -1;
+    }
+
+    return ret;
+}
 
 void TsMENU_SetMapScreen(int mapNo) {
     CurMapNo = mapNo;
@@ -4162,7 +4272,7 @@ void _PkMCMsgPut(SPR_PKT pk, SPR_PRM *spr, int id, int x, int y, u_int abgr) {
     if (pP3GameState != NULL) {
         flg = pP3GameState->pGameStatus->language_type;
     } else {
-        flg = LANG_JAPANESE;
+        flg = game_status.language_type;
     }
 
     MENUSubtPut(pk, spr, x, y, abgr, 1, MenuMsgGetMessageMc(id, flg), flg);
@@ -4174,7 +4284,7 @@ int _PkMCMsgGetLine(int id) {
     if (pP3GameState != NULL) {
         flg = pP3GameState->pGameStatus->language_type;
     } else {
-        flg = LANG_JAPANESE;
+        flg = game_status.language_type;
     }
 
     return MENUSubtGetLine(MenuMsgGetMessageMc(id, flg), flg);
@@ -4186,7 +4296,7 @@ void _PkSubMsgPut(SPR_PKT pk, SPR_PRM *spr, int id, int x, int y, u_int abgr) {
     if (pP3GameState != NULL) {
         flg = pP3GameState->pGameStatus->language_type;
     } else {
-        flg = LANG_JAPANESE;
+        flg = game_status.language_type;
     }
 
     MENUSubtPut(pk, spr, x, y, abgr, 1, MenuMsgGetMessageSub(id, flg), flg);

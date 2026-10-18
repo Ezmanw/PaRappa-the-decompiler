@@ -1,3 +1,148 @@
+#define NALIB_NAVECTOR_H
+template <typename T, int t0>
+class NaVECTOR {
+public:
+    NaVECTOR() {}
+
+    NaVECTOR<T, t0>& Set(const T& x, const T& y, const T& z, const T& w);
+
+public:
+    T& operator[](int arg0) {
+        return v[arg0];
+    }
+
+    T operator[](int arg0) const {
+        return v[arg0];
+    }
+
+    bool inl0(const NaVECTOR<T, t0>& arg0) const {
+        for (int i = 0; i < t0; i++) {
+            if (arg0[i] != v[i]) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    bool inl1() const {
+        for (int i = 0; i < t0; i++) {
+            if (v[i] != 0.0f) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    static NaVECTOR<float, 4>& Copy(NaVECTOR<float, 4>& lhs, const NaVECTOR<float, 4>& rhs) {
+        asm volatile("
+            lq $6, 0(%1)
+            sq $6, 0(%0)
+        " : : "r"(&lhs), "r"(&rhs)
+        : "$6", "memory");
+        return lhs;
+    }
+
+    NaVECTOR<float, 4>& operator=(const NaVECTOR<float, 4>& rhs) {
+        return Copy(*this, rhs);
+    }
+
+    template <int t1>
+    NaVECTOR<T, t0>& operator=(const NaVECTOR<T, t1>& rhs) {
+        int n = (t0 < t1) ? t0 : t1;
+        for (int i = 0; i < n; i++) {
+            v[i] = rhs[i];
+        }
+        return *this;
+    }
+
+    T v[t0];
+};
+
+#define NALIB_NAMATRIX_H
+template <typename T, int t0, int t1>
+class NaMATRIX {
+public:
+    NaMATRIX() {}
+
+    NaMATRIX(
+        const T& a0, const T& a1, const T& a2, const T& a3,
+        const T& a4, const T& a5, const T& a6, const T& a7,
+        const T& a8, const T& a9, const T& a10, const T& a11,
+        const T& a12, const T& a13, const T& a14, const T& a15
+    ) {
+        Set(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15);
+    }
+
+    NaMATRIX<T, t0, t1>& Set(
+        const T& a0, const T& a1, const T& a2, const T& a3,
+        const T& a4, const T& a5, const T& a6, const T& a7,
+        const T& a8, const T& a9, const T& a10, const T& a11,
+        const T& a12, const T& a13, const T& a14, const T& a15
+    ) asm("func_001491C0");
+
+    NaMATRIX(const NaMATRIX<float, 4, 4>& rhs) {
+        Copy(*this, rhs);
+    }
+
+    NaVECTOR<T, t0>& operator[](int arg0) {
+        return m[arg0];
+    }
+
+    const NaVECTOR<T, t0>& operator[](int arg0) const {
+        return m[arg0];
+    }
+
+    bool inl0() const {
+        const NaMATRIX<float, 4, 4>& a0 = NaMATRIX<float, 4, 4>::IDENT;
+        for (int i = 0; i < t1; i++) {
+            if (a0[i].inl0(this->m[i])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool inl1() const {
+        for (int i = 0; i < t1; i++) {
+            if (this->m[i].inl1()) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    static NaMATRIX<float, 4, 4>& Copy(NaMATRIX<float, 4, 4>& lhs, const NaMATRIX<float, 4, 4>& rhs) {
+        asm volatile("
+            lq $6, 0(%1)
+            lq $7, 0x10(%1)
+            lq $8, 0x20(%1)
+            lq $9, 0x30(%1)
+            sq $6, 0(%0)
+            sq $7, 0x10(%0)
+            sq $8, 0x20(%0)
+            sq $9, 0x30(%0)
+        " : : "r"(&lhs), "r"(&rhs)
+#ifdef VERSION_PAL
+        : "$6", "$7", "$8", "$9");
+#else
+        : "$6", "$7", "$8", "$9", "memory");
+#endif
+        return lhs;
+    }
+
+    NaMATRIX<float, 4, 4>& operator=(const NaMATRIX<float, 4, 4>& rhs) {
+        return Copy(*this, rhs);
+    }
+
+    NaVECTOR<T, t0> m[t1];
+
+    static NaMATRIX<float, 4, 4> IDENT;
+};
+
 #include "spadata.h"
 
 #include "animation.h"
@@ -532,11 +677,57 @@ NaMATRIX<float, 4, 4>* SpaTrack<NaMATRIX<float, 4, 4> >::GetValue(float arg0) co
 }
 
 /* nalib/navector.h */
-INCLUDE_ASM("asm/nonmatchings/prlib/spadata", func_0014ABE0);
+NaMATRIX<float, 4, 4> func_0014ABE0(const NaVECTOR<float, 3>& v) asm("func_0014ABE0");
+NaMATRIX<float, 4, 4> func_0014ABE0(const NaVECTOR<float, 3>& v) {
+    NaMATRIX<float, 4, 4> ret;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 4; j++) {
+            ret[i][j] = (i == j) ? 1.0f : 0.0f;
+        }
+    }
+    ret[3] = v;
+    ret[3][3] = 1.0f;
+    return ret;
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/spadata", func_0014ACE8);
+NaMATRIX<float, 4, 4> func_0014ACE8(int axis, const float& angle) asm("func_0014ACE8");
+NaMATRIX<float, 4, 4> func_0014ACE8(int axis, const float& angle) {
+    float c = cosf(angle);
+    float s = sinf(angle);
+    if (axis == 0) {
+        return NaMATRIX<float, 4, 4>(
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, c, s, 0.0f,
+            0.0f, -s, c, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        );
+    } else if (axis == 1) {
+        return NaMATRIX<float, 4, 4>(
+            c, 0.0f, -s, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            s, 0.0f, c, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        );
+    } else {
+        return NaMATRIX<float, 4, 4>(
+            c, s, 0.0f, 0.0f,
+            -s, c, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        );
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/spadata", func_0014AFE0);
+NaMATRIX<float, 4, 4> func_0014AFE0(const NaVECTOR<float, 4>& v) asm("func_0014AFE0");
+NaMATRIX<float, 4, 4> func_0014AFE0(const NaVECTOR<float, 4>& v) {
+    NaMATRIX<float, 4, 4> ret;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            ret[i][j] = (i == j) ? v[j] : 0.0f;
+        }
+    }
+    return ret;
+}
 
 
 template <>

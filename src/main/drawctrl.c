@@ -26,6 +26,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef VERSION_PAL
+#undef GS_Y_COORD
+#define GS_Y_COORD(y) ((2048 - 128 + y) << 4)
+#endif
+
 /* sdata 399518 */ extern VCLR_PARA vclr_black_tmp; /* static */
 /* data 185478 */ extern float bra_tap[10/*undef*/][2]; /* static */
 /* data 1854c8 */ extern float bra_title[16/*undef*/][2]; /* static */
@@ -126,9 +131,17 @@ void UseGsSetXyOffset(int ofs) {
     int          offsy;
   
     if (ofs) {
+#ifdef VERSION_PAL
+        offsy = 0x7808;
+#else
         offsy = 0x7908;
+#endif
     } else {
+#ifdef VERSION_PAL
+        offsy = 0x7800;
+#else
         offsy = 0x7900;
+#endif
     }
 
     CmnGifADPacketMake(&gifpk, NULL);
@@ -504,7 +517,11 @@ void BallThrowPoll(void) {
                         sceGifPkAddGsAD(&gifP, SCE_GS_PRIM, 0x156);
 
                         px = ((int)(bts_pp->xp * 16.0f) - (w) + 27648);
+#ifdef VERSION_PAL
+                        py = ((int)(bts_pp->yp * 16.0f) - (h / 2) + 30720);
+#else
                         py = ((int)(bts_pp->yp * 16.0f) - (h / 2) + 30976);
+#endif
 
                         sceGifPkAddGsAD(&gifP, SCE_GS_UV, SCE_GS_SET_UV(0, 0));
 
@@ -608,7 +625,9 @@ void* DrawTmpBuffGetArea(int size) {
 void DrawObjdatInit(int size, OBJDAT *od_pp, PR_SCENEHANDLE prf) {
     int    i;
     void  *tmp_adr;
+#ifndef VERSION_PAL
     float  frame;
+#endif
 
     for (i = 0; i < size; i++, od_pp++) {
         tmp_adr = GetIntAdrsCurrent(od_pp->objdat_num);
@@ -617,8 +636,12 @@ void DrawObjdatInit(int size, OBJDAT *od_pp, PR_SCENEHANDLE prf) {
         case ODAT_SPA:
             od_pp->handle = PrInitializeAnimation(tmp_adr);
            
+#ifdef VERSION_PAL
+            od_pp->maxfr = PrGetAnimationEndFrame(od_pp->handle);
+#else
             frame = PrGetAnimationEndFrame(od_pp->handle);
             od_pp->maxfr = frame + frame;
+#endif
             break;
         case ODAT_SPM:
             od_pp->handle = PrInitializeModel(tmp_adr, prf);
@@ -626,8 +649,12 @@ void DrawObjdatInit(int size, OBJDAT *od_pp, PR_SCENEHANDLE prf) {
         case ODAT_SPC:
             od_pp->handle = PrInitializeCamera(tmp_adr);
 
+#ifdef VERSION_PAL
+            od_pp->maxfr = PrGetCameraEndFrame(od_pp->handle);
+#else
             frame = PrGetCameraEndFrame(od_pp->handle);
             od_pp->maxfr = frame + frame;
+#endif
             break;
         case ODAT_SPF:
         case ODAT_TM2:
@@ -1697,6 +1724,15 @@ int DrawVramClear(void *para_pp, int frame, int first_f, int useDisp, int drDisp
 
     sceGifPkAddGsAD(&gifpk, SCE_GS_TEST_2, SCE_GS_SET_TEST(1, 0, 0, 1, 0, 0, 1, 1));
     sceGifPkAddGsAD(&gifpk, SCE_GS_RGBAQ, SCE_GS_SET_RGBAQ(vclr_para_pp->r, vclr_para_pp->g, vclr_para_pp->b, vclr_para_pp->a, 0));
+#ifdef VERSION_PAL
+    sceGifPkAddGsAD(&gifpk, SCE_GS_SCISSOR_2, SCE_GS_SET_SCISSOR(0, 640, 0, 256));
+    sceGifPkAddGsAD(&gifpk, SCE_GS_PRMODECONT, SCE_GS_SET_PRMODECONT(1));
+    sceGifPkAddGsAD(&gifpk, SCE_GS_XYOFFSET_2, SCE_GS_SET_XYOFFSET(27648, 30720));
+
+    sceGifPkAddGsAD(&gifpk, SCE_GS_PRIM, SCE_GS_SET_PRIM(6, 0, 0, 0, 0, 0, 0, 1, 0));
+    sceGifPkAddGsAD(&gifpk, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(GS_X_COORD(0), GS_Y_COORD(0), 1));
+    sceGifPkAddGsAD(&gifpk, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(GS_X_COORD(640), GS_Y_COORD(256), 1));
+#else
     sceGifPkAddGsAD(&gifpk, SCE_GS_SCISSOR_2, SCE_GS_SET_SCISSOR(0, 640, 0, 224));
     sceGifPkAddGsAD(&gifpk, SCE_GS_PRMODECONT, SCE_GS_SET_PRMODECONT(1));
     sceGifPkAddGsAD(&gifpk, SCE_GS_XYOFFSET_2, SCE_GS_SET_XYOFFSET(27648, 30976));
@@ -1704,6 +1740,7 @@ int DrawVramClear(void *para_pp, int frame, int first_f, int useDisp, int drDisp
     sceGifPkAddGsAD(&gifpk, SCE_GS_PRIM, SCE_GS_SET_PRIM(6, 0, 0, 0, 0, 0, 0, 1, 0));
     sceGifPkAddGsAD(&gifpk, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(GS_X_COORD(0), GS_Y_COORD(0), 1));
     sceGifPkAddGsAD(&gifpk, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(GS_X_COORD(640), GS_Y_COORD(224), 1));
+#endif
 
     CmnGifADPacketMakeTrans(&gifpk);
 
@@ -2007,8 +2044,13 @@ int DrawPlphaIndex8Disp(void *para_pp, int frame, int first_f, int useDisp, int 
     sceGifPkAddGsAD(&gifpk, SCE_GS_UV, SCE_GS_SET_UV((0 << 4) | (1 << 3), (0 << 4) | (1 << 3)));
     sceGifPkAddGsAD(&gifpk, SCE_GS_XYZ2, SCE_GS_SET_XYZ(GS_X_COORD(0), GS_Y_COORD(0), 1));
 
+#ifdef VERSION_PAL
+    sceGifPkAddGsAD(&gifpk, SCE_GS_UV, SCE_GS_SET_UV((640 << 4) | (1 << 3), (256 << 4) | (1 << 3)));
+    sceGifPkAddGsAD(&gifpk, SCE_GS_XYZ2, SCE_GS_SET_XYZ(GS_X_COORD(640), GS_Y_COORD(256), 1));
+#else
     sceGifPkAddGsAD(&gifpk, SCE_GS_UV, SCE_GS_SET_UV((640 << 4) | (1 << 3), (224 << 4) | (1 << 3)));
     sceGifPkAddGsAD(&gifpk, SCE_GS_XYZ2, SCE_GS_SET_XYZ(GS_X_COORD(640), GS_Y_COORD(224), 1));
+#endif
 
     CmnGifADPacketMakeTrans(&gifpk);
     return 0;
@@ -2070,8 +2112,13 @@ int DrawNoodlesDisp(void *para_pp, int frame, int first_f, int useDisp, int drDi
     sceGifPkAddGsAD(&gifpk, SCE_GS_UV, SCE_GS_SET_UV(0, 0));
     sceGifPkAddGsAD(&gifpk, SCE_GS_XYZ2, SCE_GS_SET_XYZ(GS_X_COORD(0), GS_Y_COORD(0), 1));
 
+#ifdef VERSION_PAL
+    sceGifPkAddGsAD(&gifpk, SCE_GS_UV, SCE_GS_SET_UV(640 << 4, 256 << 4));
+    sceGifPkAddGsAD(&gifpk, SCE_GS_XYZ2, SCE_GS_SET_XYZ(GS_X_COORD(640), GS_Y_COORD(256), 1));
+#else
     sceGifPkAddGsAD(&gifpk, SCE_GS_UV, SCE_GS_SET_UV(640 << 4, 224 << 4));
     sceGifPkAddGsAD(&gifpk, SCE_GS_XYZ2, SCE_GS_SET_XYZ(GS_X_COORD(640), GS_Y_COORD(224), 1));
+#endif
 
     sceGifPkAddGsAD(&gifpk, SCE_GS_TEXFLUSH, 0);
     sceGifPkAddGsAD(&gifpk, SCE_GS_FRAME_1, *(u_long*)draw_pp);
@@ -2092,12 +2139,18 @@ int DrawVramLocalCopy(void *para_pp, int frame, int first_f, int useDisp, int dr
         return 0;
     }
 
+#ifndef VERSION_PAL
     printf(D_00393300);
+#endif
 
     sbp = DrawGetTbpPos(useDisp);
     dbp = DrawGetTbpPos(drDisp);
 
+#ifdef VERSION_PAL
+    GGsSetLocalMoveImage(&mi, dbp, 10, SCE_GS_PSMCT32, 0, 0, sbp, 10, SCE_GS_PSMCT32, 0, 0, 640, 256, 0);
+#else
     GGsSetLocalMoveImage(&mi, dbp, 10, SCE_GS_PSMCT32, 0, 0, sbp, 10, SCE_GS_PSMCT32, 0, 0, 640, 224, 0);
+#endif
     FlushCache(WRITEBACK_DCACHE);
 
     GGsExecLocalMoveImage(&mi);
@@ -2117,12 +2170,18 @@ int DrawVramLocalCopy2(void *para_pp, int frame, int first_f, int useDisp, int d
         return 0;
     }
 
+#ifndef VERSION_PAL
     printf(D_00393300);
+#endif
 
     sbp = DrawGetTbpPos(useDisp);
     dbp = DrawGetTbpPos(drDisp);
 
+#ifdef VERSION_PAL
+    GGsSetLocalMoveImage(&mi, dbp, 10, SCE_GS_PSMCT32, 0, 0, sbp, 10, SCE_GS_PSMCT32, 0, 0, 640, 256, 0);
+#else
     GGsSetLocalMoveImage(&mi, dbp, 10, SCE_GS_PSMCT32, 0, 0, sbp, 10, SCE_GS_PSMCT32, 0, 0, 640, 224, 0);
+#endif
     FlushCache(WRITEBACK_DCACHE);
 
     GGsExecLocalMoveImage(&mi);
@@ -2298,10 +2357,18 @@ static float mendRatioTitleGet(int frame, int dera_f) {
     endp = -1;
 
     if (dera_f) {
+#ifdef VERSION_PAL
+        sizeMen = 170;
+#else
         sizeMen = 168;
+#endif
         men_pp = mentitle_dat_dera;
     } else {
+#ifdef VERSION_PAL
+        sizeMen = 10;
+#else
         sizeMen = 8;
+#endif
         men_pp = mentitle_dat;
     }
 
@@ -2669,7 +2736,11 @@ void resetDrawSceneObjData(SCENESTR *scstr_pp) {
 void DrawCtrlInit(EVENTREC *ev_pp, int ctrlTbl, void *dat_top) {
     int i;
 
+#ifdef VERSION_PAL
+    PrSetFrameRate(50.0f);
+#else
     PrSetFrameRate(60.0f);
+#endif
     DrawTmpBuffInit();
 
     for (i = 0; i < ev_pp->scenestr_size; i++) {
@@ -2920,8 +2991,13 @@ static void ddbg_event_sub_bmp(void) {
     }
 
     /* BUG: should use usrMalloc */
+#ifdef VERSION_PAL
+    dat1_pp = malloc(0xA0000);
+    dat2_pp = malloc(0xA0000);
+#else
     dat1_pp = malloc(0x8C000); /* ~573.4 KB */
     dat2_pp = malloc(0x8C000);
+#endif
 
     sceGsSetHalfOffset(&DBufDc.draw11,  2048, 2048, 0);
     sceGsSetHalfOffset2(&DBufDc.draw12, 2048, 2048, 0);
@@ -2935,7 +3011,11 @@ static void ddbg_event_sub_bmp(void) {
         DrawScenectrlReq(check_scenectrl[lsjkl], drawCurrentTime);
     }
 
+#ifdef VERSION_PAL
+    VramTmpSave(dat1_pp, 640, 256, outbuf_idx ^ 1);
+#else
     VramTmpSave(dat1_pp, 640, 224, outbuf_idx ^ 1);
+#endif
 
     PR_SCOPE()
     VCLR_PARA vclr_para = {};
@@ -2959,13 +3039,21 @@ static void ddbg_event_sub_bmp(void) {
 
     ChangeDrawArea(DrawGetDrawEnvP(DNUM_DRAW));
 
+#ifdef VERSION_PAL
+    VramTmpSave(dat2_pp, 640, 256, outbuf_idx ^ 1);
+#else
     VramTmpSave(dat2_pp, 640, 224, outbuf_idx ^ 1);
+#endif
 
     PR_SCOPE()
     char save_name[20];
 
     sprintf(save_name, "scr%04d.bmp", ddbg_bmp_frame);
+#ifdef VERSION_PAL
+    VramTmpSaveOutBMP(save_name, 640, 256, outbuf_idx ^ 1, dat1_pp, dat2_pp);
+#else
     VramTmpSaveOutBMP(save_name, 640, 224, outbuf_idx ^ 1, dat1_pp, dat2_pp);
+#endif
     PR_SCOPEEND()
 
     usrFree(dat2_pp);
@@ -3189,7 +3277,11 @@ static void DrawCtrlMainDebug(void *x) {
 void DrawCtrlInitDebug(EVENTREC *ev_pp, int ctrlTbl, void *dat_top) {
     int i;
 
+#ifdef VERSION_PAL
+    PrSetFrameRate(50.0f);
+#else
     PrSetFrameRate(60.0f);
+#endif
     DrawTmpBuffInit();
 
     for (i = 0; i < ev_pp->scenestr_size; i++) {

@@ -181,7 +181,51 @@ void PreDrawNoodleStrip() {
     PrSendMfifo((const sceDmaTag *)pkt);
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/menderer", DrawNoodleStrip__Fff);
+extern float D_0038366C;
+extern float D_00383670;
+extern float D_00383674;
+
+struct NaVECTOR4 {
+    float v[4];
+    NaVECTOR4() {}
+};
+
+struct NaMATRIX44 {
+    NaVECTOR4 m[4];
+    NaMATRIX44() {}
+};
+void SetNoodleRotationMatrix(NaMATRIX44 &mat, float angle) asm("SetNoodleRotationMatrix__FRt8NaMATRIX3Zfi4i4f");
+void DrawNoodleStripChunk(const NaMATRIX44 &mat) asm("DrawNoodleStripChunk__FRCt8NaMATRIX3Zfi4i4");
+
+void DrawNoodleStrip(float arg0, float arg1) {
+    PreDrawNoodleStrip();
+
+    NaMATRIX44 mat;
+    SetNoodleRotationMatrix(mat, arg1);
+
+    float d, e, c;
+    if (arg0 <= 1.0f) {
+        c = arg0 * -0.28540003f + 0.60540003f;
+        e = 0.9375f;
+        d = 0.7f;
+    } else if (arg0 <= 2.0f) {
+        float t = arg0 - 1.0f;
+        e = t * 0.66410005f + 0.9375f;
+        c = t * -0.3786f + 0.32f;
+        d = t * 0.3f + 0.7f;
+    } else {
+        float t = arg0 - 2.0f;
+        e = t * -0.66400003f + 1.6016001f;
+        c = t * 0.5086f + -0.0586f;
+        d = t * -0.3f + 1.0f;
+    }
+
+    D_00383670 = d;
+    D_0038366C = c;
+    D_00383674 = e;
+
+    DrawNoodleStripChunk(mat);
+}
 
 void StartNoodleRotation() {
     noodleRotationState = 0;
@@ -190,13 +234,13 @@ void StartNoodleRotation() {
     noodleAngle = 0.0f;
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/menderer", UpdateNoodleRotation__Fv);
-
-INCLUDE_ASM("asm/nonmatchings/prlib/menderer", PrUpdateMendererSpeed__Fv);
-
 extern float g_NoodleStepB;
 extern int g_NoodleDecelerating;
 extern float g_NoodleDecel;
+
+INCLUDE_ASM("asm/nonmatchings/prlib/menderer", UpdateNoodleRotation__Fv);
+
+INCLUDE_ASM("asm/nonmatchings/prlib/menderer", PrUpdateMendererSpeed__Fv);
 
 PR_EXTERN
 void PrDecelerateMenderer(u_int frames) {
@@ -285,9 +329,64 @@ void PrRenderMenderer() {
 }
 
 /* nalib/navector.h */
-INCLUDE_ASM("asm/nonmatchings/prlib/menderer", func_0014F3B8);
+float* func_0014F3B8(
+    float* self,
+    const float& a0, const float& a1, const float& a2,
+    const float& a3, const float& a4, const float& a5,
+    const float& a6, const float& a7, const float& a8
+) asm("func_0014F3B8");
 
-INCLUDE_ASM("asm/nonmatchings/prlib/menderer", func_0014F410);
+float* func_0014F3B8(
+    float* self,
+    const float& a0, const float& a1, const float& a2,
+    const float& a3, const float& a4, const float& a5,
+    const float& a6, const float& a7, const float& a8
+) {
+    self[0] = a0;
+    self[1] = a1;
+    self[2] = a2;
+    self[3] = a3;
+    self[4] = a4;
+    self[5] = a5;
+    self[6] = a6;
+    self[7] = a7;
+    self[8] = a8;
+    return self;
+}
+
+float* func_0014F410(
+    float* self,
+    const float& a0, const float& a1, const float& a2, const float& a3,
+    const float& a4, const float& a5, const float& a6, const float& a7,
+    const float& a8, const float& a9, const float& a10, const float& a11,
+    const float& a12, const float& a13, const float& a14, const float& a15
+) asm("func_0014F410");
+
+float* func_0014F410(
+    float* self,
+    const float& a0, const float& a1, const float& a2, const float& a3,
+    const float& a4, const float& a5, const float& a6, const float& a7,
+    const float& a8, const float& a9, const float& a10, const float& a11,
+    const float& a12, const float& a13, const float& a14, const float& a15
+) {
+    self[0] = a0;
+    self[1] = a1;
+    self[2] = a2;
+    self[3] = a3;
+    self[4] = a4;
+    self[5] = a5;
+    self[6] = a6;
+    self[7] = a7;
+    self[8] = a8;
+    self[9] = a9;
+    self[10] = a10;
+    self[11] = a11;
+    self[12] = a12;
+    self[13] = a13;
+    self[14] = a14;
+    self[15] = a15;
+    return self;
+}
 
 /* prlib/menderer.cpp */
 PR_EXTERN
@@ -295,9 +394,50 @@ void _GLOBAL_$I$prMendererRatio(void) {
 }
 
 /* nalib/navector.h */
+#define PR_VU0_WAIT()                                \
+    do {                                             \
+        int _wait = 3;                               \
+        do {                                         \
+            _wait--;                                 \
+            asm volatile("nop");                     \
+            asm volatile("nop");                     \
+            asm volatile("nop");                     \
+            asm volatile("nop");                     \
+        } while (_wait != -1);                       \
+    } while (0)
+
+extern "C" void* func_00145DB0(
+    void* self,
+    const float& a0, const float& a1, const float& a2, const float& a3,
+    const float& a4, const float& a5, const float& a6, const float& a7,
+    const float& a8, const float& a9, const float& a10, const float& a11,
+    const float& a12, const float& a13, const float& a14, const float& a15
+);
+
+static inline void* SetMat44(
+    void* self,
+    const float& a0, const float& a1, const float& a2, const float& a3,
+    const float& a4, const float& a5, const float& a6, const float& a7,
+    const float& a8, const float& a9, const float& a10, const float& a11,
+    const float& a12, const float& a13, const float& a14, const float& a15
+) {
+    PR_VU0_WAIT();
+    return func_00145DB0(self, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15);
+}
+
 INCLUDE_ASM("asm/nonmatchings/prlib/menderer", func_0014F4C8);
 
-INCLUDE_ASM("asm/nonmatchings/prlib/menderer", func_0014F5D0);
+void* func_0014F5D0(void* self, const float& a1, const float& a2, const float& a3) asm("func_0014F5D0");
+void* func_0014F5D0(void* self, const float& a1, const float& a2, const float& a3) {
+    SetMat44(
+        self,
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        a1, a2, a3, 1.0f
+    );
+    return self;
+}
 
 INCLUDE_ASM("asm/nonmatchings/prlib/menderer", func_0014F6D8);
 

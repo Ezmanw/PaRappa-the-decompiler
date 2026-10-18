@@ -7,6 +7,9 @@
 #include "menu/menufont.h"
 
 #include <libcdvd.h>
+#ifdef VERSION_PAL
+#include <libscf.h>
+#endif
 
 #include <malloc.h>
 #include <stdio.h>
@@ -56,7 +59,11 @@ static int P3MC_GetIconSize(int mode) {
 
     switch (mode) {
     case 2:
+#ifdef VERSION_PAL
+        isize = 0x1e170;
+#else
         isize = 0x1e360;
+#endif
         break;
     case 1:
     default:
@@ -1038,12 +1045,22 @@ void P3MC_AddUser(P3MC_USRLST *pUser, int mode, USER_DATA *puser) {
     }
 }
 
+#ifdef VERSION_PAL
+extern GAME_STATUS game_status;
+extern char *BrokenStr[];
+#endif
+
 static void _P3MC_AddUserBroken(P3MC_USRLST *pUser, int mode, int fno) {
     USER_DATA *newUser = &pUser->getUser[pUser->nGetUser];
 
     memset(newUser, 0, sizeof(USER_DATA));
+#ifdef VERSION_PAL
+    strcpy(newUser->name, BrokenStr[game_status.language_type]);
+    strcpy(newUser->name1, BrokenStr[game_status.language_type]);
+#else
     strcpy(newUser->name, "(BROKEN)");
     strcpy(newUser->name1, "(BROKEN)");
+#endif
     newUser->stageNo = 0;
     newUser->fileNo = fno;
     newUser->mode = mode;
@@ -1506,6 +1523,9 @@ void P3MC_SetUserWorkTime(USER_DATA *puser) {
     puser->date_pad = rand() % 200;
 
     if (err != 0 && clock.stat == 0) {
+#ifdef VERSION_PAL
+        sceScfGetLocalTimefromRTC(&clock);
+#endif
         puser->date_second = clock.second;
         puser->date_minute = clock.minute;
         puser->date_hour   = clock.hour;

@@ -243,11 +243,30 @@ void UG_FadeDisp(FADE_MAKE_STR *fade_pp, sceGifPacket *fadePkSpr, sceGsFrame *te
     sceGifPkAddGsAD(fadePkSpr, SCE_GS_TEX0_1, SCE_GS_SET_TEX0(texFr_pp->FBP << 5, texFr_pp->FBW, 0, 10, 8, 0, 1, 0, 0, 0, 0, 0));
     sceGifPkAddGsAD(fadePkSpr, SCE_GS_PRIM, SCE_GS_SET_PRIM(6, 0, 1, 0, 1, 0, 1, 0, 0));
 
+#ifdef VERSION_PAL
+    PR_SCOPE()
+    u_int i;
+    int tbl[6][4] = {
+        { GS_X_COORD(0),   GS_Y_COORD(0),           0 << 4,           0 << 4 },
+        { GS_X_COORD(256), GS_Y_COORD(WV_SCREEN_H), 256 << 4, WV_SCREEN_H << 4 },
+        { GS_X_COORD(256), GS_Y_COORD(0),           256 << 4,           0 << 4 },
+        { GS_X_COORD(512), GS_Y_COORD(WV_SCREEN_H), 512 << 4, WV_SCREEN_H << 4 },
+        { GS_X_COORD(512), GS_Y_COORD(0),           512 << 4,           0 << 4 },
+        { GS_X_COORD(640), GS_Y_COORD(WV_SCREEN_H), 640 << 4, WV_SCREEN_H << 4 },
+    };
+
+    for (i = 0; i < 6; i++) {
+        sceGifPkAddGsAD(fadePkSpr, SCE_GS_UV, SCE_GS_SET_UV(tbl[i][2], tbl[i][3]));
+        sceGifPkAddGsAD(fadePkSpr, SCE_GS_XYZ2, SCE_GS_SET_XYZ(tbl[i][0], tbl[i][1], 1));
+    }
+    PR_SCOPEEND()
+#else
     sceGifPkAddGsAD(fadePkSpr, SCE_GS_UV, SCE_GS_SET_UV(0, 0));
     sceGifPkAddGsAD(fadePkSpr, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(GS_X_COORD(0), GS_Y_COORD(0), 1));
 
     sceGifPkAddGsAD(fadePkSpr, SCE_GS_UV, (WV_SCREEN_H << 20) | 0x2800);
     sceGifPkAddGsAD(fadePkSpr, SCE_GS_XYZ2, SCE_GS_SET_XYZ2(GS_X_COORD(640), GS_Y_COORD(WV_SCREEN_H), 1));
+#endif
 }
 
 void UG_FadeDisp2(FADE_MAKE_STR *fade_pp, sceGifPacket *fadePkSpr, sceGsFrame *texFr_pp, float scale) {
@@ -256,7 +275,7 @@ void UG_FadeDisp2(FADE_MAKE_STR *fade_pp, sceGifPacket *fadePkSpr, sceGsFrame *t
     sceGifPkAddGsAD(fadePkSpr, SCE_GS_TEXFLUSH, 0);
     sceGifPkAddGsAD(fadePkSpr, SCE_GS_PRMODECONT, 1);
     sceGifPkAddGsAD(fadePkSpr, SCE_GS_ALPHA_1, SCE_GS_SET_ALPHA(0, 1, 0, 1, 0));
-    sceGifPkAddGsAD(fadePkSpr, SCE_GS_CLAMP_1, SCE_GS_SET_CLAMP(0, 0, 0, 640 - 1, 0, 224 - 1));
+    sceGifPkAddGsAD(fadePkSpr, SCE_GS_CLAMP_1, SCE_GS_SET_CLAMP(0, 0, 0, 640 - 1, 0, WV_SCREEN_H - 1));
     sceGifPkAddGsAD(fadePkSpr, SCE_GS_COLCLAMP, 1);
     sceGifPkAddGsAD(fadePkSpr, SCE_GS_PABE, 0);
 
@@ -277,14 +296,14 @@ void UG_FadeDisp2(FADE_MAKE_STR *fade_pp, sceGifPacket *fadePkSpr, sceGsFrame *t
     sceGifPkAddGsAD(fadePkSpr, SCE_GS_UV, SCE_GS_SET_UV(0, 0));
 
     xp = (scale * 640.0f);
-    yp = (scale * 224.0f);
+    yp = (scale * (float)WV_SCREEN_H);
 
     xp /= 2;
     yp /= 2;
     
     sceGifPkAddGsAD(fadePkSpr, SCE_GS_XYZ2, SCE_GS_SET_XYZ((2048 - xp) << 4, (2048 - yp) << 4, 1));
 
-    sceGifPkAddGsAD(fadePkSpr, SCE_GS_UV, SCE_GS_SET_UV(0x2800, 0xe00));
+    sceGifPkAddGsAD(fadePkSpr, SCE_GS_UV, SCE_GS_SET_UV(0x2800, WV_SCREEN_H << 4));
     sceGifPkAddGsAD(fadePkSpr, SCE_GS_XYZ2, SCE_GS_SET_XYZ((xp + 2048) << 4, (yp + 2048) << 4, 1));
 }
 
@@ -309,7 +328,7 @@ void UG_NoodlesDisp(NOODLES_STR *ndl_pp, sceGsFrame *frame_pp, sceGifPacket *ndl
     for (i = 0; i <= ndl_pp->cntW; i++) {
         for (j = 0; j <= ndl_pp->cntH; j++, tmp_pp++) {
             tmp_pp->u = (i * 640) / ndl_pp->cntW;
-            tmp_pp->v = (j * 224) / ndl_pp->cntH;
+            tmp_pp->v = (j * WV_SCREEN_H) / ndl_pp->cntH;
             tmp_pp->u = tmp_pp->u << 4;
             tmp_pp->v = tmp_pp->v << 4;
 
