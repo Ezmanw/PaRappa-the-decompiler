@@ -18,7 +18,26 @@ void PrModelObject::ResetPosture() {
     m_flags &= ~4;
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/prlib/transition", BlendTransitionMatrix__7SpmNodeP13PrModelObjectRt8NaMATRIX3Zfi4i4);
+#else
+void SpmNode::BlendTransitionMatrix(PrModelObject *model, NaMATRIX<float, 4, 4>& arg1) {
+    float ratio = prSpramData->m_model_transaction_blend_ratio;
+    if (!(model->m_flags & 4)) {
+        return;
+    }
+
+    /* model + 0x7c: NaMATRIX<float, 4, 4> *m_matrices[2] */
+    NaMATRIX<float, 4, 4> **matrices = (NaMATRIX<float, 4, 4>**)((char*)model + 0x7c);
+    const float *src = (const float*)(matrices[1 - model->m_active_transition] + this->unk150);
+    float *dst = (float*)&arg1;
+    float inv = 1.0f - ratio;
+
+    for (int i = 0; i < 16; i++) {
+        dst[i] = src[i] * inv + dst[i] * ratio;
+    }
+}
+#endif
 
 struct PrModelObjectTransitionOverlay {
     char pad0[0x5c];
