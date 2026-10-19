@@ -172,7 +172,55 @@ void PushNoodleColor(u_long *ptr) {
 
 INCLUDE_ASM("asm/nonmatchings/prlib/menderer", DrawNoodleStripChunk__FRCt8NaMATRIX3Zfi4i4);
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/prlib/menderer", SetNoodleRotationMatrix__FRt8NaMATRIX3Zfi4i4f);
+#else
+#include <math.h>
+
+void* func_0014F4C8(void* self, const float& x, const float& y, const float& z) asm("func_0014F4C8");
+void* func_0014F5D0(void* self, const float& a1, const float& a2, const float& a3) asm("func_0014F5D0");
+void* func_0014F6D8(void* self, int axis, const float* angle) asm("func_0014F6D8");
+
+/* mat = mat * b (rows of mat transformed by b) */
+static void NoodleMulMat(float *mat, const float *b) {
+    float r[16];
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            r[i * 4 + j] = mat[i * 4 + 0] * b[0 * 4 + j] + mat[i * 4 + 1] * b[1 * 4 + j]
+                         + mat[i * 4 + 2] * b[2 * 4 + j] + mat[i * 4 + 3] * b[3 * 4 + j];
+        }
+    }
+    for (int i = 0; i < 16; i++) {
+        mat[i] = r[i];
+    }
+}
+
+void SetNoodleRotationMatrix(NaMATRIX<float, 4, 4> &mat, float angle) {
+    float *m = (float*)&mat;
+    float tmp[16] __attribute__((aligned(16)));
+
+    /* angle is in turns; convert the fractional part to radians */
+    float rot = (angle - floorf(angle));
+    rot = (rot + rot) * 3.14159274f;
+
+    func_0014F6D8(tmp, 2, &rot);
+    for (int i = 0; i < 16; i++) {
+        m[i] = tmp[i];
+    }
+
+    /* translate by (0.5, 0.5, 0) */
+    func_0014F5D0(tmp, 0.5f, 0.5f, 0.0f);
+    NoodleMulMat(m, tmp);
+
+    /* scale by (10240, 4096, 0) */
+    func_0014F4C8(tmp, 10240.0f, 4096.0f, 0.0f);
+    NoodleMulMat(m, tmp);
+
+    /* translate by (32768, 32768, 0) */
+    func_0014F5D0(tmp, 32768.0f, 32768.0f, 0.0f);
+    NoodleMulMat(m, tmp);
+}
+#endif
 void SetNoodleRotationMatrix(NaMATRIX<float, 4, 4> &mat, float angle) asm("SetNoodleRotationMatrix__FRt8NaMATRIX3Zfi4i4f");
 void DrawNoodleStripChunk(const NaMATRIX<float, 4, 4> &mat) asm("DrawNoodleStripChunk__FRCt8NaMATRIX3Zfi4i4");
 
