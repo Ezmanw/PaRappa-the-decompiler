@@ -91,8 +91,9 @@ void SpaFileHeader::ChangePointer() {
     m_flags |= 0x1;
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/prlib/setpointer", ChangePointer__16SpaNodeAnimationP13SpaFileHeader);
-#if 0
+#else
 // TODO: nonmatching (regalloc; the visibility track ChangePointer is not tail-merged in the target)
 void SpaNodeAnimation::ChangePointer(SpaFileHeader *animation) {
     this->unk10 = animation->CalculatePointer<int>(this->unk10);
