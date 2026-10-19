@@ -252,4 +252,40 @@ float* func_0014C540(
     return self;
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/prlib/billboard", func_0014C5F0);
+#else
+extern NaMATRIX<float, 4, 4>* SetMat44Raw(NaMATRIX<float, 4, 4>* self,
+    const float& a0, const float& a1, const float& a2, const float& a3,
+    const float& a4, const float& a5, const float& a6, const float& a7,
+    const float& a8, const float& a9, const float& a10, const float& a11,
+    const float& a12, const float& a13, const float& a14, const float& a15) asm("func_00145DB0");
+
+/* Axis rotation matrix (0 = X, 1 = Y, otherwise Z), same as func_0014ACE8 */
+NaMATRIX<float, 4, 4>* func_0014C5F0(NaMATRIX<float, 4, 4>* self, int axis, const float* angle) asm("func_0014C5F0");
+NaMATRIX<float, 4, 4>* func_0014C5F0(NaMATRIX<float, 4, 4>* self, int axis, const float* angle) {
+    float c = cosf(*angle);
+    float s = sinf(*angle);
+
+    if (axis == 0) {
+        SetMat44Raw(self,
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, c, s, 0.0f,
+            0.0f, -s, c, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f);
+    } else if (axis == 1) {
+        SetMat44Raw(self,
+            c, 0.0f, -s, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            s, 0.0f, c, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f);
+    } else {
+        SetMat44Raw(self,
+            c, s, 0.0f, 0.0f,
+            -s, c, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f);
+    }
+    return self;
+}
+#endif
