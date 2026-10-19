@@ -114,7 +114,56 @@ void PrInitializeNoodlePolygonPosition() {
     InitializeNoodlePositionData();
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/prlib/mendererdata", PrGetNoodlePolygonPosition__FPt8NaVECTOR2Zfi4Ui);
+#else
+#include <math.h>
+#include <nalib/navector.h>
+
+extern float D_0038366C;
+extern float D_00383670;
+extern float D_00383674;
+
+/* Returns the four (rotated) corners of the idx-th noodle polygon. */
+void PrGetNoodlePolygonPosition(NaVECTOR<float, 4> *pos, u_int idx) {
+    u_int id = noodlePolygonOrder[idx];
+    PrNoodlePositionData *data = &noodlePositionData[id];
+
+    UpdateNoodlePositionData(data);
+    float ratio = GetSynchronizeRatio(data);
+    float inv = 1.0f - ratio;
+
+    float scale = D_00383654 - 0.4f;
+    if (!(scale > 1.0f)) {
+        scale = 1.0f;
+    }
+
+    float y = data->y * inv;
+    float x = (data->x * inv) * scale;
+    float z = data->z * inv;
+
+    float angle = (float)id * 6.2831855f / 115.0f + z;
+    float c = cosf(angle);
+    float s = sinf(angle);
+
+    float x0 = D_0038366C + x;
+    float h = D_00383670;
+    float w = D_00383674;
+    const float K = 0.093756f;
+
+    float vx[4], vy[4];
+    vx[0] = x0;               vy[0] = y + (h * 0.5f) * K;
+    vx[1] = x0 + w * 0.5f;    vy[1] = y + (h * 0.5f) * K;
+    vx[2] = x0;               vy[2] = y + ((-h) * 0.5f) * K;
+    vx[3] = x0 + w * 0.5f;    vy[3] = y + ((-h) * 0.5f) * K;
+
+    for (int i = 0; i < 4; i++) {
+        float rx = c * vx[i] + s * vy[i];
+        float ry = (-s) * vx[i] + c * vy[i];
+        pos[i].Set(rx, ry, 0.0f, 1.0f);
+    }
+}
+#endif
 
 /* nalib/navector.h */
 float* func_00151D78(float* self, const float& a0, const float& a1, const float& a2, const float& a3) asm("func_00151D78");
