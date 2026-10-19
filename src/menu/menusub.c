@@ -6010,7 +6010,293 @@ extern PTPOS CellCusPos[];
     PkALPHA_Add(pk, 0x44);
 }
 #endif
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsOption_Flow);
+#else
+typedef struct { // 0x8
+    int val;
+    int val2;
+} MNOPT_VAL;
+
+typedef struct { // 0x10
+    int val;
+    PATPOS pat;
+} MNOPT_ENTRY;
+
+typedef struct { // 0x1c
+    int type;
+    int max;
+    int min;
+    MNOPT_ENTRY *list;
+    int msgSel;
+    int sndSel;
+    int msgAdj;
+} MNOPT_SELINF;
+
+typedef struct { // 0x88
+    int state;
+    int cancel;
+    int cur;
+    MNOPT_VAL item[5];
+    CELLOBJ cell[5];
+    short anm[5][4];
+    int arrow;
+} OPTION_MENU;
+
+extern OPTION_MENU OptionMenu; // PAL bss 1c6cf80
+extern MNOPT_SELINF OptionSelTbl[]; // PAL data 19b140
+extern PATPOS D_0019A558[]; // PAL data 19a558
+extern PATPOS D_0019A598[][4]; // PAL data 19a598
+extern int OptTmp_Lang; // PAL sdata 383850
+extern int OptTmp_Subt; // PAL sdata 383854
+extern int OptTmp_Vibr; // PAL sdata 383858
+extern int OptTmp_Oneb; // PAL sdata 38385c
+extern int OptTmp_AdjX; // PAL sdata 383860
+extern int OptTmp_AdjY; // PAL sdata 383864
+
+#define OPT_GS_ADJX(gs) (*(int *)((char *)(gs) + 0xd0))
+#define OPT_GS_ADJY(gs) (*(int *)((char *)(gs) + 0xd4))
+
+void func_00102f78(int x, int y);
+void func_00103028(void);
+void cmnfTim2Trans(void);
+void MenuLangTim2Trans(int lang);
+
+static int TSLOOP2(int no, int min, int max) {
+    if (no < min) {
+        return max - 1;
+    }
+    if (no < max) {
+        return no;
+    }
+    return min;
+}
+
+static int *OptTmp_Tbl(int i) {
+    switch (i) {
+    case 0: return &OptTmp_Lang;
+    case 1: return &OptTmp_Subt;
+    case 2: return &OptTmp_Vibr;
+    default: return &OptTmp_Oneb;
+    }
+}
+
+static void TsOption_Init(OPTION_MENU *pfw) {
+    GAME_STATUS *gs;
+    int i, k;
+    int *pv;
+    MNOPT_SELINF *tbl;
+
+    gs = pP3GameState->pGameStatus;
+    OptTmp_AdjX = OPT_GS_ADJX(gs);
+    OptTmp_Lang = gs->language_type;
+    OptTmp_Subt = gs->subtitle;
+    OptTmp_Vibr = gs->vibration;
+    OptTmp_Oneb = gs->play_table_modeG;
+    OptTmp_AdjY = OPT_GS_ADJY(gs);
+
+    memset(pfw->cell, 0, sizeof(pfw->cell));
+    memset(pfw->anm, 0, sizeof(pfw->anm));
+    TsCmnCell_CusorSET(&pfw->cell[pfw->cur]);
+
+    for (i = 0; i < 5; i++) {
+        tbl = &OptionSelTbl[i];
+        switch (i) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+            pv = OptTmp_Tbl(i);
+            k = 0;
+            if (tbl->max > 0) {
+                for (k = 0; k < tbl->max; k++) {
+                    if (tbl->list[k].val == *pv) {
+                        break;
+                    }
+                }
+                if (k < tbl->max) {
+                    pfw->item[i].val = k;
+                } else {
+                    pfw->item[i].val = 0;
+                }
+            } else {
+                pfw->item[i].val = 0;
+            }
+            break;
+        case 4:
+            pfw->item[i].val = OptTmp_AdjX;
+            pfw->item[i].val2 = OptTmp_AdjY;
+            break;
+        }
+    }
+
+    func_00103028();
+}
+
+static void TsOption_Apply(OPTION_MENU *pfw) {
+    GAME_STATUS *gs;
+    int i;
+
+    for (i = 0; i < 5; i++) {
+        switch (i) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+            *OptTmp_Tbl(i) = OptionSelTbl[i].list[pfw->item[i].val].val;
+            break;
+        case 4:
+            OptTmp_AdjX = pfw->item[i].val;
+            OptTmp_AdjY = pfw->item[i].val2;
+            break;
+        }
+    }
+
+    gs = pP3GameState->pGameStatus;
+    OPT_GS_ADJX(gs) = OptTmp_AdjX;
+    gs->language_type = OptTmp_Lang;
+    gs->subtitle = OptTmp_Subt;
+    OPT_GS_ADJY(gs) = OptTmp_AdjY;
+    gs->vibration = OptTmp_Vibr;
+    gs->play_table_modeG = OptTmp_Oneb;
+    func_00103028();
+    cmnfTim2Trans();
+    MenuLangTim2Trans(pP3GameState->pGameStatus->language_type);
+}
+
+int TsOption_Flow(int flg, u_int tpad) {
+    OPTION_MENU *pfw = &OptionMenu;
+    int state;
+    int cur, nxt;
+    int v0, v1, o0, o1;
+    MNOPT_SELINF *tbl;
+
+    if (flg == 1) {
+        pfw->state = 0;
+        pfw->cur = 0;
+        TsOption_Init(pfw);
+        pfw->arrow = -1;
+        return 0;
+    }
+    if (flg == 2) {
+        return 0;
+    }
+
+    state = pfw->state;
+    switch (state) {
+    case 0:
+        state = 0x1000;
+        /* fallthrough */
+    case 0x1000:
+        if (tpad & 0x40) {
+            pfw->cancel = 0;
+            TSSNDPLAY(6);
+            state = 0x2000;
+            pfw->arrow = pfw->cur;
+        } else if (tpad & 0x10) {
+            state = 0xF000;
+            pfw->cancel = 1;
+            TSSNDPLAY(9);
+        } else {
+            cur = pfw->cur;
+            nxt = cur;
+            if (tpad & 0x1000) {
+                nxt = cur - 1;
+            }
+            if (tpad & 0x4000) {
+                nxt = nxt + 1;
+            }
+            if (cur != nxt) {
+                nxt = TSLOOP(nxt, 5);
+                TsCmnCell_CusorOFF(&pfw->cell[cur]);
+                TsCmnCell_CusorON(&pfw->cell[nxt]);
+                pfw->cur = nxt;
+                TSSNDPLAY(OptionSelTbl[nxt].sndSel);
+                TSSNDPLAY(5);
+                cur = pfw->cur;
+            }
+            TsCMPMes_SetMes(OptionSelTbl[cur].msgSel);
+        }
+        pfw->state = state;
+        return 0;
+    case 0x2000:
+        cur = pfw->cur;
+        v0 = o0 = pfw->item[cur].val;
+        v1 = o1 = pfw->item[cur].val2;
+        if (tpad & 0x8000) {
+            v0--;
+        }
+        if (tpad & 0x2000) {
+            v0++;
+        }
+        if (cur == 4) {
+            if (tpad & 0x1000) {
+                v1--;
+            }
+            if (tpad & 0x4000) {
+                v1++;
+            }
+        }
+        if (o0 != v0 || o1 != v1) {
+            tbl = &OptionSelTbl[cur];
+            if (o0 != v0) {
+                pfw->anm[cur][(v0 < o0) ? 0 : 1] = 6;
+            }
+            if (o1 != v1) {
+                pfw->anm[cur][(v1 < o1) ? 2 : 3] = 6;
+            }
+            if (tbl->type == 0) {
+                v0 = TSLOOP2(v0, tbl->min, tbl->max);
+                v1 = TSLOOP2(v1, tbl->min, tbl->max);
+            } else if (tbl->type == 1) {
+                v0 = TSLIMIT(v0, tbl->min, tbl->max);
+                v1 = TSLIMIT(v1, tbl->min, tbl->max);
+            }
+            pfw->item[pfw->cur].val = v0;
+            pfw->item[pfw->cur].val2 = v1;
+            if (pfw->cur == 4) {
+                func_00102f78(v0, v1);
+            }
+            TSSNDPLAY(2);
+        }
+        if (tpad & 0x40) {
+            state = 0x1000;
+            TSSNDPLAY(6);
+            TsOption_Apply(pfw);
+            TsCMPMes_SetMes(-1);
+            pfw->arrow = -1;
+            memset(pfw->anm, 0, sizeof(pfw->anm));
+        }
+        if (tpad & 0x10) {
+            TSSNDPLAY(9);
+            state = 0x1000;
+            TsOption_Init(pfw);
+            pfw->arrow = -1;
+            memset(pfw->anm, 0, sizeof(pfw->anm));
+        }
+        TsCMPMes_SetMes(OptionSelTbl[pfw->cur].msgAdj);
+        pfw->state = state;
+        return 0;
+    case 0xF000:
+        if (pfw->cancel == 0) {
+            TsOption_Apply(pfw);
+            TsCMPMes_SetMes(-1);
+        }
+        pfw->state = (pfw->cancel == 0) ? 0xFF10 : 0xFF20;
+        return 0;
+    case 0xF100:
+        pfw->state = (pfw->cancel == 0) ? 0xFF10 : 0xFF20;
+        return 0;
+    case 0xFF10:
+        return 1;
+    case 0xFF20:
+        return -1;
+    default:
+        pfw->state = state;
+        return 0;
+    }
+}
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsOption_Draw);
 
