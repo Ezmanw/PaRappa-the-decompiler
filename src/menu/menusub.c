@@ -5735,16 +5735,10 @@ int TsPopMenu_Flow(int flg, u_int tpad) {
 #ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPopMenu_Draw);
 #else
-typedef struct { // 0x18
-    short px;
-    short py;
+typedef struct { // 0x8
+    short x;
+    short y;
     u_int abgr;
-    short sx;
-    short sy;
-    int pad0;
-    short nx;
-    short ny;
-    int pad1;
 } STRPOS;
 
 typedef struct { // 0x8
@@ -5758,7 +5752,7 @@ extern PATPOS Ranking_PatScroll[]; // PAL data 19a740 (jul 18c180)
 extern PATPOS RankSISTNo_PAT[]; // PAL data 19a758 (jul 18c198)
 extern PATPOS *VSRanking_PatTbl[]; // PAL data 19a8c8 (jul 18c308)
 extern PATPOS RankVSSTNo_PAT[]; // PAL data 19a8d8 (jul 18c318)
-extern STRPOS SRanking_Str[]; // PAL data 19a948 (jul 18c388)
+extern STRPOS SRanking_Str[]; // PAL data 19a948 (jul 18c388), 3 entries
 extern STRPOS VRanking_Str[]; // PAL data 19a960 (jul 18c3a0)
 extern POPRNK_PPOS PopRnk_pPos[]; // PAL data 19a988 (jul 18c3c8)
 extern PTPOS POPWZoom_CXY[]; // PAL data 19ab00 (jul 18c540)
@@ -5904,7 +5898,7 @@ void TsPopMenu_Draw(SPR_PKT pk, SPR_PRM *spr) {
             pstr = VRanking_Str;
         }
         i = 0;
-        n = by + pstr->py;
+        n = by + pstr[0].y;
         sc_y = n - 5;
         SetSprScreenXYWH(spr);
         PkSCISSOR_Add(pk, spr->px, (short)sc_y, spr->sw, 0x50);
@@ -5912,15 +5906,15 @@ void TsPopMenu_Draw(SPR_PKT pk, SPR_PRM *spr) {
         if (nrank > 0) {
             sc_lim = n - 0xD;
             do {
-                rx = ry + pstr->py;
+                rx = ry + pstr[0].y;
                 if (sc_lim < rx && rx < sc_y + 0x58) {
-                    col = GetDToneColor(pstr->abgr & 0xFFFFFF, pstr->abgr, ton);
+                    col = GetDToneColor(pstr[0].abgr & 0xFFFFFF, pstr[0].abgr, ton);
                     sprintf(buf, "%d", i + 1);
-                    MENUFontPutR(pk, spr, bx + pstr->px, rx, col, 0x100, (u_char *)buf, 1.0f);
+                    MENUFontPutR(pk, spr, bx + pstr[0].x, rx, col, 0x100, (u_char *)buf, 1.0f);
                     sprintf(buf, "%d", prank[i].score);
-                    MENUFontPutR(pk, spr, bx + pstr->sx, ry + pstr->sy, col, 0x102, (u_char *)buf, 1.0f);
+                    MENUFontPutR(pk, spr, bx + pstr[1].x, ry + pstr[1].y, col, 0x102, (u_char *)buf, 1.0f);
                     sprintf(buf, "%s", prank[i].name);
-                    MENUFontPutR(pk, spr, bx + pstr->nx, ry + pstr->ny, col, 0x100, (u_char *)buf, 1.1f);
+                    MENUFontPutR(pk, spr, bx + pstr[2].x, ry + pstr[2].y, col, 0x100, (u_char *)buf, 1.1f);
                 }
                 i++;
                 ry += 8;
