@@ -170,7 +170,121 @@ void PushNoodleColor(u_long *ptr) {
     *ptr = SCE_GS_SET_RGBAQ(ri, gi, bi, 0x80, 0);
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/prlib/menderer", DrawNoodleStripChunk__FRCt8NaMATRIX3Zfi4i4);
+#else
+extern u_long D_00371AC0[6];  /* DMA tag (qwc 2) + GIFtag (A+D, 1 loop) + CLAMP_2 register address */
+extern u_long D_0037FE40[2];  /* DMA tag (cnt, qwc 6) */
+extern u_long D_0037FE50[2];  /* GIFtag (REGLIST, NREG 10, NLOOP 1) */
+extern float D_00383688;
+void PrGetNoodlePolygonPosition(NaVECTOR<float, 4> *pos, u_int idx);
+
+void DrawNoodleStripChunk(const NaMATRIX<float, 4, 4> &mat) {
+    const float *m = (const float *)&mat;
+    u_int count = 115;
+
+    if (prCurrentStage == 6 || prCurrentStage == 16) {
+        float t;
+        float sq;
+        if (prMendererRatio <= 1.05f) {
+            t = 0.0f;
+            sq = t * t;
+        } else if (prMendererRatio <= 1.4f) {
+            t = (prMendererRatio - 1.0f) / 0.4f;
+            sq = t * t;
+        } else if (prMendererRatio <= 1.6f) {
+            t = 1.0f;
+            sq = t * t;
+        } else if (prMendererRatio < 1.95f) {
+            t = (2.0f - prMendererRatio) / 0.4f;
+            sq = t * t;
+        } else {
+            t = 0.0f;
+            sq = t * t;
+        }
+
+        count = (u_int)(u_long)(t * sq * 114.0f + 0.5f) + 1;
+        if (count > 115) {
+            count = 115;
+        } else if (count == 0) {
+            count = 1;
+        }
+    }
+
+    const u_int polys_per_band = 119 / 5;
+    u_int poly = 0;
+    noodleRandomSeed = 0;
+
+    for (u_int band = 0; band < 5; band++) {
+        /* CLAMP_2: region clamp, U in [0, 255], V in [(band + 1) * 16, (band + 2) * 16 - 1] */
+        u_long *clamp_pkt = (u_long *)prSpramData->GetWork();
+        for (int i = 0; i < 6; i++) {
+            clamp_pkt[i] = D_00371AC0[i];
+        }
+        clamp_pkt[4] = (u_long)(((band + 2) * 16 - 1)) << 34 | ((u_long)((band + 1) * 16) << 24) | 0x3fc00a;
+        PrSendMfifo((const sceDmaTag *)clamp_pkt);
+
+        u_long v1_uv = (u_long)((band + 1) << 8) << 16;
+        u_long v2_uv = (u_long)((band + 2) << 8) << 16;
+
+        for (u_int j = 0; j < polys_per_band; j++) {
+            u_long *pkt = (u_long *)prSpramData->GetWork();
+            pkt[0] = D_0037FE40[0];
+            pkt[1] = D_0037FE40[1];
+            pkt[2] = D_0037FE50[0];
+            pkt[3] = D_0037FE50[1];
+            pkt[4] = 860; /* PRIM: tristrip, IIP, TME, ABE, FST, CTXT */
+            PushNoodleColor(&pkt[5]);
+
+            NaVECTOR<float, 4> corners[4];
+            PrGetNoodlePolygonPosition(corners, poly);
+            poly++;
+
+            float out[4][4];
+            for (int c = 0; c < 4; c++) {
+                const float *v = (const float *)&corners[c];
+                for (int k = 0; k < 4; k++) {
+                    out[c][k] = v[0] * m[0 * 4 + k] + v[1] * m[1 * 4 + k] + v[2] * m[2 * 4 + k] + v[3] * m[3 * 4 + k];
+                }
+            }
+
+            u_long uv0 = v1_uv;
+            u_long uv1 = v1_uv | 4096;
+            u_long uv2 = v2_uv;
+            u_long uv3 = v2_uv | 4096;
+            u_long uvs[4] = { uv0, uv1, uv2, uv3 };
+
+            for (int c = 0; c < 4; c++) {
+                u_long x = (u_long)out[c][0];
+                u_long y = (u_long)out[c][1];
+                pkt[6 + c * 2] = uvs[c];
+                pkt[7 + c * 2] = (u_long)(u_int)x | (((u_long)(u_int)y << 32) >> 16);
+            }
+
+            PrSendMfifo((const sceDmaTag *)pkt);
+
+            if (poly == count) {
+                goto done;
+            }
+        }
+    }
+
+done:
+    if (g_NoodlePause == 0) {
+        float step = g_NoodleStep;
+        float a = D_00383684 + step * 0.07f;
+        float b = D_00383688 + step * 0.0528f;
+        if (3.0f <= a) {
+            a -= 3.0f;
+        }
+        if (2.0f <= b) {
+            b -= 2.0f;
+        }
+        D_00383684 = a;
+        D_00383688 = b;
+    }
+}
+#endif
 
 #ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/prlib/menderer", SetNoodleRotationMatrix__FRt8NaMATRIX3Zfi4i4f);
