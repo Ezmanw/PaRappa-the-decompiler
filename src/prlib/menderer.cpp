@@ -228,7 +228,50 @@ extern float g_NoodleStepB;
 extern int g_NoodleDecelerating;
 extern float g_NoodleDecel;
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/prlib/menderer", UpdateNoodleRotation__Fv);
+#else
+void UpdateNoodleRotation() {
+    if (g_NoodlePause != 0) {
+        return;
+    }
+
+    if (prCurrentStage == 6) {
+        noodleAngle += g_NoodleStep * 0.001f;
+        return;
+    }
+
+    int state = noodleRotationState;
+    if (state == 0 || state == 2) {
+        if (--noodleChangeTimer == 0) {
+            noodleChangeTimer = 900;
+            state = (state + 1) % 4;
+            noodleRotationState = state;
+        }
+    }
+
+    float rot;
+    if (state == 1) {
+        rot = noodleRotation - 1.6666668e-05f;
+        if (rot < -0.001f) {
+            rot = -0.001f;
+            noodleRotationState = 2;
+        }
+        noodleRotation = rot;
+    } else if (state == 3) {
+        rot = noodleRotation + 1.6666668e-05f;
+        if (0.001f < rot) {
+            rot = 0.001f;
+            noodleRotationState = 0;
+        }
+        noodleRotation = rot;
+    } else {
+        rot = noodleRotation;
+    }
+
+    noodleAngle += g_NoodleStep * rot;
+}
+#endif
 
 void PrUpdateMendererSpeed() {
     if (g_NoodlePause != 0) {
@@ -577,7 +620,22 @@ static inline void* SetMat44(
     return func_00145DB0(self, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15);
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/prlib/menderer", func_0014F4C8);
+#else
+/* self = diag(x, y, z, 1) */
+void* func_0014F4C8(void* self, const float& x, const float& y, const float& z) asm("func_0014F4C8");
+void* func_0014F4C8(void* self, const float& x, const float& y, const float& z) {
+    SetMat44(
+        self,
+        x, 0.0f, 0.0f, 0.0f,
+        0.0f, y, 0.0f, 0.0f,
+        0.0f, 0.0f, z, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+    );
+    return self;
+}
+#endif
 
 void* func_0014F5D0(void* self, const float& a1, const float& a2, const float& a3) asm("func_0014F5D0");
 void* func_0014F5D0(void* self, const float& a1, const float& a2, const float& a3) {
@@ -591,7 +649,37 @@ void* func_0014F5D0(void* self, const float& a1, const float& a2, const float& a
     return self;
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/prlib/menderer", func_0014F6D8);
+#else
+/* Axis rotation matrix (0 = X, 1 = Y, otherwise Z) */
+void* func_0014F6D8(void* self, int axis, const float* angle) asm("func_0014F6D8");
+void* func_0014F6D8(void* self, int axis, const float* angle) {
+    float c = cosf(*angle);
+    float s = sinf(*angle);
+
+    if (axis == 0) {
+        SetMat44(self,
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, c, s, 0.0f,
+            0.0f, -s, c, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f);
+    } else if (axis == 1) {
+        SetMat44(self,
+            c, 0.0f, -s, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            s, 0.0f, c, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f);
+    } else {
+        SetMat44(self,
+            c, s, 0.0f, 0.0f,
+            -s, c, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f);
+    }
+    return self;
+}
+#endif
 
 /* prlib/menderer.cpp */
 INCLUDE_RODATA("asm/nonmatchings/prlib/menderer", D_003967E0);
