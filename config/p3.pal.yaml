@@ -68,18 +68,18 @@ segments:
         - [0x5008, asm, main/cdctrl]
         - [0x6ab8, asm, main/stdat]
         - [0x6c78, asm, main/scrctrl]
-        - [0xe8f0, asm, main/sprite]
+        - [0xe8f0, c, main/sprite]
         - [0xf248, c, main/fadectrl]
         - [0xf358, asm, main/subt]
         - [0xfeb0, asm, main/drawctrl]
-        - [0x16278, asm, main/effect]
+        - [0x16278, c, main/effect]
         - [0x17950, asm, main/mbar]
         - [0x1b3c0, asm, main/pack]
         - [0x1b5b8, asm, main/etc]
         - [0x1c338, asm, main/wipe]
         - [0x1e460, c, main/mcctrl]
         - [0x1ed50, asm, main/main]
-        - [0x21068, asm, main/cmnfile]
+        - [0x21068, c, main/cmnfile]
         - [0x21260, asm, main/p3str]
         - [0x21f40, asm, main/commake]
 
@@ -90,7 +90,7 @@ segments:
         - [0x377d8, asm, menu/p3mc]
         - [0x3a608, asm, menu/memc]
         - [0x3c478, c, menu/mntm2hed]
-        - [0x3c490, asm, menu/menufont]
+        - [0x3c490, c, menu/menufont]
         - [0x3d3d8, asm, menu/pksprite]
 
         - [0x3f570, asm, iop_mdl/wp2cd_rpc]
@@ -124,6 +124,10 @@ segments:
         - [0x277320, rodata, pal/rodata_377320]
         - [0x277ac0, .rodata, os/tim2]
         - [0x277b10, rodata, pal/rodata_377b10]
+        - [0x278a48, .rodata, main/sprite]
+        - [0x278b40, rodata, pal/rodata_378b40]
+        - [0x278d38, .rodata, main/effect]
+        - [0x278dd0, rodata, pal/rodata_378dd0]
         - [0x279038, .rodata, main/mcctrl]
         - [0x279044, rodata, pal/rodata_379044]
 
@@ -132,6 +136,10 @@ segments:
 
         # .lit4
         - [0x282d00, lit4, pal/lit4_382d00]
+        - [0x282d58, .lit4, main/effect]
+        - [0x282d60, lit4, pal/lit4_382d60]
+        - [0x282ef0, .lit4, menu/menufont]
+        - [0x282f04, lit4, pal/lit4_382f04]
 
         # .sdata
         - [0x283100, sdata, pal/sdata_383100]
@@ -140,11 +148,15 @@ segments:
         - [0x283118, sdata, pal/sdata_383118]
         - [0x283150, .sdata, os/tim2]
         - [0x283160, sdata, pal/sdata_383160]
+        - [0x283274, .sdata, main/sprite]
+        - [0x283278, sdata, pal/sdata_383278]
 
         # .sbss
         - { type: .sbss, vram: 0x00383700, name: dbug/dbgmsg }
         - { type: .sbss, vram: 0x00383718, name: os/mtc }
         - { type: sbss, vram: 0x0038371c, name: pal/sbss_38371c }
+        - { type: .sbss, vram: 0x00383744, name: main/sprite }
+        - { type: sbss, vram: 0x00383748, name: pal/sbss_383748 }
         - { type: .sbss, vram: 0x003837a0, name: main/mcctrl }
         - { type: sbss, vram: 0x003837ac, name: pal/sbss_3837ac }
 
@@ -155,10 +167,15 @@ segments:
         - { type: bss, vram: 0x003a3e40, name: pal/bss_3a3e40 }
         - { type: .bss, vram: 0x01c48100, name: os/tim2 }
         - { type: bss, vram: 0x01c48d80, name: pal/bss_1c48d80 }
+        - { type: .bss, vram: 0x01c51b80, name: main/sprite }
         - { type: .bss, vram: 0x01c59b90, name: main/fadectrl }
         - { type: bss, vram: 0x01c59ba0, name: pal/bss_1c59ba0 }
+        - { type: .bss, vram: 0x01c5bef0, name: main/effect }
+        - { type: bss, vram: 0x01c5bfc0, name: pal/bss_1c5bfc0 }
         - { type: .bss, vram: 0x01c5f0e8, name: main/mcctrl }
         - { type: bss, vram: 0x01c63630, name: pal/bss_1c63630 }
+        - { type: .bss, vram: 0x01c6d8c0, name: menu/menufont }
+        - { type: bss, vram: 0x01c6e900, name: pal/bss_1c6e900 }
         - { type: .bss, vram: 0x01c6ea40, name: iop_mdl/tapctrl_rpc }
         - { type: bss, vram: 0x01c6eab0, name: pal/bss_1c6eab0 }
 

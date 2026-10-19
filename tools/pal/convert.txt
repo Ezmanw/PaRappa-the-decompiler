@@ -7,3 +7,7 @@ menu/mntm2hed
 main/mcctrl
 iop_mdl/tapctrl_rpc
 os/mtc
+main/cmnfile
+main/effect
+main/sprite
+menu/menufont
