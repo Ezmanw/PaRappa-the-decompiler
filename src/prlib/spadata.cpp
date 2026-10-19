@@ -466,8 +466,9 @@ int SpaNodeAnimation::Optimize() {
     return remove_count;
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/prlib/spadata", GetLinearValue__Ct8SpaTrack1Zt8NaVECTOR2Zfi4Uif);
-#if 0
+#else
 // TODO: nonmatching (regalloc only: a0/a1/a2 swaps in the address computations).
 // Requires NaVECTOR to have a copy constructor that copies with lq/sq.
 static inline NaVECTOR<float, 4> operator*(const NaVECTOR<float, 4>& v, float f) {
@@ -616,7 +617,56 @@ float* func_001491C0(
     return self;
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/prlib/spadata", func_00149270);
+#else
+#include <float.h>
+
+#ifndef PR_VU0_WAIT
+#define PR_VU0_WAIT()                                \
+    do {                                             \
+        int _wait = 3;                               \
+        do {                                         \
+            _wait--;                                 \
+            asm volatile("nop");                     \
+            asm volatile("nop");                     \
+            asm volatile("nop");                     \
+            asm volatile("nop");                     \
+        } while (_wait != -1);                       \
+    } while (0)
+#endif
+
+/* Axis-angle (Rodrigues) rotation matrix: self = rot(axis, *angle) */
+NaMATRIX<float, 4, 4>* func_00149270(NaMATRIX<float, 4, 4>* self, const float* axis, const float* angle) asm("func_00149270");
+NaMATRIX<float, 4, 4>* func_00149270(NaMATRIX<float, 4, 4>* self, const float* axis, const float* angle) {
+    float yz = axis[1] * axis[1] + axis[2] * axis[2];
+    float len = sqrtf(axis[0] * axis[0] + yz);
+    float r = sqrtf(yz);
+    float sy, cz;
+
+    if (r < FLT_EPSILON) {
+        sy = 0.0f;
+        cz = 1.0f;
+    } else {
+        sy = axis[1] / r;
+        cz = axis[2] / r;
+    }
+
+    float a = r / len;
+    float b = -axis[0] / len;
+    float s = sinf(*angle);
+    float c = cosf(*angle);
+    float t = a * (c - 1.0f);
+
+    PR_VU0_WAIT();
+    self->Set(
+        a * t + 1.0f, sy * b * t + cz * a * s, cz * b * t - sy * a * s, 0.0f,
+        sy * b * t - cz * a * s, -sy * sy * a * t + c, -sy * cz * a * t - b * s, 0.0f,
+        cz * b * t + sy * a * s, -sy * cz * a * t + b * s, -cz * cz * a * t + c, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f);
+    return self;
+}
+#endif
 
 /* prlib/spadata.cpp */
 template <>
@@ -691,9 +741,80 @@ float* SpaTrack<float>::GetValue(float arg0) const {
     return NULL;
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/prlib/spadata", GetSprineValue__Ct8SpaTrack1Zt8NaMATRIX3Zfi4i4Uif);
 
 INCLUDE_ASM("asm/nonmatchings/prlib/spadata", GetLinearValue__Ct8SpaTrack1Zt8NaMATRIX3Zfi4i4Uif);
+#else
+typedef NaMATRIX<float, 4, 4> SpaMat44;
+
+/* Element-wise helpers (the original used VU0 vector ops per row; vmulx/vadd/vsub are exact
+ * float ops, and the divide is Q = 1/f followed by a multiply). */
+static inline SpaMat44 SpaMatScale(const SpaMat44& a, float f) {
+    SpaMat44 r;
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            r[i].v[j] = a[i].v[j] * f;
+    return r;
+}
+
+static inline SpaMat44 SpaMatDiv(const SpaMat44& a, float f) {
+    float q = 1.0f / f;
+    return SpaMatScale(a, q);
+}
+
+static inline SpaMat44 SpaMatAdd(const SpaMat44& a, const SpaMat44& b) {
+    SpaMat44 r;
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            r[i].v[j] = a[i].v[j] + b[i].v[j];
+    return r;
+}
+
+static inline SpaMat44 SpaMatSub(const SpaMat44& a, const SpaMat44& b) {
+    SpaMat44 r;
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            r[i].v[j] = a[i].v[j] - b[i].v[j];
+    return r;
+}
+
+template <>
+SpaMat44* SpaTrack<SpaMat44>::GetSprineValue(u_int seg, float arg1) const {
+    static SpaMat44 return_buffer;
+
+    float f2 = this->unkC[seg + 1] - this->unkC[seg];
+    SpaMat44 *a0 = (SpaMat44*)&this->unk10 + (seg * 3);
+    const SpaMat44& p2 = ((SpaMat44*)&this->unk10)[seg * 3 + 2];
+    const SpaMat44& p4 = ((SpaMat44*)&this->unk10)[seg * 3 + 4];
+    const SpaMat44& p3 = ((SpaMat44*)&this->unk10)[seg * 3 + 3];
+    if (f2 == 0.0f) {
+        return a0;
+    }
+
+    float f0 = (arg1 - this->unkC[seg]) / f2;
+    SpaMat44 d = SpaMatSub(a0[0], p3);
+
+    SpaMat44 t = SpaMatAdd(SpaMatScale(SpaMatAdd(p2, p4), f2), SpaMatScale(d, 2.0f));
+    t = SpaMatSub(SpaMatScale(t, f0), SpaMatScale(SpaMatAdd(SpaMatScale(p2, 2.0f), p4), f2));
+    t = SpaMatSub(t, SpaMatScale(d, 3.0f));
+    t = SpaMatAdd(SpaMatScale(t, f0), SpaMatScale(p2, f2));
+    return_buffer = SpaMatAdd(SpaMatScale(t, f0), a0[0]);
+    return &return_buffer;
+}
+
+template <>
+SpaMat44* SpaTrack<SpaMat44>::GetLinearValue(u_int seg, float arg1) const {
+    static SpaMat44 return_buffer;
+
+    float f1 = arg1 - this->unkC[seg];
+    float f0 = this->unkC[seg + 1] - arg1;
+    return_buffer = SpaMatDiv(
+        SpaMatAdd(SpaMatScale(((SpaMat44*)&this->unk10)[seg], f0), SpaMatScale(((SpaMat44*)&this->unk10)[seg + 1], f1)),
+        f0 + f1);
+    return &return_buffer;
+}
+#endif
 
 template <>
 NaMATRIX<float, 4, 4>* SpaTrack<NaMATRIX<float, 4, 4> >::GetValue(float arg0) const {
