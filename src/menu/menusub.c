@@ -5910,20 +5910,25 @@ static void TsCmnCell_CusorMASK(CELLOBJ *obj) {
     obj->flg = 0xffff;
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsCmnCell_CusorDraw);
-#if 0
-extern PTPOS D_0019A258[];
+#else
+extern PTPOS CellCusPos[];
 
 /* static */ void TsCmnCell_CusorDraw(SPR_PKT pk, SPR_PRM *spr, int n, CELLOBJ *obj, int ox, int oy, int CurColor) {
     TSTEX_INF *ptex;
     int        flg;
     int        ton;
+    int        n1;
+    int        isCell;
 
-    if ((u_int)(n + 1) >= 9) {
+    n1 = n + 1;
+    if ((u_int)n1 >= 9) {
         return;
     }
+    isCell = (u_int)n < 7;
 
-    if ((u_int)n < 7) {
+    if (isCell) {
         if (obj != NULL) {
             int state = obj->state;
 
@@ -5967,7 +5972,7 @@ extern PTPOS D_0019A258[];
         }
     }
 
-    if ((u_int)n < 7) {
+    if (isCell) {
         flg = obj->flg;
         ton = obj->ton;
     } else {
@@ -5997,15 +6002,14 @@ extern PTPOS D_0019A258[];
     spr->uy = 0;
     spr->uw = ptex->w;
     spr->uh = ptex->h;
-    spr->px = D_0019A258[n + 1].x + ox;
+    spr->px = CellCusPos[n1].x + ox;
     spr->sw = 0x234;
-    spr->py = D_0019A258[n + 1].y + oy;
+    spr->py = CellCusPos[n1].y + oy;
     spr->sh = ptex->h * 2;
     PkNSprite_Add(pk, spr, 1);
     PkALPHA_Add(pk, 0x44);
 }
 #endif
-
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsOption_Flow);
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsOption_Draw);
