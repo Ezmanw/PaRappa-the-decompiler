@@ -5732,7 +5732,205 @@ int TsPopMenu_Flow(int flg, u_int tpad) {
 }
 #endif
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPopMenu_Draw);
+#else
+typedef struct { // 0x18
+    short px;
+    short py;
+    u_int abgr;
+    short sx;
+    short sy;
+    int pad0;
+    short nx;
+    short ny;
+    int pad1;
+} STRPOS;
+
+typedef struct { // 0x8
+    PTPOS *p0;
+    PTPOS *p1;
+} POPRNK_PPOS;
+
+extern PATPOS PopMenuSel_Pat[]; // PAL data 19a698 (jul 18c0c8)
+extern PATPOS SIRanking_Pat[]; // PAL data 19a728 (jul 18c168)
+extern PATPOS Ranking_PatScroll[]; // PAL data 19a740 (jul 18c180)
+extern PATPOS RankSISTNo_PAT[]; // PAL data 19a758 (jul 18c198)
+extern PATPOS *VSRanking_PatTbl[]; // PAL data 19a8c8 (jul 18c308)
+extern PATPOS RankVSSTNo_PAT[]; // PAL data 19a8d8 (jul 18c318)
+extern STRPOS SRanking_Str[]; // PAL data 19a948 (jul 18c388)
+extern STRPOS VRanking_Str[]; // PAL data 19a960 (jul 18c3a0)
+extern POPRNK_PPOS PopRnk_pPos[]; // PAL data 19a988 (jul 18c3c8)
+extern PTPOS POPWZoom_CXY[]; // PAL data 19ab00 (jul 18c540)
+
+void TsPopMenu_Draw(SPR_PKT pk, SPR_PRM *spr) {
+    char buf[32];
+    float rt0, rt1, rt2;
+    int ton;
+    int tm180;
+    RANKLIST *prank;
+    int nrank;
+    int sc_y;
+    int sc_lim;
+    u_int ccus, cnorm;
+    short ox, oy;
+    short bx, by;
+    PTPOS *pp;
+    PATPOS *pcur;
+    PATPOS *plist;
+    PATPOS *pnum;
+    PATPOS *pnum1;
+    STRPOS *pstr;
+    int i, n;
+    int rx, ry;
+    u_int col;
+    float zr, f0, f1;
+    float rate;
+
+    PopupMenu.cani.fswing = -cosf(((float)(MNSceneGetMusicFitTimer() % 72) / 72.0f) * 6.2831855f);
+    tm180 = MNSceneGetMusicFitTimer() % 180;
+    spr->zx = 1.0f;
+    spr->zy = 0.5f;
+    PkALPHA_Add(pk, 0x44);
+
+    if (PopupMenu.isRnkWAnime == 0 && TsANIME_GetRate(&PopupMenu.awork, &rt0, &rt1, &rt2) != 0) {
+        pp = &POPWZoom_CXY[PopupMenu.nPBubPat];
+        ton = (int)(rt0 * 256.0f);
+        spr->zoom.centerX = (float)pp->x;
+        spr->zoom.zoomY = rt1;
+        spr->zoom.isOn = 1;
+        spr->zoom.zoomX = rt0;
+        spr->zoom.centerY = (float)pp->y;
+    } else {
+        spr->zoom.isOn = 0;
+        ton = 0x100;
+    }
+
+    pp = PopRnk_pPos[PopupMenu.nPPosSet].p0;
+    oy = pp->y;
+    ox = pp->x;
+    spr->rgba0 = GetDToneColor(0x404040, 0x80808080, ton);
+    if (PopupMenu.urTim != 0) {
+        PopupMenu.urTim--;
+    }
+    ccus = GetDToneColor(0x404040, 0x80FFFFFF, ton);
+    cnorm = GetDToneColor(0x404040, 0x80808080, ton);
+    TsPopMenCus_Draw(pk, spr, &PopupMenu, ox, oy, ccus, cnorm, 0);
+    TsPopMenCus_Draw(pk, spr, &PopupMenu, ox, oy, ccus, cnorm, 1);
+    TsPopMenCus_Draw(pk, spr, &PopupMenu, ox, oy, ccus, cnorm, 6);
+    spr->zoom.isOn = 0;
+
+    if (PopupMenu.isRankOn != 0) {
+        pp = PopRnk_pPos[PopupMenu.nPPosSet].p1;
+        by = pp->y;
+        bx = pp->x;
+        if (PopupMenu.isRnkWAnime != 0) {
+            if (TsANIME_GetRate(&PopupMenu.awork, &rt0, &rt1, &rt2) == 0) {
+                spr->zoom.isOn = 0;
+                ton = 0x100;
+                rate = 0.0f;
+            } else {
+                if (PopupMenu.rankFlg == 0) {
+                    pcur = &PopMenuSel_Pat[3];
+                } else {
+                    pcur = &PopMenuSel_Pat[4];
+                }
+                n = pcur->x + ox;
+                spr->zoom.zoomY = rt1 * 0.9f + 0.1f;
+                spr->zoom.isOn = 1;
+                spr->zoom.centerX = (float)(n + 0x20) + ((float)(n - bx) / 1.8f);
+                rate = rt2 * 0.6f;
+                spr->zoom.zoomX = rt0 * 0.65f + 0.35f;
+                spr->zoom.centerY = (float)(pcur->y + oy + 6);
+                ton = (int)(rt0 * 156.0f) + 0x64;
+            }
+        } else {
+            ton = 0x100;
+            rate = 0.0f;
+        }
+        spr->rgba0 = GetDToneColor(0x20FFFFFF, 0x80808080, ton);
+
+        if (PopupMenu.rankFlg != 0) {
+            pnum = RankVSSTNo_PAT;
+            n = 5;
+            plist = VSRanking_PatTbl[PopupMenu.rVsLev];
+        } else {
+            plist = SIRanking_Pat;
+            pnum = RankSISTNo_PAT;
+            n = 2;
+        }
+
+        for (i = 0; i < n; i++) {
+            if (rate != 0.0f) {
+                f0 = sinf(rate * 6.2831855f);
+                f1 = f0 * 0.3f;
+                zr = f0 * 0.2f + 1.0f;
+                TsPatPutMZoom(pk, spr, &plist[i], bx, by, zr, zr, 8, 8, f1, f1);
+                PopupMenu.urTim = 20;
+            } else if (i == 0) {
+                if (PopupMenu.urTim != 0) {
+                    f1 = 1.0f - (float)PopupMenu.urTim * 0.05f;
+                } else {
+                    f1 = 1.0f;
+                }
+                TsPatPutUneri(pk, spr, &plist[i], bx, by, 8, 10, (float)tm180 / 180.0f, f1);
+            } else {
+                TsPatPut(pk, spr, &plist[i], bx, by);
+            }
+        }
+        pnum1 = &pnum[1];
+
+        if (rate < 0.15f) {
+            ton = (int)((0.15f - rate) * 256.0f * 6.6666665f);
+        } else {
+            ton = 0;
+        }
+        spr->rgba0 = GetDToneColor(0x808080, 0x80808080, ton);
+        TsPatPut(pk, spr, pnum, bx, by);
+        TsPatPut(pk, spr, &pnum1[PopupMenu.rStageNo], bx, by);
+        n = PopupMenu.selrnkpg;
+        if (n > 0) {
+            TsPatPut(pk, spr, &Ranking_PatScroll[0], bx, by);
+        }
+        if (n < PopupMenu.nPageMax - 1) {
+            TsPatPut(pk, spr, &Ranking_PatScroll[1], bx, by);
+        }
+
+        prank = PopupMenu.pRanking;
+        nrank = PopupMenu.nRanking;
+        if (PopupMenu.rankFlg == 0) {
+            pstr = SRanking_Str;
+        } else {
+            pstr = VRanking_Str;
+        }
+        i = 0;
+        n = by + pstr->py;
+        sc_y = n - 5;
+        SetSprScreenXYWH(spr);
+        PkSCISSOR_Add(pk, spr->px, (short)sc_y, spr->sw, 0x50);
+        ry = by - (PopupMenu.selrnkpg * 0x50 + (PopupMenu.rsline >> 1));
+        if (nrank > 0) {
+            sc_lim = n - 0xD;
+            do {
+                rx = ry + pstr->py;
+                if (sc_lim < rx && rx < sc_y + 0x58) {
+                    col = GetDToneColor(pstr->abgr & 0xFFFFFF, pstr->abgr, ton);
+                    sprintf(buf, "%d", i + 1);
+                    MENUFontPutR(pk, spr, bx + pstr->px, rx, col, 0x100, (u_char *)buf, 1.0f);
+                    sprintf(buf, "%d", prank[i].score);
+                    MENUFontPutR(pk, spr, bx + pstr->sx, ry + pstr->sy, col, 0x102, (u_char *)buf, 1.0f);
+                    sprintf(buf, "%s", prank[i].name);
+                    MENUFontPutR(pk, spr, bx + pstr->nx, ry + pstr->ny, col, 0x100, (u_char *)buf, 1.1f);
+                }
+                i++;
+                ry += 8;
+            } while (i < nrank);
+        }
+        PkDefSCISSOR_Add(pk);
+        spr->zoom.isOn = 0;
+    }
+}
+#endif
 
 #ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPopMenCus_Draw);
