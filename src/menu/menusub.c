@@ -5322,7 +5322,415 @@ INCLUDE_RODATA("asm/nonmatchings/menu/menusub", D_00396070);
 
 INCLUDE_RODATA("asm/nonmatchings/menu/menusub", D_00396078);
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPopMenu_Flow);
+#else
+extern POPUP_MENU PopupMenu; // PAL bss
+extern int POPSel2BtnDir[]; // PAL data 19b0f8 (jul 18cae8)
+extern int Pop_CmpMesNo[]; // PAL data (jul 18cad0)
+extern int PopRnkPos_No[][9]; // PAL data 19a9e0 (jul 18c420)
+extern int PopBubblePat_No[][9]; // PAL data 19aa70 (jul 18c4b0)
+
+int TsPopMenu_Flow(int flg, u_int tpad) {
+    POPUP_MENU *pfw = &PopupMenu;
+    ANIME_WK *awk = &pfw->awork;
+    POPCTIM *cani = &pfw->cani;
+    int s0;
+    int s2;
+    int i;
+    int idx;
+    int btn, nbtn;
+    int sel, nsel;
+    int cur, ncur;
+    int pg;
+    P3LOG_VAL *plog;
+
+    if (flg == 1) {
+        TsANIME_Init(awk);
+        pfw->isRnkWAnime = 0;
+        TsPopCusInit(cani, 0);
+        pfw->state = 0;
+        plog = pP3GameState->pLog;
+        pfw->selno = 0;
+        pfw->btnNo = 0;
+        pfw->bSelRank = 0;
+        pfw->selLev = 0;
+        pfw->rVsLev = 0;
+        pfw->urTim = 0;
+        idx = tpad - 1;
+        if (plog->nRound == 0) {
+            if (!(((int)plog->clrFlg[0] >> (pP3GameState->nStage - 1)) & 1)) {
+                idx = tpad - 1;
+                for (i = 0; i < 5; i++) {
+                    if (i != 0) {
+                        cani->bDim[i] = 1;
+                    }
+                }
+            }
+        }
+        pfw->levMax = (pP3GameState->pLog->clrVSCOM1[pP3GameState->nStage - 1] != 0) ? 4 : 1;
+        if (tpad != 0) {
+            tpad = idx;
+        }
+        pfw->nPPosSet = PopRnkPos_No[tpad][pP3GameState->nStage];
+        PopMenu_Sw = 1;
+        pfw->isSelLev = 0;
+        pfw->isRankOn = 0;
+        pfw->nPBubPat = PopBubblePat_No[tpad][pP3GameState->nStage];
+        return 0;
+    }
+
+    if (flg == 2) {
+        pfw->isSelLev = 0;
+        PopMenu_Sw = 0;
+        pfw->isRankOn = 0;
+        return 0;
+    }
+
+    s0 = TsANIME_Poll(awk);
+    TsPopCusFlow(cani);
+    s2 = pfw->state;
+
+    switch (s2) {
+    case 0:
+        s2 = 0x800;
+        TsANIME_Start(awk, 2, 15);
+        s0 = TsANIME_Poll(awk);
+        pfw->isRnkWAnime = 0;
+        /* fallthrough */
+    case 0x800:
+        if (s0 != 0) {
+            break;
+        }
+        /* fallthrough */
+    case 0x1000:
+        pfw->isSelLev = 0;
+        s2 = 0x1010;
+        pfw->selLev = 0;
+        pfw->exitflg = 0;
+        break;
+    case 0x1010:
+        plog = pP3GameState->pLog;
+        if (plog->nRound != 0 || (((int)plog->clrFlg[0] >> (pP3GameState->nStage - 1)) & 1)) {
+            MENUSubt_PadFontArrowSet(POPSel2BtnDir[pfw->selno]);
+        } else {
+            MENUSubt_PadFontArrowSet(0);
+        }
+        TsCMPMes_SetMes(Pop_CmpMesNo[pfw->selno]);
+        if (TsCheckTimeMapChange()) {
+            break;
+        }
+
+        btn = pfw->btnNo;
+        nbtn = btn;
+        sel = POPBtn2Sel[(pfw->bSelRank != 0) ? (btn + 3) : btn];
+        if (tpad & 0x8000) {
+            nbtn = btn - 1;
+        }
+        if (tpad & 0x2000) {
+            nbtn = nbtn + 1;
+        }
+        if (btn != nbtn) {
+            nbtn = TSLOOP(nbtn, 3);
+            if (TsPUPCheckMove(nbtn, pfw->bSelRank, cani)) {
+                pfw->btnNo = nbtn;
+                pfw->bSelRank = 0;
+                TSSNDPLAY(2);
+            }
+        }
+        btn = pfw->btnNo;
+        if (btn != 1) {
+            cur = pfw->bSelRank;
+            ncur = cur;
+            if (tpad & 0x1000) {
+                ncur = cur - 1;
+            }
+            if (tpad & 0x4000) {
+                ncur = ncur + 1;
+            }
+            if (cur != ncur) {
+                ncur = TSLOOP(ncur, 2);
+                if (TsPUPCheckMove(pfw->btnNo, ncur, cani)) {
+                    pfw->bSelRank = ncur;
+                    TSSNDPLAY(5);
+                }
+            }
+        } else {
+            pfw->bSelRank = 0;
+        }
+        nsel = POPBtn2Sel[(pfw->bSelRank != 0) ? (btn + 3) : btn];
+        pfw->selno = nsel;
+        if (sel != nsel) {
+            TsPopCusAOff(cani);
+            cani->onTim = 10;
+            cani->onTNo = pfw->selno;
+        } else {
+            nsel = sel;
+        }
+        TsCMPMes_SetMes(Pop_CmpMesNo[nsel]);
+        if (tpad & 0x10) {
+            s2 = 0xF020;
+            pfw->exitflg = 1;
+            TSSNDPLAY(9);
+        }
+        if (tpad & 0x40) {
+            pfw->exitflg = 0;
+            switch (pfw->selno) {
+            case 0:
+            case 1:
+                TSSNDPLAY(8);
+                break;
+            case 2:
+                if (pfw->levMax < 2) {
+                    TSSNDPLAY(8);
+                } else {
+                    TSSNDPLAY(6);
+                }
+                break;
+            case 3:
+            case 4:
+                TSSNDPLAY(6);
+                break;
+            default:
+                break;
+            }
+            s2 = 0x2000;
+        }
+        break;
+    case 0x2000:
+        switch (pfw->selno) {
+        case 0:
+        case 1:
+            s2 = 0xF000;
+            MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[2]);
+            break;
+        case 2:
+            if (pfw->levMax < 2) {
+                s2 = 0xF000;
+                MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[2]);
+                pfw->selLev = 0;
+            } else {
+                s2 = 0x3000;
+            }
+            break;
+        case 3:
+        case 4:
+            s2 = 0x5000;
+            break;
+        default:
+            break;
+        }
+        break;
+    case 0x3000:
+        cani->okTim = 25;
+        cani->onTNo = pfw->selno;
+        s2 = 0x3005;
+        /* fallthrough */
+    case 0x3005:
+        if (cani->okTim != 0) {
+            break;
+        }
+        pfw->selLev = 0;
+        pfw->isSelLev = 1;
+        TsCMPMes_SetMes(0x18);
+        s2 = 0x3010;
+        /* fallthrough */
+    case 0x3010:
+        if (TsCheckTimeMapChange()) {
+            break;
+        }
+        cur = pfw->selLev;
+        ncur = cur;
+        if (tpad & 0x8000) {
+            ncur = cur - 1;
+        }
+        if (tpad & 0x2000) {
+            ncur = ncur + 1;
+        }
+        ncur = TSLOOP(ncur, pfw->levMax);
+        if (cur != ncur) {
+            pfw->selLev = ncur;
+            TSSNDPLAY(2);
+        }
+        if (tpad & 0x10) {
+            s2 = 0x1000;
+            TSSNDPLAY(9);
+        }
+        if (tpad & 0x40) {
+            TSSNDPLAY(8);
+            s2 = 0xF000;
+            MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[2]);
+            pfw->isSelLev = 0;
+        }
+        break;
+    case 0x5000:
+        cani->okTim = 25;
+        cani->onTNo = pfw->selno;
+        if (pfw->selno == 3) {
+            pfw->nTagMax = 1;
+            pfw->nRankMax = 20;
+        } else {
+            pfw->nRankMax = 10;
+            pfw->nTagMax = pfw->levMax;
+        }
+        pfw->rVsLev = 0;
+        s2 = 0x5010;
+        McInitFlow();
+        break;
+    case 0x5010:
+        ret = McUserCheckFlow(0, 3, NULL);
+        if (ret >= 0) {
+            if ((u_int)(ret - 1) < 2) {
+                pfw->isRankOn = 0;
+                s2 = 0x1010;
+            } else {
+                s2 = 0x6000;
+            }
+        }
+        break;
+    case 0x6000:
+        TsANIME_Start(awk, 4, 15);
+        pfw->isRnkWAnime = 1;
+        s0 = TsANIME_Poll(awk);
+        /* fallthrough */
+    case 0x6002:
+        pfw->selrnkpg = 0;
+        pfw->isRankOn = 1;
+        pfw->rsline = 0;
+        pfw->rStageNo = pP3GameState->nStage - 1;
+        pfw->rankFlg = (pfw->selno == 3) ? 0 : 1;
+        pfw->pRanking = TsGetRankingList(pfw->rankFlg, pfw->rVsLev, pfw->rStageNo, &pfw->nRanking);
+        if (pfw->nRankMax < pfw->nRanking) {
+            pfw->nRanking = pfw->nRankMax;
+        }
+        pfw->nPageMax = (pfw->nRanking + 9) / 10;
+        if (pfw->nPageMax == 0) {
+            pfw->nPageMax = 1;
+        }
+        s2 = 0x6005;
+        /* fallthrough */
+    case 0x6005:
+        if (s0 != 0) {
+            break;
+        }
+        if (pfw->nPageMax < 2) {
+            if (pfw->rankFlg != 0) {
+                TsCMPMes_SetMes(30);
+            } else {
+                TsCMPMes_SetMes(29);
+            }
+        } else {
+            TsCMPMes_SetMes(28);
+        }
+        s2 = 0x6010;
+        break;
+    case 0x6010:
+        if (pfw->rsline != 0) {
+            pfw->rsline = TSNumMov(pfw->rsline, 0, 5);
+        } else {
+            if (TsCheckTimeMapChange()) {
+                break;
+            }
+            pg = pfw->selrnkpg;
+            cur = pg;
+            ncur = pg;
+            if (tpad & 0x1000) {
+                ncur = pg - 1;
+            }
+            if (tpad & 0x4000) {
+                ncur = ncur + 1;
+            }
+            ncur = TSLIMIT(ncur, 0, pfw->nPageMax);
+            if (cur != ncur) {
+                pfw->rsline = (ncur < cur) ? 160 : -160;
+                pfw->selrnkpg = ncur;
+                if (ncur < pg) {
+                    TSSNDPLAY(3);
+                } else {
+                    TSSNDPLAY(4);
+                }
+            }
+            cur = pfw->rVsLev;
+            ncur = cur;
+            if (tpad & 0x8000) {
+                ncur = cur - 1;
+            }
+            if (tpad & 0x2000) {
+                ncur = ncur + 1;
+            }
+            ncur = TSLOOP(ncur, pfw->nTagMax);
+            if (cur != ncur) {
+                pfw->rVsLev = ncur;
+                TSSNDPLAY(2);
+                s2 = 0x6002;
+                break;
+            }
+        }
+        if (tpad & 0x10) {
+            pfw->exitflg = 0;
+            s2 = 0x6020;
+            TSSNDPLAY(9);
+        }
+        break;
+    case 0x6020:
+        TsANIME_Start(awk, 5, 15);
+        s2 = 0x6030;
+        pfw->isRnkWAnime = 1;
+        s0 = TsANIME_Poll(awk);
+        /* fallthrough */
+    case 0x6030:
+        if (s0 != 0) {
+            break;
+        }
+        pfw->isRankOn = 0;
+        s2 = 0x1010;
+        break;
+    case 0xF000:
+        cani->okTim = 25;
+        cani->onTNo = pfw->selno;
+        s2 = 0xF010;
+        /* fallthrough */
+    case 0xF010:
+        if (cani->okTim != 0) {
+            break;
+        }
+        /* fallthrough */
+    case 0xF020:
+        TsANIME_Start(awk, 3, 15);
+        s2 = 0xF080;
+        s0 = TsANIME_Poll(awk);
+        pfw->isRnkWAnime = 0;
+        /* fallthrough */
+    case 0xF080:
+        if (s0 != 0) {
+            break;
+        }
+        /* fallthrough */
+    case 0xF100:
+        PopMenu_Sw = 0;
+        pfw->isRankOn = 0;
+        if (pfw->exitflg != 0) {
+            s2 = 0xFF20;
+            break;
+        }
+        if (pfw->selno == 1) {
+            ret = 2;
+        } else if (pfw->selno == 0) {
+            ret = 1;
+        } else if (pfw->selno == 2) {
+            ret = (pfw->selLev << 8) | 3;
+        }
+        return ret;
+    case 0xFF20:
+        return -1;
+    default:
+        break;
+    }
+
+    pfw->state = s2;
+    return 0;
+}
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPopMenu_Draw);
 
