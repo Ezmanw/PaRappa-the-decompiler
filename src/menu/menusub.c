@@ -6298,7 +6298,56 @@ int TsOption_Flow(int flg, u_int tpad) {
 }
 #endif
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsOption_Draw);
+#else
+void TsOption_Draw(SPR_PKT pk, SPR_PRM *spr) {
+    OPTION_MENU *pfw = &OptionMenu;
+    char buf[32];
+    float rots[4] = { -1.5707964f, 1.5707964f, 0.0f, 3.1415927f };
+    int i, j;
+    float zr;
+    PATPOS *ppat;
+
+    for (i = 0; i < 5; i++) {
+        TsCmnCell_CusorDraw(pk, spr, i, &pfw->cell[i], 0, 0, 0x1A808080);
+    }
+
+    for (i = 0; i < 5; i++) {
+        spr->rgba0 = 0x800062FF;
+        TsPatPut(pk, spr, &D_0019A558[i], 0, 0);
+        if (pfw->arrow == i) {
+            for (j = 0; j < 4; j++) {
+                ppat = &D_0019A598[i][j];
+                if (ppat->texNo >= 0) {
+                    if (pfw->anm[i][j] > 0) {
+                        pfw->anm[i][j]--;
+                        spr->rgba0 = 0x80FFFFFF;
+                        zr = (float)((double)(float)pfw->anm[i][j] * 0.5 * 0.1666666716337204 + 1.0);
+                    } else {
+                        zr = 1.0f;
+                        spr->rgba0 = 0x80808080;
+                    }
+                    TsPatPutRZoom(pk, spr, ppat, 0, 0, zr, rots[j]);
+                }
+            }
+        }
+    }
+
+    PkALPHA_Add(pk, 0x44);
+    spr->zx = 1.0f;
+    spr->zy = 0.5f;
+    spr->rgba0 = 0x80808080;
+    for (i = 0; i < 5; i++) {
+        if (i != 4) {
+            TsPatPut(pk, spr, &OptionSelTbl[i].list[pfw->item[i].val].pat, 0, 0);
+        }
+    }
+
+    sprintf(buf, "X:%d Y:%d", pfw->item[4].val, pfw->item[4].val2);
+    MENUFontPutS(pk, spr, OptionSelTbl[4].list->pat.x, OptionSelTbl[4].list->pat.y, 0x80808080, 1, (u_char *)buf);
+}
+#endif
 
 static int TsUserList_GetCurFileNo(int *isBroken) {
     USERLIST_MENU *pfw   = &UserListMenu;
