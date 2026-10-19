@@ -5326,7 +5326,84 @@ INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPopMenu_Flow);
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPopMenu_Draw);
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPopMenCus_Draw);
+#else
+extern PATPOS PopMenuSel_Pat[];
+extern PATPOS VSComMenuSel_Pat[];
+extern PATPOS VSComMenuSelH_Pat[];
+extern int POPSel2Btn[];
+
+void TsPopMenCus_Draw(SPR_PKT pk, SPR_PRM *spr, POPUP_MENU *pfw, int px, int py, u_int hicol, u_int nmcol, int dflg) {
+    int i, j;
+    int bPut;
+    int bState;
+    int st;
+    float oy;
+    PATPOS *ppat;
+
+    oy = spr->ofsy;
+    bState = 0;
+    i = 0;
+    do {
+        pfw->cani.habgr = hicol;
+        pfw->cani.nabgr = nmcol;
+        bPut = 0;
+        spr->ofsy = oy + sinf((float)(MNSceneGetMusicFitTimer() % 480) * 6.2831855f * 0.0020833334f + (float)POPSel2Btn[i] * 2.5132742f) * 3.3f;
+
+        if (i == pfw->selno && pfw->cani.okTim != 0) {
+            bState = 2;
+            bPut = 2;
+        } else {
+            bState = ((POPSel2Btn[i] ^ pfw->btnNo) != 0) ? 0 : 1;
+            if (i == pfw->selno) {
+                bPut = 1;
+                if (pfw->cani.onTim != 0) {
+                    bState = 3;
+                }
+            }
+        }
+
+        if (pfw->isSelLev != 0) {
+            bState = ((i ^ 2) != 0) ? 0 : 5;
+        }
+
+        if (bPut == 0) {
+            spr->rgba0 = pfw->cani.nabgr;
+        } else if (bPut == 1) {
+            spr->rgba0 = pfw->cani.habgr;
+        }
+
+        TsPopCusPut(pk, spr, dflg, &pfw->cani, bState, i, &PopMenuSel_Pat[i], px, py);
+
+        if (i == 2) {
+            pfw->cani.habgr = nmcol;
+            pfw->cani.nabgr = nmcol;
+            for (j = 0; j < pfw->levMax; j++) {
+                spr->rgba0 = nmcol;
+                ppat = &VSComMenuSel_Pat[j];
+                st = bState;
+                if (pfw->isSelLev != 0) {
+                    st = 6;
+                    if (j == pfw->selLev) {
+                        spr->rgba0 = GetDToneColor(0x80FFFFFF, 0x80606060,
+                                (int)(sinf((float)(MNSceneGetMusicFitTimer() % 30) * 3.1415927f / 30.0f) * 256.0f));
+                        ppat = &VSComMenuSelH_Pat[j];
+                    } else {
+                        spr->rgba0 = 0x80707070;
+                    }
+                }
+                TsPopCusPut(pk, spr, dflg, &pfw->cani, st, 2, ppat, px, py);
+            }
+            i = 3;
+        } else {
+            i++;
+        }
+    } while (i < 5);
+
+    spr->ofsy = oy;
+}
+#endif
 
 /* data 18cb00 */ extern int SaveMenu_CmpMesNo[]; /* static */
 
