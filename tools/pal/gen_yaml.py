@@ -15,6 +15,13 @@ J = open('config/p3.jul12.yaml', encoding='utf-8').read()
 P = open('config/p3.pal.yaml').read()
 header = P[:P.index(ROOT_HDR_END)]
 bounds = json.load(open('pal_work/boundaries.json'))
+# hand-confirmed file starts that the automatic boundary pass can miss
+try:
+    _ov = {k: int(v, 16) for k, v in json.load(open('config/p3.pal.boundary_overrides.json')).items()}
+    for _f in bounds:
+        if _f['name'] in _ov: _f['pal'] = _ov[_f['name']]
+except FileNotFoundError:
+    pass
 symmap = json.load(open('pal_work/symmap.json'))
 convert = [l.split('#')[0].strip() for l in open('tools/pal/convert.txt') if l.split('#')[0].strip()]
 

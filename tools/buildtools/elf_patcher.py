@@ -96,7 +96,7 @@ import re
 _blob = re.match(r"^(data|rodata|lit4|sdata|sbss|bss)_([0-9a-f]+)\.", elf_path.name)
 if _blob and elf_path.parent.name == "pal":
     _addr = int(_blob.group(2), 16)
-    section_align_override["." + _blob.group(1)] = min(0x10, _addr & -_addr)
+    section_align_override["." + _blob.group(1)] = min(0x80, _addr & -_addr)
 
 # Override specific alignments
 specific_alignments = SPECIFIC_ALIGNMENTS.get(elf_path.name)

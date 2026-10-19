@@ -58,7 +58,7 @@ segments:
         - [0x838, c, dbug/syori]
         - [0x858, c, dbug/vramsave]
 
-        - [0x14a0, asm, os/mtc]
+        - [0x14a0, c, os/mtc]
         - [0x19d0, asm, os/syssub]
         - [0x3098, asm, os/system]
         - [0x3808, asm, os/cmngifpk]
@@ -109,7 +109,8 @@ segments:
         - [0x88200, data, pal/data_188200]
         - [0x88270, .data, dbug/dbgmsg]
         - [0x892e0, .data, dbug/vramsave]
-        - [0x89390, data, pal/data_189390]
+        - [0x89390, .data, os/mtc]
+        - [0x89440, data, pal/data_189440]
         - [0x8e1e0, .data, os/tim2]
         - [0x8e1f8, data, pal/data_18e1f8]
         - [0x92898, .data, main/fadectrl]
@@ -135,20 +136,23 @@ segments:
         # .sdata
         - [0x283100, sdata, pal/sdata_383100]
         - [0x283108, .sdata, dbug/vramsave]
-        - [0x283110, sdata, pal/sdata_383110]
+        - [0x283110, .sdata, os/mtc]
+        - [0x283118, sdata, pal/sdata_383118]
         - [0x283150, .sdata, os/tim2]
         - [0x283160, sdata, pal/sdata_383160]
 
         # .sbss
         - { type: .sbss, vram: 0x00383700, name: dbug/dbgmsg }
-        - { type: sbss, vram: 0x00383718, name: pal/sbss_383718 }
+        - { type: .sbss, vram: 0x00383718, name: os/mtc }
+        - { type: sbss, vram: 0x0038371c, name: pal/sbss_38371c }
         - { type: .sbss, vram: 0x003837a0, name: main/mcctrl }
         - { type: sbss, vram: 0x003837ac, name: pal/sbss_3837ac }
 
         # .bss
         - { type: bss, vram: 0x00383980, name: pal/bss_383980 }
         - { type: .bss, vram: 0x00383ae0, name: dbug/dbgmsg }
-        - { type: bss, vram: 0x00393b10, name: pal/bss_393b10 }
+        - { type: .bss, vram: 0x00393b10, name: os/mtc }
+        - { type: bss, vram: 0x003a3e40, name: pal/bss_3a3e40 }
         - { type: .bss, vram: 0x01c48100, name: os/tim2 }
         - { type: bss, vram: 0x01c48d80, name: pal/bss_1c48d80 }
         - { type: .bss, vram: 0x01c59b90, name: main/fadectrl }

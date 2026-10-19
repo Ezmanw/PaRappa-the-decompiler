@@ -1,3 +1,4 @@
 g_NoodleStepB = 0x00383668;
 g_NoodleDecelerating = 0x00383690;
 g_NoodleDecel = 0x00383694;
+iWakeupThread = 0x0015df40;
