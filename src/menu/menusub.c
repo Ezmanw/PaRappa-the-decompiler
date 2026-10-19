@@ -5945,7 +5945,7 @@ extern MNANM_TBL StageMapBGMCamera[];
         break;
     case 0x100:
         MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[1]);
-        MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[33]);
+        MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[34]);
         JukeMapAnmState = 0x110;
         /* fallthrough */
     case 0x110:
@@ -5963,7 +5963,7 @@ extern MNANM_TBL StageMapBGMCamera[];
             break;
         }
         MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[1]);
-        MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[32]);
+        MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[33]);
         JukeMapAnmState = 0x2200;
         /* fallthrough */
     case 0x2200:
