@@ -8799,7 +8799,140 @@ extern u_char *UserName_InitialStr2;
     return 0;
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsNAMEINBox_Draw);
+#else
+extern PATPOS STGCNameBox[]; // PAL data 19a3a8 (5 entries)
+extern PATPOS STGCNameBoxOK; // PAL data 19a3e8
+extern PATPOS VS1PNameBox[]; // PAL data 19a3f8 (5 entries)
+extern PATPOS VS1PNameBoxOK; // PAL data 19a438
+extern PATPOS VS2PNameBox[]; // PAL data 19a448 (5 entries)
+extern PATPOS VS2PNameBoxOK; // PAL data 19a488
+
+/* static */ void TsNAMEINBox_Draw(SPR_PKT pk, SPR_PRM *spr, int px, int py, int isLog, NAMEINW *pfw, int side) {
+    char buf[2];
+    float oxs, oys;
+    float rt0, rt1;
+    float f0, f2;
+    float ang;
+    PATPOS *pbox;
+    PATPOS *pok;
+    int ton;
+    u_int col, col2, col3, c;
+    int x0, y0, x, y;
+    int i;
+    u_short *pc;
+    u_short ch;
+
+    oxs = spr->ofsx;
+    oys = spr->ofsy;
+    f0 = (float)(MNSceneGetMusicFitTimer() % 360) / 360.0f;
+    if (side != 0) {
+        ang = 2.0f * f0 * 3.1415927f - 1.5707964f;
+    } else {
+        ang = 2.0f * f0 * 3.1415927f;
+    }
+    rt0 = sinf(ang) * 4.0f;
+    spr->zx = 1.0f;
+    spr->zy = 0.5f;
+    spr->ofsy += rt0;
+
+    if (pfw->dispType != 1) {
+        if (pfw->dispType < 2) {
+            pbox = STGCNameBox;
+            pok = &STGCNameBoxOK;
+        } else if (pfw->dispType != 2) {
+            pbox = STGCNameBox;
+            pok = &STGCNameBoxOK;
+        } else {
+            pok = &VS2PNameBoxOK;
+            pbox = VS2PNameBox;
+        }
+    } else {
+        pok = &VS1PNameBoxOK;
+        pbox = VS1PNameBox;
+    }
+
+    if (TsANIME_GetRate(&pfw->awork, &rt0, &rt1, NULL) != 0) {
+        spr->zoom.centerX = (float)(px + pbox[0].x + 0x72);
+        spr->zoom.centerY = (float)(py + pbox[0].y + 0xA);
+        f0 = TSNumRBack(rt1, 0.3f);
+        if (!(pfw->awork.aflg & 1)) {
+            f0 = (1.0f - f0) * 1.2f + 1.0f;
+        }
+        spr->zoom.zoomX = f0;
+        f2 = TSNumRBack(rt0, 0.15f);
+        spr->zoom.isOn = 1;
+        spr->zoom.zoomY = f2 * f2;
+        ton = (int)(rt0 * rt0 * 256.0f);
+    } else {
+        spr->zoom.isOn = 0;
+        ton = 0x100;
+    }
+
+    col = GetDToneColor(0x808080, 0x80808080, ton);
+    spr->rgba0 = col;
+    PkALPHA_Add(pk, 0x44);
+    pc = pfw->curnchr;
+    i = 0;
+    do {
+        TsPatPut(pk, spr, &pbox[i], px, py);
+        i++;
+    } while (i < 5);
+
+    f0 = sinf(((float)(MNSceneGetMusicFitTimer() % 12) / (float)12) * 3.1415927f) * 256.0f;
+    if (pfw->onTime != 0) {
+        c = GetDToneColor(0x800A6EC8, 0x80FFFFFF, (int)f0);
+    } else {
+        c = GetDToneColor(0x803CA0FF, 0x80B4FFFF, (int)f0);
+    }
+    x0 = px + pbox[0].x + 0x2A;
+    y0 = py + pbox[0].y + 0xA;
+    if (pfw->onTime != 0) {
+        spr->px = x0;
+        spr->py = y0;
+        spr->sw = 0xB8;
+        spr->sh = 0x19;
+    } else {
+        spr->py = y0;
+        spr->px = pfw->curnpos * 0x14 + x0;
+        spr->sh = 0x19;
+        spr->sw = ((pfw->curnpos ^ 8) == 0) ? 0x18 : 0x15;
+    }
+    spr->rgba0 = GetDToneColor(c & 0xFFFFFF, c, ton);
+    PkCRect_Add(pk, spr, 2);
+    spr->rgba0 = col;
+    TsPatPut(pk, spr, pok, px, py);
+
+    x = px + pbox[0].x + 0x35;
+    y = py + pbox[0].y + 0xA;
+    switch (isLog) {
+    case 0:
+        col2 = 0x80660000;
+        break;
+    case 1:
+        col2 = 0x801E4000;
+        break;
+    default:
+        col2 = 0x80000061;
+        break;
+    }
+    col3 = GetDToneColor(0x808080, col2, ton);
+    i = 7;
+    do {
+        ch = *pc;
+        buf[0] = UserName_CharSet[ch >> 12].ptbl[ch & 0xFFF];
+        buf[1] = 0;
+        MENUFontPutL(pk, spr, x, y, col3, 1, (u_char *)buf);
+        x += 0x14;
+        pc++;
+        i--;
+    } while (i >= 0);
+
+    spr->ofsy = oys;
+    spr->ofsx = oxs;
+}
+#endif
 
 int TsSCFADE_Set(int flg, int num, int prio) {
     SCFADE *pfw = &ScFade;
