@@ -108,7 +108,81 @@ void PrInitializeAwfulBackground(void *picture) {
     WaveCtrlInit(&awfulWave, 640, 256, WM_WSLICE);
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/prlib/mendererawful", PrDrawAwfulBackground__FG10sceGsFrame);
+#else
+#include <math.h>
+
+#include "utility.h"
+
+extern float g_NoodleStepB;       /* fade ratio of the awful background */
+extern u_long D_00371C30[48];     /* 24 qword GIF packet: texture setup + rotated UV quad */
+extern u_long D_00371748;         /* prRenderStuff.m_zbuf */
+extern WAVE_STR awfulWave;
+
+void PrDrawAwfulBackground(sceGsFrame frame) {
+    TIM2_PICTUREHEADER *ph = awfulPictureHeader;
+    if (ph == NULL) {
+        return;
+    }
+
+    u_long *pkt = D_00371C30;
+
+    /* ZBUF_2: same Z buffer as the renderer; masked while drawing, restored afterwards */
+    u_long zbuf = D_00371748;
+    u_long zbuf_val = (zbuf & 0x1ff) | (zbuf & 0x0f000000);
+    pkt[48 / 8] = zbuf_val | (1UL << 32);
+    pkt[304 / 8] = zbuf_val;
+
+    /* Load the picture next to the Z buffer */
+    u_long tbp = ((zbuf & 0xffff & 0x1ff) + 4) << 5;
+    u_long cbp = tbp + 128;
+    u_long tw = (u_int)PrGetBitSize(256);
+    u_long th = (u_int)PrGetBitSize(256);
+
+    ph->GsTex0 = tbp | 0x1410000UL | (1UL << 61) | ((th << 32) >> 2) | (1UL << 35)
+               | (cbp << 37) | ((tw << 32) >> 6) | (0x100004UL << 32);
+    ph->GsTex1 = 96;
+    ph->GsRegs = 0x80000;
+    ph->GsTexClut = 0;
+    Tim2LoadPicture(ph);
+
+    pkt[80 / 8] = ph->GsTex0;                                   /* TEX0_2 */
+    pkt[64 / 8] = ((u_long)(g_NoodleStepB * 128.0f) << 32) | 100; /* ALPHA_2 */
+
+    /* Rotate the texture coordinates of the two top corners */
+    float angle = -awfulBackgroundAngle;
+    float c = cosf(angle);
+    float s = sinf(angle);
+
+    float ax = c * 2730.0f + s * 2048.0f;
+    float ay = (-s) * 2730.0f + c * 2048.0f;
+    float bx = c * -2730.0f + s * 2048.0f;
+    float by = (-s) * -2730.0f + c * 2048.0f;
+
+    const float center = 8192.0f;
+    float uv[4][2] = {
+        { ax + center, ay + center },
+        { bx + center, by + center },
+        { center - bx, center - by },
+        { center - ax, center - ay },
+    };
+
+    for (int i = 0; i < 4; i++) {
+        u_long x = (u_long)uv[i][0];
+        u_long y = (u_long)uv[i][1];
+        pkt[(160 + i * 32) / 8] = (u_long)(u_int)x | (((u_long)(u_int)y << 32) >> 16);
+    }
+
+    PrWaitDmaFinish(SCE_DMA_GIF);
+    sceDmaChan *chan = sceDmaGetChan(SCE_DMA_GIF);
+    chan->chcr.TTE = 0;
+    FlushCache(WRITEBACK_DCACHE);
+    sceDmaSendN(chan, pkt, 24);
+
+    WaveCtrlDisp(&awfulWave, &frame);
+}
+#endif
 
 void PrUpdateAwfulMenderer() {
     if (prAwfulMendererPause != 0) {
