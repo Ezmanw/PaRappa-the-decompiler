@@ -5641,7 +5641,396 @@ void _TsJkRecordPut(SPR_PKT pk, SPR_PRM *spr, JUKECDOBJ *pw, int px, int py, flo
     spr->ofsy = oy;
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TSJukeCDObj_Draw);
+#else
+extern float JUKEWAV_INITBL[]; // PAL data (jul 18c628)
+
+/* static */ void TSJukeCDObj_Draw(SPR_PKT pk, SPR_PRM *spr, JUKECDOBJ *pw, int px, int py, int anmtime) {
+    PTPOS *pp;
+    PATPOS *jpat;
+    int ox, oy;
+    int psx, psy;
+    float sox, soy;
+    float rate;
+    float jz, rz;
+    float f26, f29, f31;
+    float offx, offy;
+    float rot, rrot;
+    float f20, f22, f28, f27;
+    u_int c, cs, rc, rcs;
+    int ton, ton2;
+    int a, na, i;
+    float rox0, roy0;
+
+    offy = 0.0f;
+    pp = pw->patPos;
+    oy = py + pp->y;
+    ox = px + pp->x;
+    f26 = 1.0f;
+    jpat = &JUKEJKT_Pat[pw->patNo];
+    f29 = 1.0f;
+    sox = spr->ofsx;
+    rate = 1.0f;
+    f31 = 1.0f;
+    soy = spr->ofsy;
+    PkALPHA_Add(pk, 0x44);
+    rot = 0.0f;
+    offx = 0.0f;
+    rrot = 0.0f;
+
+    switch (pw->state) {
+    case 1:
+        c = 0x80707070;
+        cs = 0x30808080;
+        pw->vrate = 0.0f;
+        break;
+    case 2:
+    case 5:
+        rate = 1.25f;
+        c = 0x80C0C0C0;
+        pw->vrate = 0.0f;
+        cs = 0x30808080;
+        break;
+    case 3:
+        pw->time++;
+        f22 = (float)pw->time * 0.06666667f;
+        if (pw->time >= 15) {
+            pw->time = 0;
+            pw->state = 2;
+        }
+        cs = 0x30808080;
+        f20 = f22 * 3.1415927f;
+        rate = (sinf(f20) * 0.2f + 1.0f) * (f22 * 0.25f + 1.0f);
+        pw->vrate = sinf(f20) * 0.1f;
+        c = GetDToneColor(0x80707070, 0x80C0C0C0, (int)(f22 * 256.0f));
+        break;
+    case 4:
+        pw->time++;
+        f22 = (float)pw->time * 0.06666667f;
+        if (pw->time >= 15) {
+            pw->time = 0;
+            pw->state = 1;
+        }
+        cs = 0x30808080;
+        f20 = f22 * 3.1415927f;
+        rate = (float)((1.0 - (double)sinf(f20) * 0.25) * (double)((1.0f - f22) * 0.25f + 1.0f));
+        pw->vrate = sinf(f20) * -0.08f;
+        c = GetDToneColor(0x80C0C0C0, 0x80707070, (int)(f22 * 256.0f));
+        break;
+    default:
+        c = 0x80C0C0C0;
+        pw->vrate = rot;
+        cs = 0x30808080;
+        break;
+    }
+
+    if (pw->bMsk != 0) {
+        pw->vrate = 0.0f;
+        c = 0x30808080;
+        cs = 0x18808080;
+    }
+
+    rc = c;
+    rcs = cs;
+    rz = 0.0f;
+    jz = 0.0f;
+
+    switch (pw->anime) {
+    case 1:
+        if (pw->atime != 0) {
+            pw->innm = 0x200;
+            pw->atime--;
+            return;
+        }
+        pw->innm = TSNumMov(pw->innm, 0, 5);
+        f22 = 1.0f - (float)pw->innm * 0.001953125f;
+        rot = (1.0f - f22) * 6.2831855f;
+        offx = (1.0f - f22) * ((pw->dir != 0) ? 200.0f : -200.0f);
+        offy = (1.0f - f22) * ((pw->dir2 != 0) ? 20.0f : -20.0f);
+        ton = (int)(f22 * 256.0f);
+        c = GetDToneColor(0xFFFFFF, c, ton);
+        cs = GetDToneColor(0x808080, cs, ton);
+        f20 = (1.0f - f22) * 1.5f + 1.0f;
+        if (pw->innm == 0) {
+            jz = f20 * rate;
+            pw->anime = 0;
+            rz = 1.0f * rate;
+            pw->time = 0;
+            pw->atime = 0;
+        } else {
+            jz = f20 * rate;
+            rz = f29 * rate;
+        }
+        break;
+    case 2:
+        if (pw->atime != 0) {
+            jz = 1.0f * rate;
+            pw->atime--;
+            pw->innm = 0x100;
+            rz = jz;
+        } else {
+            pw->innm = TSNumMov(pw->innm, 0, 5);
+            f22 = 1.0f - (float)pw->innm * 0.00390625f;
+            rot = f22 * -9.424778f;
+            offx = f22 * ((pw->dir != 0) ? -200.0f : 200.0f);
+            offy = f22 * ((pw->dir2 != 0) ? 20.0f : -20.0f);
+            ton = (int)(f22 * 256.0f);
+            c = GetDToneColor(c, 0xFFFFFF, ton);
+            cs = GetDToneColor(c, 0x808080, ton);
+            f20 = f22 * 1.2f + 0.5f;
+            if (pw->innm == 0) {
+                jz = f20 * rate;
+                pw->anime = 0;
+                rz = 1.0f * rate;
+                pw->state = 0;
+                pw->time = 0;
+                pw->atime = 0;
+            } else {
+                jz = f20 * rate;
+                rz = f29 * rate;
+            }
+        }
+        break;
+    case 5:
+    case 6:
+        if (pw->atime != 0) {
+            pw->atime--;
+            pw->innm = 0x80;
+            pw->ox = 0.0f;
+            pw->rot = 0.0f;
+            pw->oy = 0.0f;
+            if (pw->anime == 6) {
+                return;
+            }
+            jz = 1.0f * rate;
+            rz = jz;
+        } else {
+            pw->innm = TSNumMov(pw->innm, 0, 12);
+            f22 = 1.0f - (float)pw->innm * 0.0078125f;
+            TsPatGetSize(jpat, &psx, &psy, NULL, NULL);
+            if (pw->anime == 6) {
+                f22 = 1.0f - f22;
+            }
+            ton = (int)(f22 * 256.0f);
+            offy = (float)((psy + oy) - 0xA1) * 0.5f * f22;
+            offx = (float)((psx + ox) - 0x13E) * 0.35f * f22;
+            c = GetDToneColor(c, 0x404040, ton);
+            cs = GetDToneColor(cs, 0x808080, ton);
+            f20 = 1.0f - f22 * 0.3f;
+            if (pw->innm == 0) {
+                if (pw->anime != 6) {
+                    pw->state = 0;
+                } else {
+                    pw->state = 1;
+                }
+                jz = f20 * rate;
+                pw->anime = 0;
+                rz = 1.0f * rate;
+                pw->time = 0;
+                pw->atime = 0;
+            } else {
+                jz = f20 * rate;
+                rz = f29 * rate;
+            }
+        }
+        break;
+    case 3:
+    case 4:
+        if (pw->atime != 0) {
+            pw->atime--;
+            pw->innm = 0x200;
+            pw->rot = 0.0f;
+            pw->oy = 0.0f;
+            pw->ox = 0.0f;
+            pw->rrot = 0.0f;
+            pw->rox = 0.0f;
+            if (pw->anime == 4) {
+                rz = rate;
+                pw->rox = rate * 0.0f;
+                f31 = 0.0f;
+                pw->roy = rate * -43.0f;
+                jz = 1.0f * rz;
+                c = 0x80C0C0C0;
+                cs = 0x30808080;
+                rc = 0x80C0C0C0;
+                rcs = 0x30808080;
+            } else {
+                jz = 1.0f * rate;
+                rz = jz;
+            }
+        } else {
+            pw->oy = 0.0f;
+            pw->ox = 0.0f;
+            pw->roy = 0.0f;
+            pw->rox = 0.0f;
+            pw->innm = TSNumMov(pw->innm, 0, 7);
+            f22 = 1.0f - (float)pw->innm * 0.001953125f;
+            if (pw->anime == 4) {
+                f22 = 1.0f - f22;
+            }
+            f31 = 1.0f - f22;
+            rc = c;
+            rcs = cs;
+            f20 = f22 * 0.5f * 3.1415927f;
+            pw->rox = (1.0f - cosf(f20)) * 0.0f * rate * 1.0f;
+            pw->roy = sinf(f20) * -43.0f * rate * 1.0f;
+            if (pw->innm == 0) {
+                pw->time = 0;
+                pw->atime = 0;
+                if (pw->anime == 4) {
+                    rz = rate;
+                    pw->state = 2;
+                    jz = 1.0f * rz;
+                    pw->anime = 0;
+                } else {
+                    rz = rate;
+                    pw->state = 2;
+                    pw->anime = 7;
+                    jz = 1.0f * rz;
+                }
+            } else {
+                rz = rate;
+                jz = 1.0f * rz;
+            }
+        }
+        break;
+    case 7:
+        f31 = 0.0f;
+        a = pw->atime;
+        na = a + 1;
+        if (a == 0) {
+            pw->innm2 = 0x400;
+            pw->atime = 1;
+            pw->rrot = 0.0f;
+            pw->innm = 0x400;
+        } else {
+            pw->atime = na;
+            f20 = pw->rrot + (float)((na < 0x6F) ? na : 0x6E) * 0.0023f;
+            pw->rrot = f20;
+            if (6.2831855f < f20) {
+                pw->rrot = f20 - 6.2831855f;
+            }
+        }
+        rox0 = rate * 0.0f;
+        roy0 = rate * -43.0f;
+        f29 = 1.0f;
+        rrot = pw->rrot;
+        pw->rox = rox0;
+        pw->roy = roy0;
+        if (pw->atime >= 0x47) {
+            pw->innm2 = TSNumMov(pw->innm2, 0, 11);
+            f22 = 1.0f - (float)pw->innm2 * 0.0009765625f;
+            ton = (int)(f22 * 256.0f);
+            c = GetDToneColor(c, 0xFFFFFF, ton);
+            cs = GetDToneColor(cs, 0x808080, ton);
+            f26 = 1.0f - f22 * 0.5f;
+        }
+        if (pw->atime >= 0x65) {
+            pw->innm = TSNumMov(pw->innm, 0, 14);
+            f22 = 1.0f - (float)pw->innm * 0.0009765625f;
+            ton = (int)(f22 * 256.0f);
+            rc = GetDToneColor(rc, 0xFFFFFF, ton);
+            rcs = GetDToneColor(rcs, 0x808080, ton);
+            f29 = f22 * 0.8f + 1.0f;
+            TsPatGetSize(jpat, &psx, &psy, NULL, NULL);
+            pw->rox = rox0 - (float)((psx + ox) - 0x13E) * f22;
+            pw->roy = roy0 - (float)((psy + oy) - 0xB5) * f22;
+        }
+        jz = f26 * rate;
+        if (pw->innm == 0 && pw->innm2 == 0) {
+            pw->state = 0;
+            rz = f29 * rate;
+            pw->anime = 0;
+            pw->time = 0;
+            pw->atime = 0;
+        } else {
+            rz = f29 * rate;
+        }
+        break;
+    case 8:
+        f31 = 0.0f;
+        a = pw->atime;
+        if (a == 0) {
+            jz = 1.0f * rate;
+            pw->atime = 0x50;
+            pw->rrot = 0.0f;
+            rz = jz;
+            for (i = 0; i < 0x3C; i++) {
+                pw->rrot -= (float)i;
+            }
+            pw->innm = 0x400;
+            TsPatGetSize(jpat, &psx, &psy, NULL, NULL);
+            c = 0xFFFFFF;
+            cs = 0x808080;
+            pw->roy = (rate * -43.0f) - (float)((psy + oy) - 0xB5);
+            pw->rox = (rate * 0.0f) - (float)((psx + ox) - 0x13E);
+        } else {
+            na = a - 0x15;
+            pw->atime = a - 1;
+            if (na > 0) {
+                f20 = pw->rrot + (float)na;
+                rrot = f20 * 0.005f;
+                pw->rrot = f20;
+            } else {
+                rot = 0.0f;
+            }
+            pw->innm = TSNumMov(pw->innm, 0, 6);
+            f22 = (float)pw->innm * 0.0009765625f;
+            f20 = f22 * 256.0f;
+            ton = (int)f20;
+            f29 = f22 * 0.8f + 1.0f;
+            f26 = 1.0f - f22 * 0.5f;
+            c = GetDToneColor(c, 0xFFFFFF, ton);
+            cs = GetDToneColor(cs, 0x808080, ton);
+            TsPatGetSize(jpat, &psx, &psy, NULL, NULL);
+            f28 = rate * 0.0f;
+            f27 = rate * -43.0f;
+            ton2 = (int)(f20 * 0.5f);
+            pw->roy = f27 - (float)((psy + oy) - 0xB5) * f22;
+            pw->rox = f28 - (float)((psx + ox) - 0x13E) * f22;
+            rc = GetDToneColor(rc, 0xFFFFFF, ton2);
+            rcs = GetDToneColor(rcs, 0x808080, ton2);
+            if (pw->atime == 0) {
+                jz = f26 * rate;
+                pw->state = 2;
+                rz = f29 * rate;
+                pw->atime = 1;
+                pw->anime = 4;
+                pw->rox = f28;
+                pw->roy = f27;
+                pw->time = 0;
+            } else {
+                jz = f26 * rate;
+                rz = f29 * rate;
+            }
+        }
+        break;
+    default:
+        jz = 1.0f * rate;
+        rz = jz;
+        pw->ox = 0.0f;
+        pw->rot = 0.0f;
+        pw->oy = 0.0f;
+        break;
+    }
+
+    spr->ofsx += offx + pw->ox;
+    spr->ofsy += offy + pw->oy;
+    spr->ofsy += sinf((2.0f * (float)(anmtime % 240) / 240.0f + JUKEWAV_INITBL[pw->patNo]) * 3.1415927f) * 8.0f * f31;
+
+    if ((u_int)(pw->anime - 7) < 2) {
+        _TsJkJacketPut(pk, spr, pw, ox, oy, jz, rot, c, cs);
+        _TsJkRecordPut(pk, spr, pw, ox, oy, rz, rrot, rc, rcs);
+    } else {
+        _TsJkRecordPut(pk, spr, pw, ox, oy, rz, rrot, rc, rcs);
+        _TsJkJacketPut(pk, spr, pw, ox, oy, jz, rot, c, cs);
+    }
+
+    spr->ofsy = soy;
+    spr->ofsx = sox;
+}
+#endif
 
 static int TsJukeIsObjAnime(int isComp) {
     int        i;
