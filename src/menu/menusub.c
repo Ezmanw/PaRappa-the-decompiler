@@ -282,7 +282,7 @@ static void  TsCmnCell_CusorON(CELLOBJ *obj);
 static void  TsCmnCell_CusorOFF(CELLOBJ *obj);
 static void  TsCmnCell_CusorSEL(CELLOBJ *obj);
 static void  TsCmnCell_CusorMASK(CELLOBJ *obj);
-/* static */ void  TsCmnCell_CusorDraw(SPR_PKT pk, SPR_PRM *spr, u_int n, CELLOBJ *obj, int ox, int oy, int CurColor);
+/* static */ void  TsCmnCell_CusorDraw(SPR_PKT pk, SPR_PRM *spr, int n, CELLOBJ *obj, int ox, int oy, int CurColor);
 /* static */ int   TsOption_Flow(int flg, u_int tpad);
 /* static */ void  TsOption_Draw(SPR_PKT pk, SPR_PRM *spr);
 static int   TsUserList_GetCurFileNo(int *isBroken);
@@ -1298,7 +1298,109 @@ static void TsSet_ParappaCapColor(void) {
     MenuRoundTim2Trans(n);
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsClearSet);
+extern short *D_00199B00[10];
+
+/* static */ void TsClearSet(P3GAMESTATE *pstate) {
+    int        bRecShop = 0;
+    int        recJacket = 0;
+    P3LOG_VAL *pLog = pstate->pLog;
+    int        nStage = pstate->nStage;
+    int        stgIdx = nStage - 1;
+    int        nRound = pLog->nRound;
+    int        i;
+    int        flg;
+    int        vsLev;
+    short     *pRute;
+
+    if ((u_int)stgIdx >= 8) {
+        return;
+    }
+
+    if (pstate->nMode == 1) {
+        return;
+    }
+
+    if (pstate->nMode == 2) {
+        vsLev = pstate->vsLev;
+        if (nRound >= 4) {
+            if (pLog->clrVSCOM1[stgIdx] < 4 && (vsLev + 1) >= 4) {
+                flg = 0;
+                for (i = 0; i < 8; i++) {
+                    if (pLog->clrVSCOM1[i] >= 4) {
+                        flg++;
+                    }
+                }
+                if (flg == 7) {
+                    bRecShop = 1;
+                    recJacket = 9;
+                }
+            }
+        }
+        if (pLog->clrVSCOM1[stgIdx] < (vsLev + 1)) {
+            pLog->clrVSCOM1[stgIdx] = vsLev + 1;
+        }
+    } else if (pstate->nMode == 0) {
+        pstate->pAutoMove = NULL;
+        if (nRound == 0) {
+            if (pLog->clrCount[stgIdx] <= 0) {
+                int nextStg = nStage + 1;
+                pstate->autoMovePos[1] = -1;
+                if (nextStg >= 9) {
+                    nextStg = 1;
+                }
+                pstate->autoMovePos[0] = nextStg;
+                pstate->pAutoMove = pstate->autoMovePos;
+            }
+        }
+        if (nRound < 4) {
+            pLog->clrFlg[nRound] |= (1 << stgIdx);
+        }
+        pLog->clrCount[stgIdx]++;
+        if (pLog->clrCount[stgIdx] > (nRound + 1)) {
+            pLog->clrCount[stgIdx] = nRound + 1;
+        }
+        if (pP3GameState->bCoolClr != 0) {
+            if (nRound >= 4) {
+                if (pLog->clrCOOL[stgIdx] < 4) {
+                    bRecShop = 1;
+                    recJacket = stgIdx;
+                }
+            }
+            pLog->clrCOOL[stgIdx] = nRound + 1;
+            pLog->logCOOL[stgIdx] = ((pLog->logCOOL[stgIdx] << 4) & 0xfff0) | (((nRound + 1) < 5) ? (nRound + 1) : 4);
+        }
+        flg = 1;
+        for (i = 0; i < 8; i++) {
+            if (pLog->clrCount[i] < (nRound + 1)) {
+                flg = 0;
+            }
+        }
+        if (flg != 0) {
+            pLog->nRound++;
+            if (pLog->nRound > 1000000) {
+                pLog->nRound = 1000000;
+            }
+            printf("*** Round Up = (%d)\n", pLog->nRound);
+            if (pLog->nRound == 4) {
+                bRecShop = 1;
+                recJacket = 0;
+            }
+        }
+    }
+
+    if (bRecShop != 0) {
+        pRute = D_00199B00[stgIdx + 1];
+        for (i = 0; i < 9; i++) {
+            pstate->autoMovePos[i] = pRute[i];
+            if (pRute[i] < 0) {
+                break;
+            }
+        }
+        pstate->autoMovePos[i] = -2;
+        pstate->pAutoMove = pstate->autoMovePos;
+        pstate->curRecJacket = recJacket;
+    }
+}
 
 static void TsCheckEnding(P3GAMESTATE *pstate) {
     int        nRound;
@@ -1762,7 +1864,58 @@ typedef struct {
 #endif
 } P3LOG_VAL_PAL;
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsSetSaveData);
+extern P3MC_RANKSCORE CurRankScore;
+
+/* static */ void TsSetSaveData(MCRWDATA_HDL *pDataW, int mode, USER_DATA *puser) {
+    int             stgIdx;
+    int             vsLev;
+    P3MC_STAGERANK *pRank;
+    P3MC_RANKSCORE *pScore;
+    P3LOG_VAL      *pLog;
+
+    if (pDataW->pMemTop == NULL) {
+        return;
+    }
+
+    switch (mode) {
+    case 1:
+        *(GAME_STATUS_PAL *)&pP3GameState->pLog->game_status = *(GAME_STATUS_PAL *)pP3GameState->pGameStatus;
+        *(P3LOG_VAL_PAL *)pDataW->pData = *(P3LOG_VAL_PAL *)pP3GameState->pLog;
+
+        pLog = (P3LOG_VAL *)pDataW->pData;
+        memcpy(pLog->name, puser->name, 12);
+        pLog->name[11] = '\0';
+
+        TsSetRanking2UData(&pDataW->pHead->user, pCStageRank);
+        TsSetRankingName(pDataW->pHead->user.stageRank, (u_char *)pLog->name);
+        return;
+    case 2:
+        *(MC_REP_STR *)pDataW->pData = *pP3GameState->pReplayArea;
+
+        pRank = pDataW->pHead->user.stageRank;
+        stgIdx = puser->stageNo - 1;
+        memset(pRank, 0, sizeof(pDataW->pHead->user.stageRank));
+
+        if ((u_int)stgIdx < 8) {
+            if (puser->isVs != 0) {
+                if (puser->isVs == 2) {
+                    vsLev = puser->vsLev;
+                    pScore = pRank[stgIdx].vplay[vsLev];
+                    pRank[stgIdx].nVplay[vsLev] = 1;
+                    pScore[0] = CurRankScore;
+                }
+            } else {
+                pRank[stgIdx].nSplay = 1;
+                pRank[stgIdx].splay[0] = CurRankScore;
+            }
+        }
+
+        TsSetRankingName(pRank, (u_char *)puser->name1);
+        return;
+    default:
+        return;
+    }
+}
 
 /* static */ void TsRestoreSaveData(MCRWDATA_HDL *pDataW, int mode) {
     int i;
@@ -3955,11 +4108,379 @@ static int McStartCheckFlow(/* a0 4 */ int flg) {
     return -1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", McUserCheckFlow);
+/* static */ int McUserCheckFlow(int type, int mode, int *bError) {
+    extern int D_003834A0;
+    int r;
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", McUserSaveFlow);
+    switch (subStatus) {
+    case 0:
+        UCheckSaveError = 0;
+        D_003834A0 = -2;
+        UCheckLoadError = 0;
+        if (type == 0) {
+            r = P3MC_GetUserStart(mode, UserLst, 0);
+        } else {
+            r = P3MC_GetUserStart(mode, UserLst, 1);
+        }
+        if (r != 0) {
+            subStatus = 0x100;
+        } else {
+            subStatus = 0xf000;
+        }
+        break;
+    case 0x100:
+        D_003834A0 = -2;
+        ret = P3MC_GetUserCheck();
+        errorNo = 0;
+        if (ret < 0) {
+            if (ret == -1) {
+                D_003834A0 = -1;
+                subStatus = 0x102;
+            }
+            break;
+        }
+        errorNo = ret;
+        subStatus = 0x150;
+        break;
+    case 0x102:
+        D_003834A0 = -1;
+        waitTime = 90;
+        TsMCAMes_SetMes(3);
+        if (errorNo == 0) {
+            subStatus = 0x103;
+        } else {
+            subStatus = 0x104;
+        }
+        break;
+    case 0x103:
+        D_003834A0 = -1;
+        waitTime--;
+        errorNo = P3MC_GetUserCheck();
+        if (errorNo < 0) {
+            break;
+        }
+        subStatus = 0x104;
+        break;
+    case 0x104:
+        D_003834A0 = -1;
+        if (--waitTime > 0) {
+            break;
+        }
+        if (type == 0 && errorNo == 0) {
+            if (P3MC_CheckBrokenUser(UserLst, mode) != 0) {
+                errorNo = 80;
+            }
+        }
+        subStatus = 0x150;
+        break;
+    case 0x150:
+        UCheckSaveError = 0;
+        UCheckLoadError = 0;
+        if ((type & 2) || type == 0) {
+            if (errorNo == 2) {
+                errorNo = 0;
+                UCheckLoadError = 4;
+            }
+            if (type == 0 && (u_int)(errorNo - 3) < 3) {
+                memset(UserLst, 0, sizeof(P3MC_USRLST));
+                errorNo = 0;
+            }
+        }
+        if ((type & 2) && errorNo == 4) {
+            errorNo = 0;
+            UCheckLoadError = 4;
+            if (P3MC_CheckIsNewSave(mode) == 0) {
+                if (mode == 2) {
+                    UCheckSaveError = 15;
+                } else {
+                    UCheckSaveError = 7;
+                }
+            }
+        }
+        if (errorNo == 0) {
+            if (type == 2) {
+                errorNo = UCheckSaveError;
+            }
+            if (type == 1) {
+                errorNo = UCheckLoadError;
+            }
+            if (type == 3) {
+                UCheckSaveError = 0;
+            }
+            if (errorNo == 0) {
+                subStatus = 0xf000;
+                break;
+            }
+        }
+        if (errorNo == 1) {
+            if (type == 0) {
+                errorNo = 70;
+            } else {
+                errorNo = 12;
+            }
+        }
+        if (errorNo == 3) {
+            subStatus = 0xe000;
+        } else {
+            subStatus = 0x160;
+        }
+        if (errorNo == 4 && mode == 2) {
+            errorNo = 40;
+        }
+        break;
+    case 0x160:
+        TsMCAMes_SetMes(-1);
+        if (D_003834A0 == -1) {
+            if (bError != NULL) {
+                *bError = 1;
+            }
+        }
+        subStatus = 0x165;
+        /* fallthrough */
+    case 0x165:
+        ret = P3MC_CheckChange();
+        if (ret == 3 || ret == 5) {
+            subStatus = 0xe000;
+            break;
+        }
+        if (McErrorMess(errorNo) < 0) {
+            break;
+        }
+        subStatus = 0x166;
+        /* fallthrough */
+    case 0x166:
+        if (P3MC_CheckChange() < 0) {
+            break;
+        }
+        subStatus = 0xf0f0;
+        break;
+    case 0xe000:
+        ret = P3MC_CheckChange();
+        if (ret == 0 || ret == 5) {
+            if (D_003834A0 == -1) {
+                if (bError != NULL) {
+                    *bError = 2;
+                }
+            }
+            subStatus = 0;
+            break;
+        }
+        if (errorNo == 3 && type == 2) {
+            if (mode == 2) {
+                errorNo = 60;
+            } else {
+                errorNo = 50;
+            }
+        }
+        if (McErrorMess(errorNo) >= 0) {
+            subStatus = 0xee10;
+        }
+        break;
+    case 0xee10:
+        subStatus = 0xf0f0;
+        break;
+    case 0xf0f0:
+        if (type == 0) {
+            if (errorNo == 70 || errorNo == 80) {
+                if (errorNo == 70) {
+                    memset(UserLst, 0, sizeof(P3MC_USRLST));
+                }
+                subStatus = 0xf000;
+                break;
+            }
+        }
+        subStatus = 0xf002;
+        break;
+    case 0xf000:
+        P3MC_GetUserEnd();
+        TsMCAMes_SetMes(-1);
+        return 0;
+    case 0xf001:
+        P3MC_GetUserEnd();
+        TsMCAMes_SetMes(-1);
+        return 1;
+    case 0xf002:
+        P3MC_GetUserEnd();
+        TsMCAMes_SetMes(-1);
+        return 2;
+    }
+
+    return D_003834A0;
+}
 
 extern MCRWDATA_HDL *pGameData;
+
+/* static */ int McUserSaveFlow(USER_DATA *puser) {
+    switch (subStatus) {
+    case 0:
+        ret = P3MC_CheckChange();
+        if (ret < 0) {
+            break;
+        }
+        pGameData = P3MC_MakeDataWork(_P3DATA_SIZE(puser->mode), puser);
+        TsSetSaveData(pGameData, puser->mode, puser);
+        if (ret != 0) {
+            subStatus = 0x2010;
+            break;
+        }
+        subStatus = 0x100;
+        /* fallthrough */
+    case 0x100:
+        P3MC_SaveUser(pGameData, 5);
+        subStatus = 0x2000;
+        break;
+    case 0x1000:
+        TsMCAMes_SetMes(0x10000010);
+        subStatus = 0x1010;
+        /* fallthrough */
+    case 0x1010:
+        ret = P3MC_CheckChange();
+        if (ret == 3 || ret == 5) {
+            TsMCAMes_SetMes(-1);
+            subStatus = 0xe000;
+            break;
+        }
+        ret = TsMCAMes_GetSelect();
+        if (ret != 0) {
+            if (ret == 1) {
+                subStatus = 0x1020;
+            } else {
+                subStatus = 0xf002;
+            }
+        }
+        break;
+    case 0x1020:
+        if (P3MC_CheckChange() < 0) {
+            break;
+        }
+        TsMCAMes_SetMes(-1);
+        subStatus = 0x1030;
+        /* fallthrough */
+    case 0x1030:
+        P3MC_SaveUser(pGameData, 3);
+        subStatus = 0x2000;
+        break;
+    case 0x2000:
+        ret = P3MC_SaveCheck();
+        if (ret == -2) {
+            TsMCAMes_SetMes(19);
+        }
+        if (ret == -3) {
+            TsMCAMes_SetMes(17);
+        }
+        if (ret < 0) {
+            break;
+        }
+        subStatus = 0x2010;
+        /* fallthrough */
+    case 0x2010:
+        if (ret != 0) {
+            errorNo = 0;
+            switch (ret) {
+            case 9:
+                subStatus = 0x1000;
+                break;
+            case 3:
+                if (puser->mode == 2) {
+                    errorNo = 60;
+                } else {
+                    errorNo = 50;
+                }
+                break;
+            case 1:
+            case 8:
+                errorNo = 1;
+                break;
+            case 7:
+                if (puser->mode == 2) {
+                    errorNo = 15;
+                } else {
+                    errorNo = 7;
+                }
+                break;
+            default:
+                errorNo = ret;
+                break;
+            }
+            if (errorNo != 0) {
+                subStatus = 0x2200;
+            }
+            break;
+        }
+        subStatus = 0x2100;
+        /* fallthrough */
+    case 0x2100:
+        *puser = pGameData->pHead->user;
+        subStatus = 0x21f0;
+        TsMCAMes_SetMes(-1);
+        /* fallthrough */
+    case 0x21f0:
+        if (McErrorMess(200) < 0) {
+            break;
+        }
+        subStatus = 0xf000;
+        break;
+    case 0x2200:
+        TsMCAMes_SetMes(-1);
+        subStatus = 0x2201;
+        /* fallthrough */
+    case 0x2201:
+        ret = P3MC_CheckChange();
+        if (ret == 3 || ret == 5) {
+            subStatus = 0xe000;
+            break;
+        }
+        if (McErrorMess(errorNo) < 0) {
+            break;
+        }
+        subStatus = 0x2202;
+        /* fallthrough */
+    case 0x2202:
+        if (P3MC_CheckChange() < 0) {
+            break;
+        }
+        subStatus = 0xf002;
+        break;
+    case 0xe000:
+        ret = P3MC_CheckChange();
+        if (ret == 0 || ret == 5) {
+            subStatus = 0xf004;
+            break;
+        }
+        if (puser->mode == 2) {
+            errorNo = 60;
+        } else {
+            errorNo = 50;
+        }
+        if (McErrorMess(errorNo) >= 0) {
+            subStatus = 0xee10;
+        }
+        break;
+    case 0xee10:
+        if (P3MC_CheckChange() < 0) {
+            break;
+        }
+        subStatus = 0xf002;
+        break;
+    case 0xf000:
+        P3MC_DeleteDataWork(pGameData);
+        TsMCAMes_SetMes(-1);
+        return 0;
+    case 0xf001:
+        P3MC_DeleteDataWork(pGameData);
+        TsMCAMes_SetMes(-1);
+        return 1;
+    case 0xf002:
+        P3MC_DeleteDataWork(pGameData);
+        TsMCAMes_SetMes(-1);
+        return 2;
+    case 0xf004:
+        P3MC_DeleteDataWork(pGameData);
+        return 4;
+    }
+
+    return -1;
+}
 
 /* static */ int McUserLoadFlow(int fileNo, int mode, int bBroken) {
     int r;
@@ -5183,6 +5704,100 @@ static void TsCmnCell_CusorMASK(CELLOBJ *obj) {
 }
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsCmnCell_CusorDraw);
+#if 0
+extern PTPOS D_0019A258[];
+
+/* static */ void TsCmnCell_CusorDraw(SPR_PKT pk, SPR_PRM *spr, int n, CELLOBJ *obj, int ox, int oy, int CurColor) {
+    TSTEX_INF *ptex;
+    int        flg;
+    int        ton;
+
+    if ((u_int)(n + 1) >= 9) {
+        return;
+    }
+
+    if ((u_int)n < 7) {
+        if (obj != NULL) {
+            int state = obj->state;
+
+            switch (state) {
+            case 1:
+                if (--obj->tim == 0) {
+                    obj->flg = state;
+                    obj->state = 0;
+                } else {
+                    obj->ton = (obj->tim << 3) + 0x100;
+                }
+                obj->flg = 1;
+                break;
+            case 2:
+                if (--obj->tim == 0) {
+                    obj->state = 0;
+                    obj->flg = 0;
+                } else if (obj->tim * 16 < 0x5b) {
+                    obj->flg = 0;
+                    obj->ton = ((0x5a - obj->tim * 16) << 8) / 0x5a;
+                } else {
+                    obj->flg = 1;
+                    obj->ton = (((obj->tim * 16) - 0x5a) << 8) / 0xa6;
+                }
+                break;
+            case 3:
+                if (--obj->tim == 0) {
+                    obj->state = 0;
+                    obj->flg = 1;
+                } else {
+                    float f = sinf((obj->tim & 7) * 0.125f * 3.1415927f);
+                    obj->flg = 1;
+                    obj->ton = (int)(f * 256.0f) + 0x100;
+                }
+                break;
+            }
+
+            if (obj->state == 0) {
+                obj->ton = 0x100;
+            }
+        }
+    }
+
+    if ((u_int)n < 7) {
+        flg = obj->flg;
+        ton = obj->ton;
+    } else {
+        flg = 0;
+        ton = 0x100;
+    }
+
+    switch (flg) {
+    case 1:
+        PkALPHA_Add(pk, 0x48);
+        spr->rgba0 = GetDToneColor(0, CurColor, ton);
+        break;
+    case -1:
+        return;
+    case 0:
+    default:
+        PkALPHA_Add(pk, 0x42);
+        spr->rgba0 = GetDToneColor(0x808080, 0x10808080, ton);
+        break;
+    }
+
+    ptex = &tblTex[1];
+    spr->zx = 1.0f;
+    spr->zy = 0.47f;
+    PkTEX0_Add(pk, ptex->tex0);
+    spr->ux = 0;
+    spr->uy = 0;
+    spr->uw = ptex->w;
+    spr->uh = ptex->h;
+    spr->px = D_0019A258[n + 1].x + ox;
+    spr->sw = 0x234;
+    spr->py = D_0019A258[n + 1].y + oy;
+    spr->sh = ptex->h * 2;
+    PkNSprite_Add(pk, spr, 1);
+    PkALPHA_Add(pk, 0x44);
+}
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsOption_Flow);
 

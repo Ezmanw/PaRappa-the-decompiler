@@ -1,3 +1,42 @@
+#define NALIB_NAVECTOR_H
+
+#include "common.h"
+#include <eetypes.h>
+
+template <typename T, int t0>
+class NaVECTOR {
+public:
+    NaVECTOR() {}
+
+    NaVECTOR(const NaVECTOR<float, 4>& rhs) {
+        asm volatile("
+            lq $6, 0(%1)
+            sq $6, 0(%0)
+        " : : "r"(this), "r"(&rhs) : "$6");
+    }
+
+    NaVECTOR(const T& val) {
+        for (int i = 0; i < t0; i++) {
+            v[i] = val;
+        }
+    }
+
+    NaVECTOR(const T& x, const T& y, const T& z, const T& w) {
+        SetInl(x, y, z, w);
+    }
+
+    NaVECTOR<T, t0>& Set(const T& x, const T& y, const T& z, const T& w);
+
+    NaVECTOR<T, t0>& SetInl(const T& x, const T& y, const T& z, const T& w) asm("func_00149368");
+
+    const T& operator[](int arg0) const {
+        return v[arg0];
+    }
+
+private:
+    T v[t0];
+};
+
 #include "scene.h"
 
 #include "camera.h"
@@ -53,7 +92,118 @@ PrPERSPECTIVE_CAMERA* PrSceneObject::GetCurrentCamera() {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/scene", SetAppropriateDefaultCamera__13PrSceneObject);
+static inline void VecCopy(NaVECTOR<float, 4>* dst, const NaVECTOR<float, 4>* src) {
+    asm volatile(
+        "lq $6, 0(%1)\n\t"
+        "sq $6, 0(%0)\n\t"
+    : : "r"(dst), "r"(src) : "$6");
+}
+
+static inline void VecAdd(NaVECTOR<float, 4>* ret, const NaVECTOR<float, 4>* a, const NaVECTOR<float, 4>* b) {
+    asm volatile(
+        "lqc2       $vf04,  0x0(%1)        \n\t"
+        "lqc2       $vf05,  0x0(%2)        \n\t"
+        "vadd.xyzw  $vf06,  $vf04,  $vf05  \n\t"
+        "sqc2       $vf06,  0x0(%0)        \n\t"
+    : : "r"(ret), "r"(a), "r"(b));
+}
+
+static inline void VecSub(NaVECTOR<float, 4>* ret, const NaVECTOR<float, 4>* a, const NaVECTOR<float, 4>* b) {
+    asm volatile(
+        "lqc2       $vf04,  0x0(%1)        \n\t"
+        "lqc2       $vf05,  0x0(%2)        \n\t"
+        "vsub.xyzw  $vf06,  $vf04,  $vf05  \n\t"
+        "sqc2       $vf06,  0x0(%0)        \n\t"
+    : : "r"(ret), "r"(a), "r"(b));
+}
+
+static inline void VecMul(NaVECTOR<float, 4>* ret, const NaVECTOR<float, 4>* v, float f) {
+    asm volatile(
+        "lqc2       $vf04,  0x0(%1)        \n\t"
+        "mfc1       $8,     %2             \n\t"
+        "qmtc2      $8,     $vf05          \n\t"
+        "vmulx.xyzw $vf06,  $vf04,  $vf05  \n\t"
+        "sqc2       $vf06,  0x0(%0)        \n\t"
+    : : "r"(ret), "r"(v), "f"(f) : "$8");
+}
+
+static inline void VecDiv(NaVECTOR<float, 4>* ret, const NaVECTOR<float, 4>* v, float f) {
+    asm volatile(
+        "lqc2       $vf04,  0x0(%1)        \n\t"
+        "mfc1       $8,     %2             \n\t"
+        "qmtc2      $8,     $vf05          \n\t"
+        "vdiv       Q,      $vf00w, $vf05x \n\t"
+        "vwaitq                            \n\t"
+        "vmulq.xyzw $vf04,  $vf04,  Q      \n\t"
+        "sqc2       $vf04,  0x0(%0)        \n\t"
+    : : "r"(ret), "r"(v), "f"(f) : "$8");
+}
+
+void PrSceneObject::SetAppropriateDefaultCamera() {
+    NaVECTOR<float, 4> min_pos(FLT_MAX);
+    NaVECTOR<float, 4> max_pos(-FLT_MAX);
+
+    for (PrModelObject *model = m_model_set.m_head; model != NULL; model = model->m_list.next) {
+        if (model->m_flags & 0x1) {
+            u_short flags = model->m_spm_image->m_flags;
+            if (flags & eSpmIsScreenModel) {
+                continue;
+            }
+            if (flags & 0x200) {
+                continue;
+            }
+            model->UnionBoundaryBox(&min_pos, &max_pos);
+        }
+    }
+
+    NaVECTOR<float, 4> half_size;
+    {
+        NaVECTOR<float, 4> tmp1;
+        NaVECTOR<float, 4> tmp2;
+        VecSub(&tmp2, &max_pos, &min_pos);
+        VecCopy(&tmp1, &tmp2);
+        VecDiv(&tmp2, &tmp1, 2.0f);
+        VecCopy(&half_size, &tmp2);
+    }
+    if (half_size[0] < 0.0f || half_size[1] < 0.0f || half_size[2] < 0.0f) {
+        return;
+    }
+
+    NaVECTOR<float, 4> center;
+    {
+        NaVECTOR<float, 4> tmp1;
+        NaVECTOR<float, 4> tmp2;
+        VecAdd(&tmp2, &min_pos, &max_pos);
+        VecCopy(&tmp1, &tmp2);
+        VecDiv(&tmp2, &tmp1, 2.0f);
+        VecCopy(&center, &tmp2);
+    }
+    NaVECTOR<float, 4> dir(0.0f, 0.0f, -1.0f, 1.0f);
+
+    float max_xy = (half_size[2] <= half_size[1]) ? half_size[1] : half_size[2];
+    float dist = half_size[2] + max_xy * 1.7320508f * 1.3f;
+
+    NaVECTOR<float, 4> cam_pos;
+    {
+        NaVECTOR<float, 4> tmp1;
+        NaVECTOR<float, 4> tmp2;
+        VecMul(&tmp2, &dir, dist);
+        VecCopy(&tmp1, &tmp2);
+        VecSub(&tmp2, &center, &tmp1);
+        VecCopy(&cam_pos, &tmp2);
+    }
+
+    m_default_camera.position.Set(cam_pos[0], cam_pos[1], cam_pos[2], 1.0f);
+    m_default_camera.interest.Set(center[0], center[1], center[2], 1.0f);
+
+    float d_z = cam_pos[2] - center[2];
+    m_default_camera.up.Set(0.0f, 1.0f, 0.0f, 1.0f);
+
+    m_default_camera.aspect = 1.0f;
+    m_default_camera.field_of_view = 1.0471976f;
+    m_default_camera.near_clip = d_z / 30000.0f;
+    m_default_camera.far_clip = d_z * 30.0f;
+}
 
 float PrSceneObject::GetFocalLength() const {
     SpcFileHeader *camera = m_camera;

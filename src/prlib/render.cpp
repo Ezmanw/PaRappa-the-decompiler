@@ -21,7 +21,112 @@ extern int AwfulStatus;
 
 extern PrVu1InitPacket initVu1DmaPacket;
 
-INCLUDE_ASM("asm/nonmatchings/prlib/render", Render__13PrSceneObject);
+#include "mfifo.h"
+PR_EXTERN float PrGetMendererRatio();
+#define PR_T1_COUNT (*(volatile u_int*)0x10001800)
+
+void PrDrawAwfulBackground(sceGsFrame frame);
+void PrWaitMendererTexture(sceGsDrawEnv1 *env, const sceGsFrame& frame, const sceGsXyoffset& xyoffset);
+
+void PrSceneObject::Render() {
+    FlushCache(0);
+
+    if (PrGetMendererRatio() >= 1.5f && m_model_set.m_head != NULL) {
+        prRenderStuff.InitializeEECore(this);
+        PrDrawAwfulBackground(unk50);
+    }
+
+    int awful = 1;
+    prRenderStuff.ResetStatistics();
+    prRenderStuff.m_statistics.render_time0 = PR_T1_COUNT;
+    prSpramData->Initialize(this);
+
+    PrModelObject *model = m_model_set.m_head;
+    if (!(PrGetMendererRatio() >= 1.5f)) {
+        awful = 0;
+    }
+    if (model != NULL) {
+        AwfulStatus = awful;
+        do {
+            if ((model->m_flags & 1) && (!awful || (model->m_spm_image->m_flags & 0x100))) {
+                prSpramData->InitializeModel(model);
+                model->CalculateCurrentMatrix();
+            }
+            model = model->m_list.next;
+        } while (model != NULL);
+    } else {
+        AwfulStatus = awful;
+    }
+
+    {
+        register PrRenderStuff *rs asm("$20") = &prRenderStuff;
+        rs->m_statistics.render_time1 = PR_T1_COUNT;
+        sceGsFrame frame;
+        register u_long f_val asm("$2") = *(u_long*)&unk50;
+        *(u_long*)&frame = f_val;
+        sceGsXyoffset xyoffset = unk58;
+        PrWaitMendererTexture(unk70, frame, xyoffset);
+        rs->m_statistics.render_time2 = PR_T1_COUNT;
+
+        rs->InitializeEECore(this);
+        InitializeVu1();
+        prSpramData->SendDisplayHeader();
+        rs->StartRender(this);
+        rs->m_transmit_array_size = 0;
+        PrStartMfifo();
+
+        model = m_model_set.m_head;
+        if (model != NULL && (model->m_spm_image->m_flags & 0x200)) {
+            rs->AppendDmaTag(&PrGetDmaStripGifRegister((PrSetGifRegisterMode)4)->m_tag);
+            do {
+                if ((model->m_flags & 1) && (!awful || (model->m_spm_image->m_flags & 0x100))) {
+                    prSpramData->InitializeModel(model);
+                    model->RenderBackgroundScreenModel();
+                }
+                model = model->m_list.next;
+            } while (model != unk98);
+        }
+    }
+
+    if (model != NULL && (model->m_spm_image->m_flags & 0x400)) {
+        prRenderStuff.AppendDmaTag(&PrGetDmaStripGifRegister((PrSetGifRegisterMode)5)->m_tag);
+        do {
+            if ((model->m_flags & 1) && (!awful || (model->m_spm_image->m_flags & 0x100))) {
+                prSpramData->InitializeModel(model);
+                model->RenderContext1Model();
+            }
+            model = model->m_list.next;
+        } while (model != unk9C);
+    }
+
+    prRenderStuff.AppendDmaTag(&PrGetDmaStripGifRegister((PrSetGifRegisterMode)0)->m_tag);
+    for (; model != m_screen_model_list; model = model->m_list.next) {
+        if ((model->m_flags & 1) && (!awful || (model->m_spm_image->m_flags & 0x100))) {
+            prSpramData->InitializeModel(model);
+            model->RenderContext1Model();
+        }
+    }
+    for (model = unk9C; model != m_screen_model_list; model = model->m_list.next) {
+        if ((model->m_flags & 1) && (!awful || (model->m_spm_image->m_flags & 0x100))) {
+            prSpramData->InitializeModel(model);
+            model->RenderContext2Model();
+        }
+    }
+
+    register PrRenderStuff *rs2 asm("$17") = &prRenderStuff;
+    rs2->m_statistics.render_time3 = PR_T1_COUNT;
+    rs2->SortTransmitDmaArray();
+    rs2->m_statistics.render_time4 = PR_T1_COUNT;
+
+    if (prCurrentStage != 19) {
+        rs2->AppendDmaTag(&PrGetDmaStripGifRegister((PrSetGifRegisterMode)1)->m_tag);
+    }
+
+    FlushCache(0);
+    PrWaitMfifo();
+    rs2->MergeRender();
+    rs2->m_statistics.render_time5 = PR_T1_COUNT;
+}
 
 void PrSceneObject::InitializeVu1() {
     void *tag = &initVu1DmaPacket;
@@ -323,7 +428,78 @@ void SpmFileHeader::RenderScreenModelNode() {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/render", RenderScreenModelNode__7SpmNode);
+extern NaMATRIX<float, 4, 4> D_01C74230;
+
+static inline void MulMV_Screen(const PrMat44 *a, const PrMat44 *b, PrMat44 *out) {
+    PrRawMat t;
+    PrRawMat r;
+    {
+        int w = 3;
+        register PrMat44 *rp asm("$3") = (PrMat44*)&r;
+        do { w--; } while (w != -1);
+        LDA(a);
+        MUL(rp, b);
+        {
+            int w2 = 3;
+            do { w2--; } while (w2 != -1);
+        }
+        MatCopy((PrMat44*)&t, rp);
+        MatCopy(out, (PrMat44*)&t);
+    }
+}
+
+void SpmNode::RenderScreenModelNode() {
+    prRenderStuff.m_statistics.node_num++;
+
+    if (!(this->m_flags & 0x4000)) {
+        return;
+    }
+
+    PrVuNodeHeaderDmaPacket *packet = this->unk16C[0];
+    if (packet != NULL) {
+        prRenderStuff.m_statistics.opaque_context1_node_num++;
+        packet = (PrVuNodeHeaderDmaPacket*)((u_int)packet | 0x30000000);
+        PrMat44 *d = &packet->unk10;
+        const PrMat44 *b = &this->unk40;
+        const PrMat44 *a = &D_01C74230;
+        MulMV_Screen(a, b, d);
+        prRenderStuff.AppendDmaTag((sceDmaTag*)((u_int)packet & 0x0fffffff));
+    }
+
+    PrVuNodeHeaderDmaPacket *packet2 = this->unk16C[1];
+    if (packet2 != NULL) {
+        prRenderStuff.m_statistics.transmit_context1_node_num++;
+        packet2 = (PrVuNodeHeaderDmaPacket*)((u_int)packet2 | 0x30000000);
+        {
+            PrMat44 *d = &packet2->unk10;
+            const PrMat44 *b = &this->unk40;
+            const PrMat44 *a = &D_01C74230;
+            MulMV_Screen(a, b, d);
+        }
+
+        NaVECTOR<float, 4> v;
+        const NaVECTOR<float, 4> *u140 = &this->unk140;
+        {
+            NaVECTOR<float, 4> t;
+            asm volatile(
+                "lqc2     $vf4,   0x0(%1)       \n\t"
+                "lqc2     $vf5,  0x10(%1)       \n\t"
+                "lqc2     $vf6,  0x20(%1)       \n\t"
+                "lqc2     $vf7,  0x30(%1)       \n\t"
+                "lqc2     $vf8,   0x0(%2)       \n\t"
+                "vmulax.xyzw   ACC,    $vf4,   $vf8  \n\t"
+                "vmadday.xyzw  ACC,    $vf5,   $vf8  \n\t"
+                "vmaddaz.xyzw  ACC,    $vf6,   $vf8  \n\t"
+                "vmaddw.xyzw   $vf9,   $vf7,   $vf8  \n\t"
+                "sqc2     $vf9,   0x0(%0)       \n\t"
+            : : "r"(&t), "r"(&this->unk40), "r"(u140));
+            asm volatile("lq $6, 0(%1)\n\tsq $6, 0(%0)" : : "r"(&v), "r"(&t) : "$6");
+        }
+
+        u_int tm = this->unk188;
+        prRenderStuff.AppendTransmitDmaTag((sceDmaTag*)((u_int)packet2 & 0x0fffffff), tm, -v[2]);
+    }
+}
 
 void PrModelObject::RenderBackgroundScreenModel() {
     m_spm_image->RenderBackgroundScreenModel();
@@ -335,8 +511,6 @@ void SpmFileHeader::RenderBackgroundScreenModel() {
         m_nodes[i]->RenderBackgroundScreenModel();
     }
 }
-
-extern NaMATRIX<float, 4, 4> D_01C74230;
 
 void SpmNode::RenderBackgroundScreenModel() {
     prRenderStuff.m_statistics.node_num++;
@@ -507,4 +681,61 @@ extern "C" void func_00145E50(PrDmaQueue *queue, void *tag) {
 }
 
 /* prlib/render.cpp */
-INCLUDE_ASM("asm/nonmatchings/prlib/render", ComposeGlobalMatrixWithoutVisibility__7SpmNodeP13PrModelObjectRCt8NaMATRIX3Zfi4i4);
+void SpmNode::ComposeGlobalMatrixWithoutVisibility(PrModelObject *model, const NaMATRIX<float, 4, 4>& arg1) {
+    PrMat44 *d;
+    if (model->unk7C != NULL) {
+        if (m_flags & 1) {
+            *(PrMat44*)prSpramData = PrMat44::IDENT;
+        } else {
+            *(PrMat44*)prSpramData = NODE_MAT(this, 0);
+        }
+        if (prSpramData->m_model_transaction_blend_ratio != 1.0f) {
+            BlendTransitionMatrix(model, *(PrMat44*)prSpramData);
+        }
+        {
+            PrRawMat t;
+            PrRawMat r;
+            {
+                int w = 3;
+                register PrMat44 *rp asm("$11") = (PrMat44*)&r;
+                d = &unk40;
+                do { w--; } while (w != -1);
+                LDA(&arg1);
+                MUL(rp, (PrMat44*)prSpramData);
+                {
+                    int w2 = 3;
+                    do { w2--; } while (w2 != -1);
+                }
+                MatCopy((PrMat44*)&t, rp);
+                MatCopy(d, (PrMat44*)&t);
+            }
+        }
+        u_int idx = unk150; int act = model->m_active_transition; NaMATRIX<float, 4, 4> **mats = &model->unk7C;
+        (*(NaMATRIX<float, 4, 4>**)((char*)mats + (act << 2)))[idx] = *(PrMat44*)prSpramData;
+    } else if (m_flags & 1) {
+        unk40 = arg1;
+    } else {
+        {
+            PrRawMat t;
+            PrRawMat r;
+            {
+                int w = 3;
+                register PrMat44 *rp asm("$11") = (PrMat44*)&r;
+                d = &unk40;
+                do { w--; } while (w != -1);
+                LDA(&arg1);
+                MUL(rp, &NODE_MAT(this, 0));
+                {
+                    int w2 = 3;
+                    do { w2--; } while (w2 != -1);
+                }
+                MatCopy((PrMat44*)&t, rp);
+                MatCopy(d, (PrMat44*)&t);
+            }
+        }
+    }
+
+    if (m_flags & 0x8000) {
+        ApplyBillboardMatrix();
+    }
+}

@@ -112,9 +112,67 @@ static inline NaMATRIX<float, 4, 4> *MatCopy(NaMATRIX<float, 4, 4> *lhs, const N
 
 #define MUL(R, B) asm volatile(ROW(0x0) ROW(0x10) ROW(0x20) ROW(0x30) : : "r"(R), "r"(B))
 
-const NaMATRIX<float, 4, 4>& CreateBillboardMatrix(const NaMATRIX<float, 4, 4>& mat);
+static inline void InverseMat(PrRawMat& tmp_mat, const NaMATRIX<float, 4, 4>& mat) {
+    func_00165FA8(tmp_mat.m, *(const sceVu0FMATRIX*)&mat);
+    {
+        int w = 3;
+        do { w--; } while (w != -1);
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/prlib/billboard", CreateBillboardMatrix__FRCt8NaMATRIX3Zfi4i4);
+const NaMATRIX<float, 4, 4>& CreateBillboardMatrix(const NaMATRIX<float, 4, 4>& mat) {
+    NaVECTOR<float, 4> cam_pos = D_00383638->unk50;
+    cam_pos[3] = 1.0f;
+
+    NaVECTOR<float, 4> local_pos;
+    {
+        PrRawMat inv_mat;
+        {
+            PrRawMat tmp_mat;
+            {
+                int w = 3;
+                do { w--; } while (w != -1);
+            }
+            InverseMat(tmp_mat, mat);
+            asm volatile("
+                lq $6, 0(%0)
+                lq $7, 0x10(%0)
+                lq $8, 0x20(%0)
+                lq $9, 0x30(%0)
+                sq $6, 0(%1)
+                sq $7, 0x10(%1)
+                sq $8, 0x20(%1)
+                sq $9, 0x30(%1)
+            " : : "r"(&tmp_mat), "r"(&inv_mat)
+            : "$6", "$7", "$8", "$9");
+        }
+        {
+            NaVECTOR<float, 4> tmp_vec;
+            asm volatile(
+                "lqc2     $vf4,   0x0(%1)       \n\t"
+                "lqc2     $vf5,  0x10(%1)       \n\t"
+                "lqc2     $vf6,  0x20(%1)       \n\t"
+                "lqc2     $vf7,  0x30(%1)       \n\t"
+                "lqc2     $vf8,   0x0(%2)       \n\t"
+                "vmulax.xyzw   ACC,    $vf4,   $vf8  \n\t"
+                "vmadday.xyzw  ACC,    $vf5,   $vf8  \n\t"
+                "vmaddaz.xyzw  ACC,    $vf6,   $vf8  \n\t"
+                "vmaddw.xyzw   $vf9,   $vf7,   $vf8  \n\t"
+                "sqc2     $vf9,   0x0(%0)       \n\t"
+            : : "r"(&tmp_vec), "r"(&inv_mat), "r"(&cam_pos));
+            local_pos = tmp_vec;
+        }
+    }
+
+    if (local_pos[0] == 0.0f && local_pos[2] == 0.0f) {
+        return NaMATRIX<float, 4, 4>::IDENT;
+    }
+
+    float angle = atan2f(local_pos[0], local_pos[2]);
+    static NaMATRIX<float, 4, 4> return_matrix;
+    return_matrix = func_0014ACE8(1, angle);
+    return return_matrix;
+}
 
 void SpmNode::ApplyBillboardMatrix() {
     const NaMATRIX<float, 4, 4>& bb = CreateBillboardMatrix(unk40);

@@ -90,16 +90,74 @@ void PrCreateAlphaModulation(float ratio) {
     }
 
     alphaWork.f252 = prMendererRatio * 128.0f;
-    alphaTexPacket.data[11][0] = SCE_GS_SET_FRAME(mendererFbp, 10, 0, 0);
     alphaTexPacket.data[1][0] = SCE_GS_SET_FRAME(mendererFbp, 10, 0, 0x00ffffff);
+    alphaTexPacket.data[11][0] = SCE_GS_SET_FRAME(mendererFbp, 10, 0, 0);
 
     FlushCache(WRITEBACK_DCACHE);
     PrWaitDmaFinish(SCE_DMA_VIF1);
     sceDmaSend(sceDmaGetChan(SCE_DMA_VIF1), alphaDrawWords);
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/mendereralpha", PrBlendNoodleImage__Fb);
+struct PrMendererSpram {
+    char unk0[0x40];
+    void *m_work[3];
 
-INCLUDE_RODATA("asm/nonmatchings/prlib/mendereralpha", D_00396980);
+    void *GetWork() {
+        void *p0 = m_work[0];
+        void *p1 = m_work[1];
+        void *p2 = m_work[2];
+        m_work[1] = p2;
+        m_work[0] = p1;
+        m_work[2] = p0;
+        return p0;
+    }
+};
 
-INCLUDE_RODATA("asm/nonmatchings/prlib/mendereralpha", D_00396990);
+extern PrMendererSpram *prSpramData;
+void PrSendMfifo(const sceDmaTag *tag);
+
+struct GifTagPair {
+    u_long data[2];
+};
+
+extern const sceDmaTag D_0037FFE0;
+extern const GifTagPair D_0037FFF0;
+
+void PrBlendNoodleImage(bool blend) {
+    u_long *pkt = (u_long *)prSpramData->GetWork();
+    *(sceDmaTag *)pkt = D_0037FFE0;
+    *(GifTagPair *)(pkt + 2) = D_0037FFF0;
+    u_long *p = pkt + 4;
+
+    *p++ = 0;
+    *p++ = SCE_GS_TEXFLUSH;
+    *p++ = SCE_GS_SET_TEX0(mendererFbp << 5, 10, 0, 10, 8, 1, 1, 0, 0, 0, 0, 0);
+    *p++ = SCE_GS_TEX0_1;
+    *p++ = SCE_GS_SET_TEX1(0, 0, 0, 0, 0, 0, 0);
+    *p++ = SCE_GS_TEX1_1;
+    *p++ = SCE_GS_SET_CLAMP(1, 1, 0, 0, 0, 0);
+    *p++ = SCE_GS_CLAMP_1;
+    *p++ = SCE_GS_SET_TEST(0, 0, 0, 0, 0, 0, 1, 1);
+    *p++ = SCE_GS_TEST_1;
+    if (blend) {
+        *p++ = SCE_GS_SET_ALPHA(0, 1, 2, 1, 64);
+    } else {
+        *p++ = SCE_GS_SET_ALPHA(0, 1, 1, 1, 0);
+    }
+    *p++ = SCE_GS_ALPHA_1;
+    *p++ = SCE_GS_SET_PRIM(SCE_GS_PRIM_SPRITE, 0, 1, 0, 1, 0, 1, 0, 0) | 8;
+    *p++ = SCE_GS_PRIM;
+    *p++ = SCE_GS_SET_RGBAQ(0x80, 0x80, 0x80, 0x80, 0);
+    *p++ = SCE_GS_RGBAQ;
+    *p++ = SCE_GS_SET_UV(8, 8);
+    *p++ = SCE_GS_UV;
+    *p++ = SCE_GS_SET_XYZ2(27648, 30720, 0);
+    *p++ = SCE_GS_XYZ2;
+    *p++ = SCE_GS_SET_UV(10248, 4104);
+    *p++ = SCE_GS_UV;
+    *p++ = SCE_GS_SET_XYZ2(37888, 34816, 0);
+    *p++ = SCE_GS_XYZ2;
+
+    PrSendMfifo((const sceDmaTag *)pkt);
+}
+

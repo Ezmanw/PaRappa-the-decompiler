@@ -173,6 +173,8 @@ void PushNoodleColor(u_long *ptr) {
 INCLUDE_ASM("asm/nonmatchings/prlib/menderer", DrawNoodleStripChunk__FRCt8NaMATRIX3Zfi4i4);
 
 INCLUDE_ASM("asm/nonmatchings/prlib/menderer", SetNoodleRotationMatrix__FRt8NaMATRIX3Zfi4i4f);
+void SetNoodleRotationMatrix(NaMATRIX<float, 4, 4> &mat, float angle) asm("SetNoodleRotationMatrix__FRt8NaMATRIX3Zfi4i4f");
+void DrawNoodleStripChunk(const NaMATRIX<float, 4, 4> &mat) asm("DrawNoodleStripChunk__FRCt8NaMATRIX3Zfi4i4");
 
 void PreDrawNoodleStrip() {
     NoodleStripHeader *pkt = (NoodleStripHeader *)prSpramData->GetWork();
@@ -185,22 +187,10 @@ extern float D_0038366C;
 extern float D_00383670;
 extern float D_00383674;
 
-struct NaVECTOR4 {
-    float v[4];
-    NaVECTOR4() {}
-};
-
-struct NaMATRIX44 {
-    NaVECTOR4 m[4];
-    NaMATRIX44() {}
-};
-void SetNoodleRotationMatrix(NaMATRIX44 &mat, float angle) asm("SetNoodleRotationMatrix__FRt8NaMATRIX3Zfi4i4f");
-void DrawNoodleStripChunk(const NaMATRIX44 &mat) asm("DrawNoodleStripChunk__FRCt8NaMATRIX3Zfi4i4");
-
 void DrawNoodleStrip(float arg0, float arg1) {
     PreDrawNoodleStrip();
 
-    NaMATRIX44 mat;
+    NaMATRIX<float, 4, 4> mat;
     SetNoodleRotationMatrix(mat, arg1);
 
     float d, e, c;
@@ -293,8 +283,142 @@ void PrRestartMenderer() {
     g_NoodleDecelerating = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/menderer", DrawMenderer__Fv);
-void DrawMenderer();
+#include <math.h>
+#include "dma.h"
+#include "mfifo.h"
+
+extern float D_00383654;
+extern float D_00383678;
+extern float D_00383698;
+void UpdateNoodleRotation();
+void PrFadeFrameImage(float arg0);
+void PrCreateAlphaModulation(float ratio);
+void PrStartAwfulRotation();
+void PrBlendNoodleImage(bool blend);
+
+static inline float AbsDiffM(float x) {
+    return (x < 0.0f) ? -x : x;
+}
+
+void DrawMenderer() {
+    float ratio = prMendererRatio;
+    if (ratio == 0.0f) {
+        StartNoodleRotation();
+        return;
+    }
+
+    if (g_NoodlePause == 0) {
+        float t = D_00383678 + g_NoodleStep * 0.0032f;
+        if (t > 1.0f) {
+            t -= 1.0f;
+        }
+        D_00383678 = t;
+    }
+
+    if (prCurrentStage == 8 || prCurrentStage == 18) {
+        return;
+    }
+
+    if (ratio != 1.0f && ratio != 2.0f) {
+        noodleChangeTimer = 900;
+    }
+
+    UpdateNoodleRotation();
+
+    float rotStep = (noodleRotation >= 0.0f) ? 0.01f : -0.01f;
+    rotStep *= g_NoodleStep;
+    if (g_NoodlePause != 0) {
+        rotStep = 0.0f;
+    }
+
+    if (ratio <= 1.0f) {
+        ratio = sqrtf(ratio) * 2.0f - 1.0f;
+        noodleAngle += rotStep * (1.0f - ratio);
+    } else {
+        float d = AbsDiffM(ratio - 1.5f);
+        noodleAngle += rotStep * (0.5f - d);
+        PrFadeFrameImage(1.0f - d * 2.0f);
+        PrWaitDmaFinish(SCE_DMA_GIF);
+    }
+
+    if (noodleAngle > 1.0f) {
+        noodleAngle -= 1.0f;
+    }
+    if (noodleAngle < 0.0f) {
+        register float a asm("$f0") = noodleAngle + 1.0f;
+        noodleAngle = a;
+    }
+
+    float alphaRatio;
+    if (ratio > 1.5f) {
+        alphaRatio = (ratio - 1.5f) * 0.5f;
+    } else if (ratio > 1.0f) {
+        alphaRatio = (1.5f - ratio) * 2.0f;
+    } else {
+        alphaRatio = 1.0f;
+    }
+
+    if (ratio != 0.0f) {
+        PrCreateAlphaModulation(alphaRatio);
+    }
+
+    PrStartMfifo();
+
+    if (g_NoodlePause == 0) {
+        if (D_00383698 <= 1.6f && ratio > 1.0f) {
+            PrStartAwfulRotation();
+        }
+        D_00383698 = ratio;
+    }
+
+    if (prCurrentStage == 19 || prCurrentStage == 6) {
+        if (ratio <= 1.0f) {
+            DrawNoodleStrip(ratio, noodleAngle);
+        } else if (ratio <= 1.4f) {
+            DrawNoodleStrip((ratio - 1.0f) / 0.4f + 1.0f, noodleAngle);
+        } else if (ratio <= 1.6f) {
+            DrawNoodleStrip(2.0f, noodleAngle);
+        } else {
+            DrawNoodleStrip((ratio - 1.6f) * 0.6f / 0.4f + 2.0f, noodleAngle);
+        }
+    } else if (prMendererDirection != 0) {
+        if (ratio <= 0.5f) {
+            DrawNoodleStrip(ratio * 2.0f, noodleAngle);
+        } else if (ratio <= 0.6f) {
+            DrawNoodleStrip(1.0f, noodleAngle);
+        } else if (ratio <= 1.0f) {
+            DrawNoodleStrip(1.0f - (ratio - 0.6f) * 0.5f / 0.4f, noodleAngle);
+        } else if (ratio <= 1.13f) {
+            DrawNoodleStrip((ratio - 1.0f) * 0.5f / 0.13f + 0.5f, noodleAngle);
+        } else if (ratio <= 1.4f) {
+            DrawNoodleStrip((ratio - 1.13f) / 0.26f + 1.0f, noodleAngle);
+        } else if (ratio <= 1.6f) {
+            DrawNoodleStrip(2.0f, noodleAngle);
+        } else {
+            DrawNoodleStrip((ratio - 1.6f) / 0.4f + 2.0f, noodleAngle);
+        }
+    } else {
+        if (ratio <= 1.0f) {
+            DrawNoodleStrip(ratio * 0.5f, noodleAngle);
+        } else if (ratio <= 1.13f) {
+            DrawNoodleStrip((ratio - 1.0f) * 0.5f / 0.13f + 0.5f, noodleAngle);
+        } else if (ratio <= 1.4f) {
+            DrawNoodleStrip((ratio - 1.13f) / 0.26f + 1.0f, noodleAngle);
+        } else if (ratio <= 1.6f) {
+            DrawNoodleStrip(2.0f, noodleAngle);
+        } else {
+            DrawNoodleStrip((ratio - 1.6f) / 0.4f + 2.0f, noodleAngle);
+        }
+    }
+
+    PrWaitDmaFinish(SCE_DMA_VIF1);
+    while (*VIF1_STAT & 3) {
+        ;
+    }
+
+    PrBlendNoodleImage(ratio == 0.0f);
+    PrStopMfifo();
+}
 
 PR_EXTERN
 void PrSetMendererRatio(float ratio) {

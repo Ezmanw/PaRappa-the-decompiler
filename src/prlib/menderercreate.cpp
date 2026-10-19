@@ -90,7 +90,57 @@ void PrSynchronizeMendererParameter(float ratio) {
 
 INCLUDE_ASM("asm/nonmatchings/prlib/menderercreate", PrInitializeTextureCreation__FUiUiUiUi);
 
-INCLUDE_ASM("asm/nonmatchings/prlib/menderercreate", CreateMendererTexture__Ff);
+extern float prMendererRatio;
+extern u_int mendererDrawWords[];
+void PrWaitDmaFinish(u_int);
+
+void CreateMendererTexture(float arg0) {
+    PrSynchronizeMendererParameter(arg0);
+
+    float speed;
+    if (prMendererRatio <= 1.0f) {
+        speed = 1.0f;
+    } else if (prMendererRatio <= 1.4f) {
+        speed = (prMendererRatio - 1.0f) * (17.0f / 3.0f) / 0.4f + 1.0f;
+    } else if (prMendererRatio <= 1.6f) {
+        speed = 20.0f / 3.0f;
+    } else {
+        speed = (2.0f - prMendererRatio) * (17.0f / 3.0f) / 0.4f + 1.0f;
+    }
+
+    speed *= g_NoodleStep;
+    if (g_NoodlePause != 0) {
+        speed = 0.0f;
+    }
+
+    D_003836AC = 1;
+    float step = speed / 60.0f;
+
+    for (u_int i = 0; i < 5; i++) {
+        MendererParamEntry *param = &mendererParams[i];
+        for (u_int j = 0; j < 3; j++) {
+            float p = mendererPhase[i][j] + step;
+            if (p < 0.0f) {
+                while (p < 0.0f) {
+                    p += 1.0f / param->f2[j];
+                }
+            } else {
+                while (p >= 1.0f / param->f2[j]) {
+                    p -= 1.0f / param->f2[j];
+                }
+            }
+            param->f4[j] = p;
+            mendererPhase[i][j] = p;
+        }
+    }
+
+    FlushCache(WRITEBACK_DCACHE);
+    PrWaitDmaFinish(SCE_DMA_VIF1);
+
+    sceDmaChan *chan = sceDmaGetChan(SCE_DMA_VIF1);
+    chan->chcr.TTE = 1;
+    sceDmaSend(chan, mendererDrawWords);
+}
 
 PR_EXTERN
 void PrCreateMendererTexture() {
