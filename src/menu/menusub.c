@@ -8458,7 +8458,124 @@ static void NameSpaceCut(u_char *dst, u_char *src) {
 
 INCLUDE_RODATA("asm/nonmatchings/menu/menusub", D_00396120);
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsUser_PanelDraw);
+#else
+extern char *StageWordStr[]; // PAL data 199568: per-language "STAGE"
+extern char *RoundWordStr[]; // PAL data 199550: per-language "ROUND"
+extern char *BrokenStr[]; // PAL data 199580
+extern char *_MONTH_STR[]; // PAL data 199cd8
+extern STRPOS LOGS_StrCOD[]; // PAL data 19a278 (6 entries)
+extern STRPOS LOGL_StrCOD[]; // PAL data 19a2a8 (6 entries)
+extern STRPOS REPLAY_StrCOD[]; // PAL data 19a2d8 (7 entries)
+extern STRPOS VSREPLAY_StrCOD[]; // PAL data 19a310 (9 entries)
+extern PATPOS VS_MARK; // PAL data 19a358
+extern PATPOS VS_WINMARK1; // PAL data 19a368
+extern PATPOS VS_WINMARK2; // PAL data 19a378
+extern PATPOS LG_NEWDATA_MARK; // PAL data 19a388
+extern PATPOS RP_NEWDATA_MARK; // PAL data 19a398
+
+/* static */ void TsUser_PanelDraw(SPR_PKT pk, SPR_PRM *spr, USER_DATA *user, int px, int py, int pflg, int isLog) {
+    char buf[32];
+    char buf2[16];
+    STRPOS *pstr;
+    PATPOS *pmark;
+    int r;
+    u_int m;
+    int num;
+
+    spr->zx = 1.0f;
+    spr->zy = 0.5f;
+    PkALPHA_Add(pk, 0x44);
+
+    if (user != NULL && user->flg != 0) {
+        if (user->mode == 2) {
+            if (user->isVs != 0) {
+                spr->rgba0 = 0x80808080;
+                TsPatPut(pk, spr, &VS_MARK, px, py);
+                if (user->winner == 1) {
+                    TsPatPut(pk, spr, &VS_WINMARK2, px, py);
+                } else if (user->winner == 0) {
+                    TsPatPut(pk, spr, &VS_WINMARK1, px, py);
+                }
+                pstr = VSREPLAY_StrCOD;
+            } else {
+                pstr = REPLAY_StrCOD;
+            }
+            sprintf(buf, "%s", StageWordStr[game_status.language_type]);
+            num = user->stageNo;
+            sprintf(buf2, "%d", num);
+        } else {
+            if (isLog != 0) {
+                pstr = LOGL_StrCOD;
+            } else {
+                pstr = LOGS_StrCOD;
+            }
+            if (user->roundNo != 0) {
+                r = user->roundNo + 1;
+                sprintf(buf, "%s", RoundWordStr[game_status.language_type]);
+                num = (u_short)((r >= 100) ? 99 : r);
+                sprintf(buf2, "%d", num);
+            } else {
+                sprintf(buf, "%s", StageWordStr[game_status.language_type]);
+                sprintf(buf2, "%d", user->stageNo);
+            }
+        }
+        if (user->flg == 2) {
+            sprintf(buf, "%s", StageWordStr[game_status.language_type]);
+            sprintf(buf2, "?");
+        }
+        MENUFontPutS(pk, spr, pstr[0].x + px, pstr[0].y + py, pstr[0].abgr, 0x201, (u_char *)buf);
+        MENUFontPutS(pk, spr, pstr[1].x + px, pstr[1].y + py, pstr[1].abgr, 0x201, (u_char *)buf2);
+
+        if (user->flg != 2 && user->date_year != 0) {
+            m = user->date_month;
+            sprintf(buf, "%02x.%s.%04x", user->date_day, _MONTH_STR[(m >= 0x13U) ? 0x12 : m], user->date_year);
+            MENUFontPutS(pk, spr, pstr[2].x + px, pstr[2].y + py, pstr[2].abgr, 0x201, (u_char *)buf);
+            sprintf(buf, "%02x:%02x", user->date_hour, user->date_minute);
+            MENUFontPutS(pk, spr, pstr[3].x + px, pstr[3].y + py, pstr[3].abgr, 0x201, (u_char *)buf);
+        } else {
+            MENUFontPutS(pk, spr, pstr[2].x + px, pstr[2].y + py, pstr[2].abgr, 0x201, (u_char *)"--.---.----");
+            MENUFontPutS(pk, spr, pstr[3].x + px, pstr[3].y + py, pstr[3].abgr, 0x201, (u_char *)"--:--");
+        }
+        sprintf(buf, "%02d", user->fileNo + 1);
+        MENUFontPutS(pk, spr, pstr[4].x + px, pstr[4].y + py, pstr[4].abgr, 0x201, (u_char *)buf);
+
+        if (!(pflg & 2)) {
+            if (user->mode == 1) {
+                NameSpaceCut((u_char *)buf, (u_char *)user);
+            } else {
+                NameSpaceCut((u_char *)buf, (u_char *)user->name1);
+            }
+            if (user->flg == 2) {
+                NameSpaceCut((u_char *)buf, (u_char *)BrokenStr[game_status.language_type]);
+            }
+            MENUFontPutL(pk, spr, pstr[5].x + px, pstr[5].y + py, pstr[5].abgr, 0x201, (u_char *)buf);
+        }
+
+        if (user->mode == 2) {
+            sprintf(buf, "%06d", user->score);
+            MENUFontPutS(pk, spr, pstr[6].x + px, pstr[6].y + py, pstr[6].abgr, 0x201, (u_char *)buf);
+            if (user->isVs != 0) {
+                if (!(pflg & 4)) {
+                    NameSpaceCut((u_char *)buf, (u_char *)user->name2);
+                    MENUFontPutL(pk, spr, pstr[7].x + px, pstr[7].y + py, pstr[7].abgr, 0x201, (u_char *)buf);
+                }
+                sprintf(buf, "%06d", user->score2);
+                MENUFontPutS(pk, spr, pstr[8].x + px, pstr[8].y + py, pstr[8].abgr, 0x201, (u_char *)buf);
+            }
+        }
+    } else {
+        spr->rgba0 = 0x80808080;
+        if (isLog >= 0 && isLog < 2) {
+            pmark = &LG_NEWDATA_MARK;
+        } else {
+            pmark = &RP_NEWDATA_MARK;
+        }
+        TsPatPut(pk, spr, pmark, px, py);
+    }
+}
+#endif
 
 extern u_char *UserName_InitialStr;
 
