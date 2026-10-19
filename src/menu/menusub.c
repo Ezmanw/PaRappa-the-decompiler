@@ -5180,7 +5180,137 @@ void TsPopCusFlow(POPCTIM *pfw) {
     }
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPopCusPut);
+#else
+void TsPopCusPut(SPR_PKT pk, SPR_PRM *spr, int dflg, POPCTIM *pfw, int bPut, int idx, PATPOS *ppat, int px, int py) {
+    int mode;
+    float rate;
+    float v;
+    float fv;
+    float a, b, c, d;
+    int ton;
+
+    rate = 0.0f;
+    mode = 4;
+    if (pfw->bDim[idx] == 0) {
+        mode = bPut;
+    }
+
+    switch (mode) {
+    case 0:
+        if (!(dflg & 1)) {
+            return;
+        }
+        if (pfw->offinf[idx].time != 0) {
+            mode = 1;
+            rate = (float)pfw->offinf[idx].time * 0.06666667f;
+        }
+        break;
+    case 1:
+        if (!(dflg & 1)) {
+            return;
+        }
+        rate = 1.0f;
+        if (pfw->srTNo == idx && pfw->srTim != 0) {
+            rate = 1.0f - (float)pfw->srTim * 0.125f;
+        }
+        break;
+    case 2:
+        if (!(dflg & 2)) {
+            return;
+        }
+        pfw->srTNo = idx;
+        pfw->srTim = 8;
+        break;
+    case 3:
+        if (!(dflg & 1)) {
+            return;
+        }
+        pfw->srTNo = idx;
+        pfw->srTim = 8;
+        break;
+    case 4:
+        if (dflg != 0) {
+            return;
+        }
+        spr->rgba0 = 0x40808080;
+        break;
+    case 5:
+        if (!(dflg & 4)) {
+            return;
+        }
+        spr->rgba0 = 0x80707070;
+        break;
+    case 6:
+        if (!(dflg & 4)) {
+            return;
+        }
+        break;
+    default:
+        break;
+    }
+
+    if (mode < 2 || mode == 5) {
+        if (pfw->offinf[idx].cltm != 0) {
+            fv = (float)pfw->offinf[idx].cltm * 0.06666667f;
+            spr->rgba0 = GetDToneColor(pfw->nabgr, pfw->habgr, (int)(fv * 240.0f * fv));
+        }
+    }
+
+    switch (mode - 1) {
+    case 0:
+        TsPatPutSwing(pk, spr, ppat, px, py, 2, 8, pfw->fswing * rate);
+        if (pfw->offinf[idx].time == 0) {
+            pfw->offinf[idx].bCur = 1;
+        }
+        return;
+    case 1:
+        v = (float)pfw->okTim / 25.0f;
+        a = sinf(v * 9.424778f);
+        b = sinf(v * 6.2831855f);
+        v = a * (v * 0.9f * v + 0.1f);
+        spr->rgba0 = GetDToneColor(0xFFFFFF, 0x80FFFFFF, (int)(b * 256.0f * b));
+        TsPatTexFnc(2);
+        TsPatPutMZoom(pk, spr, ppat, px, py,
+                      (float)(1.0 - (double)v * 0.2),
+                      (float)((double)v * 0.6 + 1.0),
+                      8, 4,
+                      (float)((double)v * -0.2),
+                      (float)((double)v * 0.6));
+        TsPatTexFnc(0);
+        pfw->srTim = 8;
+        pfw->srTNo = idx;
+        pfw->offinf[idx].bCur = 1;
+        return;
+    case 2:
+        v = sinf((float)pfw->onTim * 2.1991148f * 0.1f);
+        a = v * 0.05f + 1.0f;
+        b = v * 0.14f + 1.0f;
+        pfw->srTNo = idx;
+        pfw->srTim = 8;
+        c = v * -0.05f;
+        d = v * -0.3f;
+        TsPatPutMZoom(pk, spr, ppat, px, py, a, b, 8, 4, c, d);
+        pfw->offinf[idx].bCur = 1;
+        return;
+    case 4:
+    case 5:
+        ton = MNSceneGetMusicFitTimer() % 45;
+        v = sinf((float)ton * 3.1415927f / 45.0f);
+        a = v * 0.1f + 0.95f;
+        pfw->srTNo = idx;
+        pfw->srTim = 8;
+        TsPatPutMZoom(pk, spr, ppat, px, py, a, a, 4, 4, 0.0f, 0.0f);
+        pfw->offinf[idx].bCur = 1;
+        return;
+    default:
+        TsPatPut(pk, spr, ppat, px, py);
+        pfw->offinf[idx].bCur = 0;
+        return;
+    }
+}
+#endif
 
 int TsPUPCheckMove(int nbtn, int bank, POPCTIM *pfw) {
     return (pfw->bDim[POPBtn2Sel[(bank != 0) ? (nbtn + 3) : (nbtn + 0)]] == FALSE);
