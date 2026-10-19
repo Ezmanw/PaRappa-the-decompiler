@@ -1737,7 +1737,122 @@ void Cl2MixTrans(int now_T, int max_T, u_char *cl2_0_pp, u_char *cl2_1_pp) {
     usrFree(dat_pp);
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/main/drawctrl", DrawObjPrReq);
+#else
+void DrawObjPrReq(SCENE_OBJDATA *scene_pp) {
+    OBJACTPRG_CTRL *ctrl;
+    OBJACTPRG *cur;
+    OBJACTPRG *prgs;
+    OBJACTPRG *p;
+    OBJACTPRG *cam[3];
+    OBJDAT *objdat;
+    int i;
+    int prio;
+    int changed;
+    int blu;
+    int first;
+    int k;
+
+    ctrl = &scene_pp->objactprg_ctrl;
+    for (k = 2; k >= 0; k--) {
+        cam[k] = NULL;
+    }
+    cur = ctrl->objactprg[0];
+
+    for (i = 0; i < ctrl->num; i++) {
+        prio = 2;
+        changed = 0;
+
+        for (;;) {
+            prgs = ctrl->objactprg[prio];
+            p = &prgs[i];
+
+            if (p->job_type != 0 && !(p->status & 1)) {
+                switch (p->job_type) {
+                case 1:
+                    blu = (p->status & 0x200) ? 3 : ((p->status & 0x10) ? 1 : ((p->status >> 4) & 2));
+                    first = (cur[i].job_type == 0) ? 1 : p->first_flag;
+                    PrSetModelDisturbance(scene_pp->objdat_pp[i].handle, p->focal_lng);
+                    objdat = scene_pp->objdat_pp;
+                    changed = 1;
+                    XAnimationLinkOption(objdat[i].handle, objdat[p->sub_num].handle, first, blu, (float)(p->now_time + p->start_time));
+                    cur[i] = *p;
+                    break;
+                case 13:
+                    objdat = scene_pp->objdat_pp;
+                    changed = 1;
+                    XAnimationPositionLink(objdat[p->sub_num].handle, objdat[i].handle, (float)(p->now_time + p->start_time));
+                    break;
+                case 2:
+                    changed = 1;
+                    if (cur[i].job_type == 0) {
+                        PrShowModel(scene_pp->objdat_pp[i].handle, NULL);
+                        cur[i] = *p;
+                        changed = 1;
+                    }
+                    break;
+                case 3:
+                    cam[prio] = p;
+                    break;
+                case 4:
+                    if (cur[i].sub_num != p->sub_num || cur[i].job_type == 0) {
+                        changed = 1;
+                        Tim2TransX(scene_pp->objdat_pp[i].handle, p->sub_num);
+                        cur[i] = *p;
+                    }
+                    break;
+                case 14:
+                    objdat = scene_pp->objdat_pp;
+                    Cl2MixTrans(p->now_time, p->end_time, objdat[i].handle, objdat[p->sub_num].handle);
+                    cur[i] = *p;
+                    break;
+                default:
+                    break;
+                }
+                if (changed != 0) {
+                    break;
+                }
+            }
+
+            prio--;
+            if (prio <= 0) {
+                if (changed == 0) {
+                    switch (cur[i].job_type) {
+                    case 1:
+                        PrResetPosture(scene_pp->objdat_pp[i].handle);
+                        PrSetTransactionBlendRatio(scene_pp->objdat_pp[i].handle, -1.0f);
+                        PrResetContour(scene_pp->objdat_pp[i].handle);
+                        PrSetContourBlurAlpha(scene_pp->objdat_pp[i].handle, -1.0f, -1.0f);
+                        PrHideModel(scene_pp->objdat_pp[i].handle);
+                        break;
+                    case 2:
+                        PrHideModel(scene_pp->objdat_pp[i].handle);
+                        break;
+                    case 13:
+                        objdat = scene_pp->objdat_pp;
+                        XAnimationPositionUnLink(objdat[prgs[i].sub_num].handle, objdat[i].handle);
+                        break;
+                    }
+                    cur[i].job_type = 0;
+                }
+                break;
+            }
+        }
+    }
+
+    for (k = 2; k >= 0; k--) {
+        if (cam[k] != NULL) {
+            PrSelectCamera(scene_pp->objdat_pp[cam[k]->main_num].handle, scene_pp->handle);
+            PrAnimateSceneCamera(scene_pp->handle, (float)(cam[k]->now_time + cam[k]->start_time) + 0.0f);
+            PrSetDepthOfField(scene_pp->handle, cam[k]->focal_lng, cam[k]->defocus_lng);
+            camOtherKill(cur, ctrl->num, cam[k]->main_num);
+            cur[cam[k]->main_num] = *cam[k];
+            return;
+        }
+    }
+}
+#endif
 
 void DrawObjStrTapTimeNext(SCENE_OBJDATA *sod_pp) {
     int        i, max_num;
