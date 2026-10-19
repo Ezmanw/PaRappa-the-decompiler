@@ -23,11 +23,9 @@ extern PrVu1InitPacket initVu1DmaPacket;
 
 INCLUDE_ASM("asm/nonmatchings/prlib/render", Render__13PrSceneObject);
 
-#ifndef NON_MATCHING
-INCLUDE_ASM("asm/nonmatchings/prlib/render", InitializeVu1__13PrSceneObject);
-#else /* Retail is not a tail call; a0/a1 move order differs */
 void PrSceneObject::InitializeVu1() {
-    PrVu1InitPacket *packet = (PrVu1InitPacket*)PR_UNCACHED(&initVu1DmaPacket);
+    void *tag = &initVu1DmaPacket;
+    PrVu1InitPacket *packet = (PrVu1InitPacket*)PR_UNCACHED(tag);
     packet->zbuf     = prRenderStuff.m_zbuf;
     packet->frame    = this->unk50;
     packet->xyoffset = this->unk58;
@@ -38,10 +36,11 @@ void PrSceneObject::InitializeVu1() {
     sceDmaChan *chan = sceDmaGetChan(SCE_DMA_GIF);
     chan->chcr.TTE = 0; /* Don't transfer the DMAtag */
 
-    sceDmaSend(chan, &initVu1DmaPacket);
+    register void *a1 asm("$5") = tag;
+    asm("" : "+r"(a1));
+    sceDmaSend(chan, a1);
     asm volatile("");
 }
-#endif
 
 void PrSceneObject::PrepareScreenModelRender() {
     prRenderStuff.StartRender(this);
@@ -337,7 +336,35 @@ void SpmFileHeader::RenderBackgroundScreenModel() {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/prlib/render", RenderBackgroundScreenModel__7SpmNode);
+extern NaMATRIX<float, 4, 4> D_01C74230;
+
+void SpmNode::RenderBackgroundScreenModel() {
+    prRenderStuff.m_statistics.node_num++;
+
+    if (!(this->m_flags & 0x4000)) {
+        return;
+    }
+    if (AwfulStatus && !(this->m_flags & 0x400000)) {
+        return;
+    }
+
+    for (u_int i = 0; i < 2; i++) {
+        PrVuNodeHeaderDmaPacket *packet = this->unk16C[i];
+        if (packet != NULL) {
+            packet = (PrVuNodeHeaderDmaPacket*)((u_int)packet | 0x30000000);
+            const PrMat44 *b = &this->unk40;
+            const PrMat44 *a = &D_01C74230;
+            PrMat44 *d = &packet->unk10;
+            MulMV(a, b, d);
+            prRenderStuff.AppendDmaTag((sceDmaTag*)((u_int)packet & 0x0fffffff));
+            if (i == 0) {
+                prRenderStuff.m_statistics.opaque_context1_node_num++;
+            } else {
+                prRenderStuff.m_statistics.transmit_context1_node_num++;
+            }
+        }
+    }
+}
 
 void PrModelObject::RenderContext2Model() {
     PrSPRAM_DATA *spram = prSpramData;

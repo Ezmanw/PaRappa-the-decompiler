@@ -511,8 +511,8 @@ template <>
 NaVECTOR<float, 4>* SpaTrack<NaVECTOR<float, 4> >::GetLinearValue(u_int seg, float arg1) const {
     static NaVECTOR<float, 4> return_buffer;
 
-    float f0 = this->unkC[seg + 1] - arg1;
     float f1 = arg1 - this->unkC[seg];
+    float f0 = this->unkC[seg + 1] - arg1;
     NaVECTOR<float, 4> ret = (((NaVECTOR<float, 4>*)&this->unk10)[seg] * f0 + ((NaVECTOR<float, 4>*)&this->unk10)[seg + 1] * f1) / (f0 + f1);
     return_buffer = ret;
     return &return_buffer;

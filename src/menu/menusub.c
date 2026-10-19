@@ -224,7 +224,7 @@ static void  TsMENU_GetMapTimeState(int flg);
 static void  TsSet_ParappaCapColor(void);
 /* static */ void  TsClearSet(P3GAMESTATE *pstate);
 static void  TsCheckEnding(P3GAMESTATE *pstate);
-/* static */ void  TsSetRankingName(P3MC_STAGERANK *pRankTop, u_char *name);
+static void  TsSetRankingName(P3MC_STAGERANK *pRankTop, u_char *name);
 static void  TsSetRanking2UData(USER_DATA *puser, P3MC_STAGERANK *wkRank);
 /* static */ void  TsSetSaveData(MCRWDATA_HDL *pDataW, int mode, USER_DATA *puser);
 /* static */ void  TsRestoreSaveData(MCRWDATA_HDL *pDataW, int mode);
@@ -282,7 +282,7 @@ static void  TsCmnCell_CusorON(CELLOBJ *obj);
 static void  TsCmnCell_CusorOFF(CELLOBJ *obj);
 static void  TsCmnCell_CusorSEL(CELLOBJ *obj);
 static void  TsCmnCell_CusorMASK(CELLOBJ *obj);
-/* static */ void  TsCmnCell_CusorDraw(SPR_PKT pk, SPR_PRM *spr, int n, CELLOBJ *obj, int ox, int oy, int CurColor);
+/* static */ void  TsCmnCell_CusorDraw(SPR_PKT pk, SPR_PRM *spr, u_int n, CELLOBJ *obj, int ox, int oy, int CurColor);
 /* static */ int   TsOption_Flow(int flg, u_int tpad);
 /* static */ void  TsOption_Draw(SPR_PKT pk, SPR_PRM *spr);
 static int   TsUserList_GetCurFileNo(int *isBroken);
@@ -1165,7 +1165,116 @@ static void TsMENU_GetMapTimeState(int flg) {
     CurMapBakFlg = state;
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsSetScene_Map);
+extern MN_SCENETBL Scene_StageMapA;
+extern MN_SCENETBL Scene_StageMapY;
+extern MNANM_TBL StageMapAnime[];
+extern MNANM_TBL StageMapAnimeBB[];
+extern MNANM_TBL *StageMapCWptr[];
+extern MNANM_TBL StageMapAnimeSEA[];
+extern MNANM_TBL StageMapAnimeBK[];
+extern char stg_clr_msk[8];
+
+/* static */ void TsSetScene_Map(MN_SCENE *pScene, int mapNo, int tflg, int bFocus) {
+    P3LOG_VAL *pLog;
+    int        mn;
+    int        nRound;
+    int        i;
+    int        cnt;
+    int        ncool;
+    int        cool[4];
+    u_int      cval;
+    int        j;
+
+    mn = mapNo;
+    pLog = pP3GameState->pLog;
+    nRound = pLog->nRound;
+    if (mapNo == 0) {
+        mn = TsMENU_GetMapNo(NULL);
+        if (mn == 9) {
+            if (nRound >= 4) {
+                mn = 10;
+            }
+        }
+    }
+    if (mapNo == 9 && nRound >= 4) {
+        mapNo = 10;
+        mn = 10;
+    }
+
+    MNScene_End(pScene);
+
+    switch (tflg) {
+    case 1:
+        MNScene_Init(pScene, &Scene_StageMap, bFocus);
+        MNScene_StartAnime(pScene, -1, &StageMapAnimeBK[0]);
+        break;
+    case 2:
+        MNScene_Init(pScene, &Scene_StageMapY, bFocus);
+        MNScene_StartAnime(pScene, -1, &StageMapAnimeBK[1]);
+        break;
+    case 0:
+    default:
+        MNScene_Init(pScene, &Scene_StageMapA, bFocus);
+        MNScene_StartAnime(pScene, -1, &StageMapAnimeBK[2]);
+        break;
+    }
+
+    MNScene_DispSw(pScene, 1);
+    MNScene_StartAnime(pScene, -1, &StageMapAnime[mapNo]);
+    MNScene_StartAnime(pScene, -1, &StageMapAnime[mn + 11]);
+    MNScene_StartAnime(pScene, -1, &StageMapAnimeSEA[0]);
+
+    for (i = 0; i < 8; i++) {
+        cnt = pLog->clrCount[i];
+        if (mapNo == 0) {
+            if (stg_clr_msk[i] != 0) {
+                cnt = 0;
+            }
+        }
+
+        if (cnt > 0) {
+            MNScene_StartAnime(pScene, -1, &StageMapAnimeBB[i * 2]);
+            if (cnt > nRound + 1) {
+                cnt = nRound + 1;
+            }
+            if (cnt >= 5) {
+                cnt = 4;
+            }
+            MenuStageCl1Trans(i, (cnt > 0) ? (cnt - 1) : cnt);
+
+            for (j = 0; j < 4; j++) {
+                cool[j] = 0;
+            }
+            cval = pLog->logCOOL[i];
+            for (ncool = 0, j = 0; j < 4 && cval != 0; j++, ncool++) {
+                cool[j] = cval & 0xf;
+                cval >>= 4;
+            }
+            if (ncool >= 5) {
+                ncool = 4;
+            }
+            if (ncool <= 0) {
+                MNScene_ModelDispSw(pScene, i + 12, 0);
+            } else {
+                MNScene_StartAnime(pScene, -1, &StageMapCWptr[i][ncool - 1]);
+                for (j = 0; j < ncool; j++) {
+                    cval = cool[(ncool - 1) - j];
+                    if ((int)cval > 0) {
+                        MenuCoolCl1Trans(i, j, cval - 1);
+                    }
+                }
+            }
+        } else {
+            MNScene_StartAnime(pScene, -1, &StageMapAnimeBB[i * 2 + 1]);
+            MNScene_ModelDispSw(pScene, i + 12, 0);
+        }
+    }
+
+    if (mapNo == 0) {
+        MNScene_StartAnime(pScene, -1, &StageMapAnimePA[0]);
+        MNScene_StartAnime(pScene, -1, &StageMapAnimePA[6]);
+    }
+}
 
 static void TsSet_ParappaCapColor(void) {
     P3LOG_VAL      *pLog = pP3GameState->pLog;
@@ -1599,7 +1708,7 @@ void TsMenu_Draw(void) {
     TsCmnPkClose(&FPacket, pkt, 0xf);
 }
 
-/* static */ void TsSetRankingName(P3MC_STAGERANK *pRankTop, u_char *name) {
+static void TsSetRankingName(P3MC_STAGERANK *pRankTop, u_char *name) {
     P3MC_STAGERANK *pRank;
     int             i, j, k;
 
@@ -1629,8 +1738,6 @@ static void TsSetRanking2UData(USER_DATA *puser, P3MC_STAGERANK *wkRank) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsSetSaveData);
-
 typedef struct {
     /* 0x00 */ GAME_STATUS base;
 #ifdef VERSION_PAL
@@ -1654,6 +1761,8 @@ typedef struct {
     /* 0x0b8 */ GAME_STATUS game_status;
 #endif
 } P3LOG_VAL_PAL;
+
+INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsSetSaveData);
 
 /* static */ void TsRestoreSaveData(MCRWDATA_HDL *pDataW, int mode) {
     int i;
@@ -3850,7 +3959,155 @@ INCLUDE_ASM("asm/nonmatchings/menu/menusub", McUserCheckFlow);
 
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", McUserSaveFlow);
 
-INCLUDE_ASM("asm/nonmatchings/menu/menusub", McUserLoadFlow);
+extern MCRWDATA_HDL *pGameData;
+
+/* static */ int McUserLoadFlow(int fileNo, int mode, int bBroken) {
+    int r;
+
+    switch (subStatus) {
+    case 0:
+        r = P3MC_CheckChange();
+        ret = r;
+        if (r < 0) {
+            break;
+        }
+        pGameData = P3MC_MakeDataWork(_P3DATA_SIZE(mode), NULL);
+        if (ret != 0) {
+            subStatus = 0x2010;
+            break;
+        }
+        if (bBroken != 0) {
+            ret = 6;
+            subStatus = 0x2010;
+            break;
+        }
+        subStatus = 0x100;
+        /* fallthrough */
+    case 0x100:
+        waitTime = 90;
+        TsMCAMes_SetMes(7);
+        P3MC_LoadUser(mode, fileNo, pGameData, 0);
+        subStatus = 0x2000;
+        break;
+    case 0x2000:
+        waitTime--;
+        r = P3MC_LoadCheck();
+        ret = r;
+        if (r < 0) {
+            break;
+        }
+        subStatus = 0x2002;
+        break;
+    case 0x2002:
+        if (--waitTime > 0) {
+            break;
+        }
+        subStatus = 0x2010;
+        /* fallthrough */
+    case 0x2010:
+        if (ret != 0) {
+            errorNo = 0;
+            switch (ret) {
+            case 1:
+            case 2:
+            case 4:
+                errorNo = 2;
+                break;
+            default:
+                errorNo = ret;
+                break;
+            }
+            if (errorNo != 0) {
+                subStatus = 0x2200;
+            }
+            break;
+        }
+        subStatus = 0x2100;
+        /* fallthrough */
+    case 0x2100:
+        TsRestoreSaveData(pGameData, mode);
+        subStatus = 0x2f00;
+        TsMCAMes_SetMes(-1);
+        /* fallthrough */
+    case 0x2f00:
+        if (McErrorMess(100) < 0) {
+            break;
+        }
+        subStatus = 0xf000;
+        break;
+    case 0x2200:
+        TsMCAMes_SetMes(-1);
+        subStatus = 0x2201;
+        /* fallthrough */
+    case 0x2201:
+        ret = P3MC_CheckChange();
+        if (ret == 3 || ret == 5) {
+            subStatus = 0xe000;
+            break;
+        }
+        if (McErrorMess(errorNo) < 0) {
+            break;
+        }
+        subStatus = 0x2202;
+        /* fallthrough */
+    case 0x2202:
+        if (P3MC_CheckChange() < 0) {
+            break;
+        }
+        if (errorNo == 6) {
+            if (bBroken != 0) {
+                subStatus = 0xf001;
+            } else {
+                subStatus = 0xf002;
+            }
+        } else {
+            subStatus = 0xf002;
+        }
+        break;
+    case 0xe000:
+        ret = P3MC_CheckChange();
+        if (ret == 0 || ret == 5) {
+            subStatus = 0xf004;
+            break;
+        }
+        if (McErrorMess(errorNo) >= 0) {
+            subStatus = 0xee10;
+        }
+        break;
+    case 0xee10:
+        if (P3MC_CheckChange() < 0) {
+            break;
+        }
+        TsMCAMes_SetMes(-1);
+        if (errorNo == 6) {
+            if (bBroken != 0) {
+                subStatus = 0xf001;
+            } else {
+                subStatus = 0xf002;
+            }
+        } else {
+            subStatus = 0xf002;
+        }
+        break;
+    case 0xf000:
+        P3MC_DeleteDataWork(pGameData);
+        TsMCAMes_SetMes(-1);
+        return 0;
+    case 0xf001:
+        P3MC_DeleteDataWork(pGameData);
+        TsMCAMes_SetMes(-1);
+        return 1;
+    case 0xf002:
+        P3MC_DeleteDataWork(pGameData);
+        TsMCAMes_SetMes(-1);
+        return 2;
+    case 0xf004:
+        P3MC_DeleteDataWork(pGameData);
+        return 4;
+    }
+
+    return -1;
+}
 
 static void TsMCAMes_Init(void) {
     memset(&MCMesWork, 0, sizeof(MCMesWork));

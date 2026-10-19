@@ -4,7 +4,46 @@
 
 extern PrSPRAM_DATA *prRenderEeSpram;
 
-INCLUDE_ASM("asm/nonmatchings/prlib/renderee", InitializeEECore__13PrRenderStuffP13PrSceneObject);
+#include "dma.h"
+#include "scene.h"
+
+struct PrEECoreInitPacket {
+    sceDmaTag     tag;
+    sceGifTag     giftag;
+    sceGsFrame    frame;
+    u_long        frame_addr;
+    sceGsZbuf     zbuf;
+    u_long        zbuf_addr;
+    u_long        unk40[16];
+    sceGsXyoffset xyoffset;
+    u_long        xyoffset_addr;
+    sceGsScissor  scissor;
+    u_long        scissor_addr;
+    sceGsDthe     dthe;
+    u_long        dthe_addr;
+} PR_ALIGNED(128);
+
+extern PrEECoreInitPacket D_00371800;
+
+void PrRenderStuff::InitializeEECore(PrSceneObject *scene) {
+    void *tag = &D_00371800;
+    PrEECoreInitPacket *packet = (PrEECoreInitPacket*)PR_UNCACHED(tag);
+    packet->zbuf     = this->m_zbuf;
+    packet->frame    = scene->unk50;
+    packet->xyoffset = scene->unk58;
+    packet->scissor  = scene->unk70->scissor1;
+    packet->dthe     = scene->unk70->dthe;
+
+    PrWaitDmaFinish(SCE_DMA_GIF);
+
+    sceDmaChan *chan = sceDmaGetChan(SCE_DMA_GIF);
+    chan->chcr.TTE = 0;
+
+    register void *a1 asm("$5") = tag;
+    asm("" : "+r"(a1));
+    sceDmaSend(chan, a1);
+    asm volatile("");
+}
 
 void PrRenderStuff::RenderVertexEECoreBothface() {
     register char *spr asm("$4") = reinterpret_cast<char*>(prRenderEeSpram) + 0x330;

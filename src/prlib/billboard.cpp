@@ -1,8 +1,138 @@
+#define NALIB_NAVECTOR_H
+#define NALIB_NAMATRIX_H
+
+template <typename T, int t0>
+class NaVECTOR {
+public:
+    NaVECTOR() {}
+    NaVECTOR(const NaVECTOR<float, 4>& rhs) {
+        Copy(*this, rhs);
+    }
+
+    NaVECTOR<T, t0>& Set(const T& x, const T& y, const T& z, const T& w);
+
+public:
+    T& operator[](int arg0) {
+        return v[arg0];
+    }
+
+    T operator[](int arg0) const {
+        return v[arg0];
+    }
+
+    static NaVECTOR<float, 4>& Copy(NaVECTOR<float, 4>& lhs, const NaVECTOR<float, 4>& rhs) {
+        asm volatile("
+            lq $6, 0(%1)
+            sq $6, 0(%0)
+        " : : "r"(&lhs), "r"(&rhs)
+        : "$6");
+        return lhs;
+    }
+
+    NaVECTOR<float, 4>& operator=(const NaVECTOR<float, 4>& rhs) {
+        return Copy(*this, rhs);
+    }
+
+private:
+    T v[t0];
+};
+
+template <typename T, int t0, int t1>
+class NaMATRIX {
+public:
+    NaMATRIX() {}
+    NaMATRIX(const NaMATRIX<float, 4, 4>& rhs) {
+        Copy(*this, rhs);
+    }
+
+    const NaVECTOR<T, t0>& operator[](int arg0) const {
+        return m[arg0];
+    }
+
+    static NaMATRIX<float, 4, 4>& Copy(NaMATRIX<float, 4, 4>& lhs, const NaMATRIX<float, 4, 4>& rhs) {
+        asm volatile("
+            lq $6, 0(%1)
+            lq $7, 0x10(%1)
+            lq $8, 0x20(%1)
+            lq $9, 0x30(%1)
+            sq $6, 0(%0)
+            sq $7, 0x10(%0)
+            sq $8, 0x20(%0)
+            sq $9, 0x30(%0)
+        " : : "r"(&lhs), "r"(&rhs)
+        : "$6", "$7", "$8", "$9");
+        return lhs;
+    }
+
+    NaMATRIX<float, 4, 4>& operator=(const NaMATRIX<float, 4, 4>& rhs) {
+        return Copy(*this, rhs);
+    }
+
+private:
+    NaVECTOR<T, t0> m[t1];
+
+public:
+    static NaMATRIX<float, 4, 4> IDENT;
+};
+
 #include "common.h"
+
+#include "model.h"
+#include "spram.h"
+#include "vu0mat.h"
+
+#include <math.h>
+#include <libvu0.h>
+
+extern PrSPRAM_DATA *D_00383638;
+
+extern "C" void func_00165FA8(sceVu0FMATRIX m0, const sceVu0FMATRIX m1);
+NaMATRIX<float, 4, 4> func_0014ACE8(int axis, const float& angle) asm("func_0014ACE8");
+
+struct PrRawMat { float m[4][4]; };
+
+static inline NaMATRIX<float, 4, 4> *MatCopy(NaMATRIX<float, 4, 4> *lhs, const NaMATRIX<float, 4, 4> *rhs) {
+    return &NaMATRIX<float, 4, 4>::Copy(*lhs, *rhs);
+}
+
+#define LDA(A) asm volatile( \
+        "lqc2     $vf4,   0x0(%0)       \n\t" \
+        "lqc2     $vf5,  0x10(%0)       \n\t" \
+        "lqc2     $vf6,  0x20(%0)       \n\t" \
+        "lqc2     $vf7,  0x30(%0)       \n\t" \
+    : : "r"(A))
+
+#define ROW(o) \
+        "lqc2     $vf8,  " #o "(%1)       \n\t" \
+        "vmulax   ACC,    $vf4,   $vf8  \n\t" \
+        "vmadday  ACC,    $vf5,   $vf8  \n\t" \
+        "vmaddaz  ACC,    $vf6,   $vf8  \n\t" \
+        "vmaddw   $vf9,   $vf7,   $vf8  \n\t" \
+        "sqc2     $vf9,   " #o "(%0)       \n\t"
+
+#define MUL(R, B) asm volatile(ROW(0x0) ROW(0x10) ROW(0x20) ROW(0x30) : : "r"(R), "r"(B))
+
+const NaMATRIX<float, 4, 4>& CreateBillboardMatrix(const NaMATRIX<float, 4, 4>& mat);
 
 INCLUDE_ASM("asm/nonmatchings/prlib/billboard", CreateBillboardMatrix__FRCt8NaMATRIX3Zfi4i4);
 
-INCLUDE_ASM("asm/nonmatchings/prlib/billboard", ApplyBillboardMatrix__7SpmNode);
+void SpmNode::ApplyBillboardMatrix() {
+    const NaMATRIX<float, 4, 4>& bb = CreateBillboardMatrix(unk40);
+    PrRawMat t;
+    PrRawMat r;
+    {
+        int w = 3;
+        do { w--; } while (w != -1);
+    }
+    LDA(&unk40);
+    MUL((NaMATRIX<float, 4, 4>*)&r, &bb);
+    {
+        int w = 3;
+        do { w--; } while (w != -1);
+    }
+    MatCopy((NaMATRIX<float, 4, 4>*)&t, (NaMATRIX<float, 4, 4>*)&r);
+    MatCopy(&unk40, (NaMATRIX<float, 4, 4>*)&t);
+}
 
 /* nalib/navector.h */
 float* func_0014C4E8(

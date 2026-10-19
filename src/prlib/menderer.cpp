@@ -240,7 +240,35 @@ extern float g_NoodleDecel;
 
 INCLUDE_ASM("asm/nonmatchings/prlib/menderer", UpdateNoodleRotation__Fv);
 
-INCLUDE_ASM("asm/nonmatchings/prlib/menderer", PrUpdateMendererSpeed__Fv);
+void PrUpdateMendererSpeed() {
+    if (g_NoodlePause != 0) {
+        return;
+    }
+    if (g_NoodleDecelerating == 0) {
+        return;
+    }
+    float s;
+    if (prCurrentStage == 6 || prCurrentStage == 16) {
+        s = g_NoodleStepB - g_NoodleDecel;
+        if (s < 0.0f) {
+            g_NoodleStepB = 0.0f;
+            return;
+        }
+        goto store_b;
+    } else {
+        s = g_NoodleStep - g_NoodleDecel;
+        if (s < 0.0f) {
+            g_NoodleStep = 0.0f;
+            return;
+        }
+        goto store_a;
+    }
+store_b:
+    g_NoodleStepB = s;
+    return;
+store_a:
+    g_NoodleStep = s;
+}
 
 PR_EXTERN
 void PrDecelerateMenderer(u_int frames) {
