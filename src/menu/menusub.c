@@ -5180,7 +5180,137 @@ void TsPopCusFlow(POPCTIM *pfw) {
     }
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPopCusPut);
+#else
+void TsPopCusPut(SPR_PKT pk, SPR_PRM *spr, int dflg, POPCTIM *pfw, int bPut, int idx, PATPOS *ppat, int px, int py) {
+    int mode;
+    float rate;
+    float v;
+    float fv;
+    float a, b, c, d;
+    int ton;
+
+    rate = 0.0f;
+    mode = 4;
+    if (pfw->bDim[idx] == 0) {
+        mode = bPut;
+    }
+
+    switch (mode) {
+    case 0:
+        if (!(dflg & 1)) {
+            return;
+        }
+        if (pfw->offinf[idx].time != 0) {
+            mode = 1;
+            rate = (float)pfw->offinf[idx].time * 0.06666667f;
+        }
+        break;
+    case 1:
+        if (!(dflg & 1)) {
+            return;
+        }
+        rate = 1.0f;
+        if (pfw->srTNo == idx && pfw->srTim != 0) {
+            rate = 1.0f - (float)pfw->srTim * 0.125f;
+        }
+        break;
+    case 2:
+        if (!(dflg & 2)) {
+            return;
+        }
+        pfw->srTNo = idx;
+        pfw->srTim = 8;
+        break;
+    case 3:
+        if (!(dflg & 1)) {
+            return;
+        }
+        pfw->srTNo = idx;
+        pfw->srTim = 8;
+        break;
+    case 4:
+        if (dflg != 0) {
+            return;
+        }
+        spr->rgba0 = 0x40808080;
+        break;
+    case 5:
+        if (!(dflg & 4)) {
+            return;
+        }
+        spr->rgba0 = 0x80707070;
+        break;
+    case 6:
+        if (!(dflg & 4)) {
+            return;
+        }
+        break;
+    default:
+        break;
+    }
+
+    if (mode < 2 || mode == 5) {
+        if (pfw->offinf[idx].cltm != 0) {
+            fv = (float)pfw->offinf[idx].cltm * 0.06666667f;
+            spr->rgba0 = GetDToneColor(pfw->nabgr, pfw->habgr, (int)(fv * 240.0f * fv));
+        }
+    }
+
+    switch (mode - 1) {
+    case 0:
+        TsPatPutSwing(pk, spr, ppat, px, py, 2, 8, pfw->fswing * rate);
+        if (pfw->offinf[idx].time == 0) {
+            pfw->offinf[idx].bCur = 1;
+        }
+        return;
+    case 1:
+        v = (float)pfw->okTim / 25.0f;
+        a = sinf(v * 9.424778f);
+        b = sinf(v * 6.2831855f);
+        v = a * (v * 0.9f * v + 0.1f);
+        spr->rgba0 = GetDToneColor(0xFFFFFF, 0x80FFFFFF, (int)(b * 256.0f * b));
+        TsPatTexFnc(2);
+        TsPatPutMZoom(pk, spr, ppat, px, py,
+                      (float)(1.0 - (double)v * 0.2),
+                      (float)((double)v * 0.6 + 1.0),
+                      8, 4,
+                      (float)((double)v * -0.2),
+                      (float)((double)v * 0.6));
+        TsPatTexFnc(0);
+        pfw->srTim = 8;
+        pfw->srTNo = idx;
+        pfw->offinf[idx].bCur = 1;
+        return;
+    case 2:
+        v = sinf((float)pfw->onTim * 2.1991148f * 0.1f);
+        a = v * 0.05f + 1.0f;
+        b = v * 0.14f + 1.0f;
+        pfw->srTNo = idx;
+        pfw->srTim = 8;
+        c = v * -0.05f;
+        d = v * -0.3f;
+        TsPatPutMZoom(pk, spr, ppat, px, py, a, b, 8, 4, c, d);
+        pfw->offinf[idx].bCur = 1;
+        return;
+    case 4:
+    case 5:
+        ton = MNSceneGetMusicFitTimer() % 45;
+        v = sinf((float)ton * 3.1415927f / 45.0f);
+        a = v * 0.1f + 0.95f;
+        pfw->srTNo = idx;
+        pfw->srTim = 8;
+        TsPatPutMZoom(pk, spr, ppat, px, py, a, a, 4, 4, 0.0f, 0.0f);
+        pfw->offinf[idx].bCur = 1;
+        return;
+    default:
+        TsPatPut(pk, spr, ppat, px, py);
+        pfw->offinf[idx].bCur = 0;
+        return;
+    }
+}
+#endif
 
 int TsPUPCheckMove(int nbtn, int bank, POPCTIM *pfw) {
     return (pfw->bDim[POPBtn2Sel[(bank != 0) ? (nbtn + 3) : (nbtn + 0)]] == FALSE);
@@ -5192,11 +5322,688 @@ INCLUDE_RODATA("asm/nonmatchings/menu/menusub", D_00396070);
 
 INCLUDE_RODATA("asm/nonmatchings/menu/menusub", D_00396078);
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPopMenu_Flow);
+#else
+extern POPUP_MENU PopupMenu; // PAL bss
+extern int POPSel2BtnDir[]; // PAL data 19b0f8 (jul 18cae8)
+extern int Pop_CmpMesNo[]; // PAL data (jul 18cad0)
+extern int PopRnkPos_No[][9]; // PAL data 19a9e0 (jul 18c420)
+extern int PopBubblePat_No[][9]; // PAL data 19aa70 (jul 18c4b0)
 
+int TsPopMenu_Flow(int flg, u_int tpad) {
+    POPUP_MENU *pfw = &PopupMenu;
+    ANIME_WK *awk = &pfw->awork;
+    POPCTIM *cani = &pfw->cani;
+    int s0;
+    int s2;
+    int i;
+    int idx;
+    int btn, nbtn;
+    int sel, nsel;
+    int cur, ncur;
+    int pg;
+    P3LOG_VAL *plog;
+
+    if (flg == 1) {
+        TsANIME_Init(awk);
+        pfw->isRnkWAnime = 0;
+        TsPopCusInit(cani, 0);
+        pfw->state = 0;
+        plog = pP3GameState->pLog;
+        pfw->selno = 0;
+        pfw->btnNo = 0;
+        pfw->bSelRank = 0;
+        pfw->selLev = 0;
+        pfw->rVsLev = 0;
+        pfw->urTim = 0;
+        idx = tpad - 1;
+        if (plog->nRound == 0) {
+            if (!(((int)plog->clrFlg[0] >> (pP3GameState->nStage - 1)) & 1)) {
+                idx = tpad - 1;
+                for (i = 0; i < 5; i++) {
+                    if (i != 0) {
+                        cani->bDim[i] = 1;
+                    }
+                }
+            }
+        }
+        pfw->levMax = (pP3GameState->pLog->clrVSCOM1[pP3GameState->nStage - 1] != 0) ? 4 : 1;
+        if (tpad != 0) {
+            tpad = idx;
+        }
+        pfw->nPPosSet = PopRnkPos_No[tpad][pP3GameState->nStage];
+        PopMenu_Sw = 1;
+        pfw->isSelLev = 0;
+        pfw->isRankOn = 0;
+        pfw->nPBubPat = PopBubblePat_No[tpad][pP3GameState->nStage];
+        return 0;
+    }
+
+    if (flg == 2) {
+        pfw->isSelLev = 0;
+        PopMenu_Sw = 0;
+        pfw->isRankOn = 0;
+        return 0;
+    }
+
+    s0 = TsANIME_Poll(awk);
+    TsPopCusFlow(cani);
+    s2 = pfw->state;
+
+    switch (s2) {
+    case 0:
+        s2 = 0x800;
+        TsANIME_Start(awk, 2, 15);
+        s0 = TsANIME_Poll(awk);
+        pfw->isRnkWAnime = 0;
+        /* fallthrough */
+    case 0x800:
+        if (s0 != 0) {
+            break;
+        }
+        /* fallthrough */
+    case 0x1000:
+        pfw->isSelLev = 0;
+        s2 = 0x1010;
+        pfw->selLev = 0;
+        pfw->exitflg = 0;
+        break;
+    case 0x1010:
+        plog = pP3GameState->pLog;
+        if (plog->nRound != 0 || (((int)plog->clrFlg[0] >> (pP3GameState->nStage - 1)) & 1)) {
+            MENUSubt_PadFontArrowSet(POPSel2BtnDir[pfw->selno]);
+        } else {
+            MENUSubt_PadFontArrowSet(0);
+        }
+        TsCMPMes_SetMes(Pop_CmpMesNo[pfw->selno]);
+        if (TsCheckTimeMapChange()) {
+            break;
+        }
+
+        btn = pfw->btnNo;
+        nbtn = btn;
+        sel = POPBtn2Sel[(pfw->bSelRank != 0) ? (btn + 3) : btn];
+        if (tpad & 0x8000) {
+            nbtn = btn - 1;
+        }
+        if (tpad & 0x2000) {
+            nbtn = nbtn + 1;
+        }
+        if (btn != nbtn) {
+            nbtn = TSLOOP(nbtn, 3);
+            if (TsPUPCheckMove(nbtn, pfw->bSelRank, cani)) {
+                pfw->btnNo = nbtn;
+                pfw->bSelRank = 0;
+                TSSNDPLAY(2);
+            }
+        }
+        btn = pfw->btnNo;
+        if (btn != 1) {
+            cur = pfw->bSelRank;
+            ncur = cur;
+            if (tpad & 0x1000) {
+                ncur = cur - 1;
+            }
+            if (tpad & 0x4000) {
+                ncur = ncur + 1;
+            }
+            if (cur != ncur) {
+                ncur = TSLOOP(ncur, 2);
+                if (TsPUPCheckMove(pfw->btnNo, ncur, cani)) {
+                    pfw->bSelRank = ncur;
+                    TSSNDPLAY(5);
+                }
+            }
+        } else {
+            pfw->bSelRank = 0;
+        }
+        nsel = POPBtn2Sel[(pfw->bSelRank != 0) ? (btn + 3) : btn];
+        pfw->selno = nsel;
+        if (sel != nsel) {
+            TsPopCusAOff(cani);
+            cani->onTim = 10;
+            cani->onTNo = pfw->selno;
+        } else {
+            nsel = sel;
+        }
+        TsCMPMes_SetMes(Pop_CmpMesNo[nsel]);
+        if (tpad & 0x10) {
+            s2 = 0xF020;
+            pfw->exitflg = 1;
+            TSSNDPLAY(9);
+        }
+        if (tpad & 0x40) {
+            pfw->exitflg = 0;
+            switch (pfw->selno) {
+            case 0:
+            case 1:
+                TSSNDPLAY(8);
+                break;
+            case 2:
+                if (pfw->levMax < 2) {
+                    TSSNDPLAY(8);
+                } else {
+                    TSSNDPLAY(6);
+                }
+                break;
+            case 3:
+            case 4:
+                TSSNDPLAY(6);
+                break;
+            default:
+                break;
+            }
+            s2 = 0x2000;
+        }
+        break;
+    case 0x2000:
+        switch (pfw->selno) {
+        case 0:
+        case 1:
+            s2 = 0xF000;
+            MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[2]);
+            break;
+        case 2:
+            if (pfw->levMax < 2) {
+                s2 = 0xF000;
+                MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[2]);
+                pfw->selLev = 0;
+            } else {
+                s2 = 0x3000;
+            }
+            break;
+        case 3:
+        case 4:
+            s2 = 0x5000;
+            break;
+        default:
+            break;
+        }
+        break;
+    case 0x3000:
+        cani->okTim = 25;
+        cani->onTNo = pfw->selno;
+        s2 = 0x3005;
+        /* fallthrough */
+    case 0x3005:
+        if (cani->okTim != 0) {
+            break;
+        }
+        pfw->selLev = 0;
+        pfw->isSelLev = 1;
+        TsCMPMes_SetMes(0x18);
+        s2 = 0x3010;
+        /* fallthrough */
+    case 0x3010:
+        if (TsCheckTimeMapChange()) {
+            break;
+        }
+        cur = pfw->selLev;
+        ncur = cur;
+        if (tpad & 0x8000) {
+            ncur = cur - 1;
+        }
+        if (tpad & 0x2000) {
+            ncur = ncur + 1;
+        }
+        ncur = TSLOOP(ncur, pfw->levMax);
+        if (cur != ncur) {
+            pfw->selLev = ncur;
+            TSSNDPLAY(2);
+        }
+        if (tpad & 0x10) {
+            s2 = 0x1000;
+            TSSNDPLAY(9);
+        }
+        if (tpad & 0x40) {
+            TSSNDPLAY(8);
+            s2 = 0xF000;
+            MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[2]);
+            pfw->isSelLev = 0;
+        }
+        break;
+    case 0x5000:
+        cani->okTim = 25;
+        cani->onTNo = pfw->selno;
+        if (pfw->selno == 3) {
+            pfw->nTagMax = 1;
+            pfw->nRankMax = 20;
+        } else {
+            pfw->nRankMax = 10;
+            pfw->nTagMax = pfw->levMax;
+        }
+        pfw->rVsLev = 0;
+        s2 = 0x5010;
+        McInitFlow();
+        break;
+    case 0x5010:
+        ret = McUserCheckFlow(0, 3, NULL);
+        if (ret >= 0) {
+            if ((u_int)(ret - 1) < 2) {
+                pfw->isRankOn = 0;
+                s2 = 0x1010;
+            } else {
+                s2 = 0x6000;
+            }
+        }
+        break;
+    case 0x6000:
+        TsANIME_Start(awk, 4, 15);
+        pfw->isRnkWAnime = 1;
+        s0 = TsANIME_Poll(awk);
+        /* fallthrough */
+    case 0x6002:
+        pfw->selrnkpg = 0;
+        pfw->isRankOn = 1;
+        pfw->rsline = 0;
+        pfw->rStageNo = pP3GameState->nStage - 1;
+        pfw->rankFlg = (pfw->selno == 3) ? 0 : 1;
+        pfw->pRanking = TsGetRankingList(pfw->rankFlg, pfw->rVsLev, pfw->rStageNo, &pfw->nRanking);
+        if (pfw->nRankMax < pfw->nRanking) {
+            pfw->nRanking = pfw->nRankMax;
+        }
+        pfw->nPageMax = (pfw->nRanking + 9) / 10;
+        if (pfw->nPageMax == 0) {
+            pfw->nPageMax = 1;
+        }
+        s2 = 0x6005;
+        /* fallthrough */
+    case 0x6005:
+        if (s0 != 0) {
+            break;
+        }
+        if (pfw->nPageMax < 2) {
+            if (pfw->rankFlg != 0) {
+                TsCMPMes_SetMes(30);
+            } else {
+                TsCMPMes_SetMes(29);
+            }
+        } else {
+            TsCMPMes_SetMes(28);
+        }
+        s2 = 0x6010;
+        break;
+    case 0x6010:
+        if (pfw->rsline != 0) {
+            pfw->rsline = TSNumMov(pfw->rsline, 0, 5);
+        } else {
+            if (TsCheckTimeMapChange()) {
+                break;
+            }
+            pg = pfw->selrnkpg;
+            cur = pg;
+            ncur = pg;
+            if (tpad & 0x1000) {
+                ncur = pg - 1;
+            }
+            if (tpad & 0x4000) {
+                ncur = ncur + 1;
+            }
+            ncur = TSLIMIT(ncur, 0, pfw->nPageMax);
+            if (cur != ncur) {
+                pfw->rsline = (ncur < cur) ? 160 : -160;
+                pfw->selrnkpg = ncur;
+                if (ncur < pg) {
+                    TSSNDPLAY(3);
+                } else {
+                    TSSNDPLAY(4);
+                }
+            }
+            cur = pfw->rVsLev;
+            ncur = cur;
+            if (tpad & 0x8000) {
+                ncur = cur - 1;
+            }
+            if (tpad & 0x2000) {
+                ncur = ncur + 1;
+            }
+            ncur = TSLOOP(ncur, pfw->nTagMax);
+            if (cur != ncur) {
+                pfw->rVsLev = ncur;
+                TSSNDPLAY(2);
+                s2 = 0x6002;
+                break;
+            }
+        }
+        if (tpad & 0x10) {
+            pfw->exitflg = 0;
+            s2 = 0x6020;
+            TSSNDPLAY(9);
+        }
+        break;
+    case 0x6020:
+        TsANIME_Start(awk, 5, 15);
+        s2 = 0x6030;
+        pfw->isRnkWAnime = 1;
+        s0 = TsANIME_Poll(awk);
+        /* fallthrough */
+    case 0x6030:
+        if (s0 != 0) {
+            break;
+        }
+        pfw->isRankOn = 0;
+        s2 = 0x1010;
+        break;
+    case 0xF000:
+        cani->okTim = 25;
+        cani->onTNo = pfw->selno;
+        s2 = 0xF010;
+        /* fallthrough */
+    case 0xF010:
+        if (cani->okTim != 0) {
+            break;
+        }
+        /* fallthrough */
+    case 0xF020:
+        TsANIME_Start(awk, 3, 15);
+        s2 = 0xF080;
+        s0 = TsANIME_Poll(awk);
+        pfw->isRnkWAnime = 0;
+        /* fallthrough */
+    case 0xF080:
+        if (s0 != 0) {
+            break;
+        }
+        /* fallthrough */
+    case 0xF100:
+        PopMenu_Sw = 0;
+        pfw->isRankOn = 0;
+        if (pfw->exitflg != 0) {
+            s2 = 0xFF20;
+            break;
+        }
+        if (pfw->selno == 1) {
+            ret = 2;
+        } else if (pfw->selno == 0) {
+            ret = 1;
+        } else if (pfw->selno == 2) {
+            ret = (pfw->selLev << 8) | 3;
+        }
+        return ret;
+    case 0xFF20:
+        return -1;
+    default:
+        break;
+    }
+
+    pfw->state = s2;
+    return 0;
+}
+#endif
+
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPopMenu_Draw);
+#else
+typedef struct { // 0x8
+    short x;
+    short y;
+    u_int abgr;
+} STRPOS;
 
+typedef struct { // 0x8
+    PTPOS *p0;
+    PTPOS *p1;
+} POPRNK_PPOS;
+
+extern PATPOS PopMenuSel_Pat[]; // PAL data 19a698 (jul 18c0c8)
+extern PATPOS SIRanking_Pat[]; // PAL data 19a728 (jul 18c168)
+extern PATPOS Ranking_PatScroll[]; // PAL data 19a740 (jul 18c180)
+extern PATPOS RankSISTNo_PAT[]; // PAL data 19a758 (jul 18c198)
+extern PATPOS *VSRanking_PatTbl[]; // PAL data 19a8c8 (jul 18c308)
+extern PATPOS RankVSSTNo_PAT[]; // PAL data 19a8d8 (jul 18c318)
+extern STRPOS SRanking_Str[]; // PAL data 19a948 (jul 18c388), 3 entries
+extern STRPOS VRanking_Str[]; // PAL data 19a960 (jul 18c3a0)
+extern POPRNK_PPOS PopRnk_pPos[]; // PAL data 19a988 (jul 18c3c8)
+extern PTPOS POPWZoom_CXY[]; // PAL data 19ab00 (jul 18c540)
+
+void TsPopMenu_Draw(SPR_PKT pk, SPR_PRM *spr) {
+    char buf[32];
+    float rt0, rt1, rt2;
+    int ton;
+    int tm180;
+    RANKLIST *prank;
+    int nrank;
+    int sc_y;
+    int sc_lim;
+    u_int ccus, cnorm;
+    short ox, oy;
+    short bx, by;
+    PTPOS *pp;
+    PATPOS *pcur;
+    PATPOS *plist;
+    PATPOS *pnum;
+    PATPOS *pnum1;
+    STRPOS *pstr;
+    int i, n;
+    int rx, ry;
+    u_int col;
+    float zr, f0, f1;
+    float rate;
+
+    PopupMenu.cani.fswing = -cosf(((float)(MNSceneGetMusicFitTimer() % 72) / 72.0f) * 6.2831855f);
+    tm180 = MNSceneGetMusicFitTimer() % 180;
+    spr->zx = 1.0f;
+    spr->zy = 0.5f;
+    PkALPHA_Add(pk, 0x44);
+
+    if (PopupMenu.isRnkWAnime == 0 && TsANIME_GetRate(&PopupMenu.awork, &rt0, &rt1, &rt2) != 0) {
+        pp = &POPWZoom_CXY[PopupMenu.nPBubPat];
+        ton = (int)(rt0 * 256.0f);
+        spr->zoom.centerX = (float)pp->x;
+        spr->zoom.zoomY = rt1;
+        spr->zoom.isOn = 1;
+        spr->zoom.zoomX = rt0;
+        spr->zoom.centerY = (float)pp->y;
+    } else {
+        spr->zoom.isOn = 0;
+        ton = 0x100;
+    }
+
+    pp = PopRnk_pPos[PopupMenu.nPPosSet].p0;
+    oy = pp->y;
+    ox = pp->x;
+    spr->rgba0 = GetDToneColor(0x404040, 0x80808080, ton);
+    if (PopupMenu.urTim != 0) {
+        PopupMenu.urTim--;
+    }
+    ccus = GetDToneColor(0x404040, 0x80FFFFFF, ton);
+    cnorm = GetDToneColor(0x404040, 0x80808080, ton);
+    TsPopMenCus_Draw(pk, spr, &PopupMenu, ox, oy, ccus, cnorm, 0);
+    TsPopMenCus_Draw(pk, spr, &PopupMenu, ox, oy, ccus, cnorm, 1);
+    TsPopMenCus_Draw(pk, spr, &PopupMenu, ox, oy, ccus, cnorm, 6);
+    spr->zoom.isOn = 0;
+
+    if (PopupMenu.isRankOn != 0) {
+        pp = PopRnk_pPos[PopupMenu.nPPosSet].p1;
+        by = pp->y;
+        bx = pp->x;
+        if (PopupMenu.isRnkWAnime != 0) {
+            if (TsANIME_GetRate(&PopupMenu.awork, &rt0, &rt1, &rt2) == 0) {
+                spr->zoom.isOn = 0;
+                ton = 0x100;
+                rate = 0.0f;
+            } else {
+                if (PopupMenu.rankFlg == 0) {
+                    pcur = &PopMenuSel_Pat[3];
+                } else {
+                    pcur = &PopMenuSel_Pat[4];
+                }
+                n = pcur->x + ox;
+                spr->zoom.zoomY = rt1 * 0.9f + 0.1f;
+                spr->zoom.isOn = 1;
+                spr->zoom.centerX = (float)(n + 0x20) + ((float)(n - bx) / 1.8f);
+                rate = rt2 * 0.6f;
+                spr->zoom.zoomX = rt0 * 0.65f + 0.35f;
+                spr->zoom.centerY = (float)(pcur->y + oy + 6);
+                ton = (int)(rt0 * 156.0f) + 0x64;
+            }
+        } else {
+            ton = 0x100;
+            rate = 0.0f;
+        }
+        spr->rgba0 = GetDToneColor(0x20FFFFFF, 0x80808080, ton);
+
+        if (PopupMenu.rankFlg != 0) {
+            pnum = RankVSSTNo_PAT;
+            n = 5;
+            plist = VSRanking_PatTbl[PopupMenu.rVsLev];
+        } else {
+            plist = SIRanking_Pat;
+            pnum = RankSISTNo_PAT;
+            n = 2;
+        }
+
+        for (i = 0; i < n; i++) {
+            if (rate != 0.0f) {
+                f0 = sinf(rate * 6.2831855f);
+                f1 = f0 * 0.3f;
+                zr = f0 * 0.2f + 1.0f;
+                TsPatPutMZoom(pk, spr, &plist[i], bx, by, zr, zr, 8, 8, f1, f1);
+                PopupMenu.urTim = 20;
+            } else if (i == 0) {
+                if (PopupMenu.urTim != 0) {
+                    f1 = 1.0f - (float)PopupMenu.urTim * 0.05f;
+                } else {
+                    f1 = 1.0f;
+                }
+                TsPatPutUneri(pk, spr, &plist[i], bx, by, 8, 10, (float)tm180 / 180.0f, f1);
+            } else {
+                TsPatPut(pk, spr, &plist[i], bx, by);
+            }
+        }
+        pnum1 = &pnum[1];
+
+        if (rate < 0.15f) {
+            ton = (int)((0.15f - rate) * 256.0f * 6.6666665f);
+        } else {
+            ton = 0;
+        }
+        spr->rgba0 = GetDToneColor(0x808080, 0x80808080, ton);
+        TsPatPut(pk, spr, pnum, bx, by);
+        TsPatPut(pk, spr, &pnum1[PopupMenu.rStageNo], bx, by);
+        n = PopupMenu.selrnkpg;
+        if (n > 0) {
+            TsPatPut(pk, spr, &Ranking_PatScroll[0], bx, by);
+        }
+        if (n < PopupMenu.nPageMax - 1) {
+            TsPatPut(pk, spr, &Ranking_PatScroll[1], bx, by);
+        }
+
+        prank = PopupMenu.pRanking;
+        nrank = PopupMenu.nRanking;
+        if (PopupMenu.rankFlg == 0) {
+            pstr = SRanking_Str;
+        } else {
+            pstr = VRanking_Str;
+        }
+        i = 0;
+        n = by + pstr[0].y;
+        sc_y = n - 5;
+        SetSprScreenXYWH(spr);
+        PkSCISSOR_Add(pk, spr->px, (short)sc_y, spr->sw, 0x50);
+        ry = by - (PopupMenu.selrnkpg * 0x50 + (PopupMenu.rsline >> 1));
+        if (nrank > 0) {
+            sc_lim = n - 0xD;
+            do {
+                rx = ry + pstr[0].y;
+                if (sc_lim < rx && rx < sc_y + 0x58) {
+                    col = GetDToneColor(pstr[0].abgr & 0xFFFFFF, pstr[0].abgr, ton);
+                    sprintf(buf, "%d", i + 1);
+                    MENUFontPutR(pk, spr, bx + pstr[0].x, rx, col, 0x100, (u_char *)buf, 1.0f);
+                    sprintf(buf, "%d", prank[i].score);
+                    MENUFontPutR(pk, spr, bx + pstr[1].x, ry + pstr[1].y, col, 0x102, (u_char *)buf, 1.0f);
+                    sprintf(buf, "%s", prank[i].name);
+                    MENUFontPutR(pk, spr, bx + pstr[2].x, ry + pstr[2].y, col, 0x100, (u_char *)buf, 1.1f);
+                }
+                i++;
+                ry += 8;
+            } while (i < nrank);
+        }
+        PkDefSCISSOR_Add(pk);
+        spr->zoom.isOn = 0;
+    }
+}
+#endif
+
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsPopMenCus_Draw);
+#else
+extern PATPOS PopMenuSel_Pat[];
+extern PATPOS VSComMenuSel_Pat[];
+extern PATPOS VSComMenuSelH_Pat[];
+extern int POPSel2Btn[];
+
+void TsPopMenCus_Draw(SPR_PKT pk, SPR_PRM *spr, POPUP_MENU *pfw, int px, int py, u_int hicol, u_int nmcol, int dflg) {
+    int i, j;
+    int bPut;
+    int bState;
+    int st;
+    float oy;
+    PATPOS *ppat;
+
+    oy = spr->ofsy;
+    bState = 0;
+    i = 0;
+    do {
+        pfw->cani.habgr = hicol;
+        pfw->cani.nabgr = nmcol;
+        bPut = 0;
+        spr->ofsy = oy + sinf((float)(MNSceneGetMusicFitTimer() % 480) * 6.2831855f * 0.0020833334f + (float)POPSel2Btn[i] * 2.5132742f) * 3.3f;
+
+        if (i == pfw->selno && pfw->cani.okTim != 0) {
+            bState = 2;
+            bPut = 2;
+        } else {
+            bState = ((POPSel2Btn[i] ^ pfw->btnNo) != 0) ? 0 : 1;
+            if (i == pfw->selno) {
+                bPut = 1;
+                if (pfw->cani.onTim != 0) {
+                    bState = 3;
+                }
+            }
+        }
+
+        if (pfw->isSelLev != 0) {
+            bState = ((i ^ 2) != 0) ? 0 : 5;
+        }
+
+        if (bPut == 0) {
+            spr->rgba0 = pfw->cani.nabgr;
+        } else if (bPut == 1) {
+            spr->rgba0 = pfw->cani.habgr;
+        }
+
+        TsPopCusPut(pk, spr, dflg, &pfw->cani, bState, i, &PopMenuSel_Pat[i], px, py);
+
+        if (i == 2) {
+            pfw->cani.habgr = nmcol;
+            pfw->cani.nabgr = nmcol;
+            for (j = 0; j < pfw->levMax; j++) {
+                spr->rgba0 = nmcol;
+                ppat = &VSComMenuSel_Pat[j];
+                st = bState;
+                if (pfw->isSelLev != 0) {
+                    st = 6;
+                    if (j == pfw->selLev) {
+                        spr->rgba0 = GetDToneColor(0x80FFFFFF, 0x80606060,
+                                (int)(sinf((float)(MNSceneGetMusicFitTimer() % 30) * 3.1415927f / 30.0f) * 256.0f));
+                        ppat = &VSComMenuSelH_Pat[j];
+                    } else {
+                        spr->rgba0 = 0x80707070;
+                    }
+                }
+                TsPopCusPut(pk, spr, dflg, &pfw->cani, st, 2, ppat, px, py);
+            }
+            i = 3;
+        } else {
+            i++;
+        }
+    } while (i < 5);
+
+    spr->ofsy = oy;
+}
+#endif
 
 /* data 18cb00 */ extern int SaveMenu_CmpMesNo[]; /* static */
 
@@ -5434,7 +6241,396 @@ void _TsJkRecordPut(SPR_PKT pk, SPR_PRM *spr, JUKECDOBJ *pw, int px, int py, flo
     spr->ofsy = oy;
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TSJukeCDObj_Draw);
+#else
+extern float JUKEWAV_INITBL[]; // PAL data (jul 18c628)
+
+/* static */ void TSJukeCDObj_Draw(SPR_PKT pk, SPR_PRM *spr, JUKECDOBJ *pw, int px, int py, int anmtime) {
+    PTPOS *pp;
+    PATPOS *jpat;
+    int ox, oy;
+    int psx, psy;
+    float sox, soy;
+    float rate;
+    float jz, rz;
+    float f26, f29, f31;
+    float offx, offy;
+    float rot, rrot;
+    float f20, f22, f28, f27;
+    u_int c, cs, rc, rcs;
+    int ton, ton2;
+    int a, na, i;
+    float rox0, roy0;
+
+    offy = 0.0f;
+    pp = pw->patPos;
+    oy = py + pp->y;
+    ox = px + pp->x;
+    f26 = 1.0f;
+    jpat = &JUKEJKT_Pat[pw->patNo];
+    f29 = 1.0f;
+    sox = spr->ofsx;
+    rate = 1.0f;
+    f31 = 1.0f;
+    soy = spr->ofsy;
+    PkALPHA_Add(pk, 0x44);
+    rot = 0.0f;
+    offx = 0.0f;
+    rrot = 0.0f;
+
+    switch (pw->state) {
+    case 1:
+        c = 0x80707070;
+        cs = 0x30808080;
+        pw->vrate = 0.0f;
+        break;
+    case 2:
+    case 5:
+        rate = 1.25f;
+        c = 0x80C0C0C0;
+        pw->vrate = 0.0f;
+        cs = 0x30808080;
+        break;
+    case 3:
+        pw->time++;
+        f22 = (float)pw->time * 0.06666667f;
+        if (pw->time >= 15) {
+            pw->time = 0;
+            pw->state = 2;
+        }
+        cs = 0x30808080;
+        f20 = f22 * 3.1415927f;
+        rate = (sinf(f20) * 0.2f + 1.0f) * (f22 * 0.25f + 1.0f);
+        pw->vrate = sinf(f20) * 0.1f;
+        c = GetDToneColor(0x80707070, 0x80C0C0C0, (int)(f22 * 256.0f));
+        break;
+    case 4:
+        pw->time++;
+        f22 = (float)pw->time * 0.06666667f;
+        if (pw->time >= 15) {
+            pw->time = 0;
+            pw->state = 1;
+        }
+        cs = 0x30808080;
+        f20 = f22 * 3.1415927f;
+        rate = (float)((1.0 - (double)sinf(f20) * 0.25) * (double)((1.0f - f22) * 0.25f + 1.0f));
+        pw->vrate = sinf(f20) * -0.08f;
+        c = GetDToneColor(0x80C0C0C0, 0x80707070, (int)(f22 * 256.0f));
+        break;
+    default:
+        c = 0x80C0C0C0;
+        pw->vrate = rot;
+        cs = 0x30808080;
+        break;
+    }
+
+    if (pw->bMsk != 0) {
+        pw->vrate = 0.0f;
+        c = 0x30808080;
+        cs = 0x18808080;
+    }
+
+    rc = c;
+    rcs = cs;
+    rz = 0.0f;
+    jz = 0.0f;
+
+    switch (pw->anime) {
+    case 1:
+        if (pw->atime != 0) {
+            pw->innm = 0x200;
+            pw->atime--;
+            return;
+        }
+        pw->innm = TSNumMov(pw->innm, 0, 5);
+        f22 = 1.0f - (float)pw->innm * 0.001953125f;
+        rot = (1.0f - f22) * 6.2831855f;
+        offx = (1.0f - f22) * ((pw->dir != 0) ? 200.0f : -200.0f);
+        offy = (1.0f - f22) * ((pw->dir2 != 0) ? 20.0f : -20.0f);
+        ton = (int)(f22 * 256.0f);
+        c = GetDToneColor(0xFFFFFF, c, ton);
+        cs = GetDToneColor(0x808080, cs, ton);
+        f20 = (1.0f - f22) * 1.5f + 1.0f;
+        if (pw->innm == 0) {
+            jz = f20 * rate;
+            pw->anime = 0;
+            rz = 1.0f * rate;
+            pw->time = 0;
+            pw->atime = 0;
+        } else {
+            jz = f20 * rate;
+            rz = f29 * rate;
+        }
+        break;
+    case 2:
+        if (pw->atime != 0) {
+            jz = 1.0f * rate;
+            pw->atime--;
+            pw->innm = 0x100;
+            rz = jz;
+        } else {
+            pw->innm = TSNumMov(pw->innm, 0, 5);
+            f22 = 1.0f - (float)pw->innm * 0.00390625f;
+            rot = f22 * -9.424778f;
+            offx = f22 * ((pw->dir != 0) ? -200.0f : 200.0f);
+            offy = f22 * ((pw->dir2 != 0) ? 20.0f : -20.0f);
+            ton = (int)(f22 * 256.0f);
+            c = GetDToneColor(c, 0xFFFFFF, ton);
+            cs = GetDToneColor(c, 0x808080, ton);
+            f20 = f22 * 1.2f + 0.5f;
+            if (pw->innm == 0) {
+                jz = f20 * rate;
+                pw->anime = 0;
+                rz = 1.0f * rate;
+                pw->state = 0;
+                pw->time = 0;
+                pw->atime = 0;
+            } else {
+                jz = f20 * rate;
+                rz = f29 * rate;
+            }
+        }
+        break;
+    case 5:
+    case 6:
+        if (pw->atime != 0) {
+            pw->atime--;
+            pw->innm = 0x80;
+            pw->ox = 0.0f;
+            pw->rot = 0.0f;
+            pw->oy = 0.0f;
+            if (pw->anime == 6) {
+                return;
+            }
+            jz = 1.0f * rate;
+            rz = jz;
+        } else {
+            pw->innm = TSNumMov(pw->innm, 0, 12);
+            f22 = 1.0f - (float)pw->innm * 0.0078125f;
+            TsPatGetSize(jpat, &psx, &psy, NULL, NULL);
+            if (pw->anime == 6) {
+                f22 = 1.0f - f22;
+            }
+            ton = (int)(f22 * 256.0f);
+            offy = (float)((psy + oy) - 0xA1) * 0.5f * f22;
+            offx = (float)((psx + ox) - 0x13E) * 0.35f * f22;
+            c = GetDToneColor(c, 0x404040, ton);
+            cs = GetDToneColor(cs, 0x808080, ton);
+            f20 = 1.0f - f22 * 0.3f;
+            if (pw->innm == 0) {
+                if (pw->anime != 6) {
+                    pw->state = 0;
+                } else {
+                    pw->state = 1;
+                }
+                jz = f20 * rate;
+                pw->anime = 0;
+                rz = 1.0f * rate;
+                pw->time = 0;
+                pw->atime = 0;
+            } else {
+                jz = f20 * rate;
+                rz = f29 * rate;
+            }
+        }
+        break;
+    case 3:
+    case 4:
+        if (pw->atime != 0) {
+            pw->atime--;
+            pw->innm = 0x200;
+            pw->rot = 0.0f;
+            pw->oy = 0.0f;
+            pw->ox = 0.0f;
+            pw->rrot = 0.0f;
+            pw->rox = 0.0f;
+            if (pw->anime == 4) {
+                rz = rate;
+                pw->rox = rate * 0.0f;
+                f31 = 0.0f;
+                pw->roy = rate * -43.0f;
+                jz = 1.0f * rz;
+                c = 0x80C0C0C0;
+                cs = 0x30808080;
+                rc = 0x80C0C0C0;
+                rcs = 0x30808080;
+            } else {
+                jz = 1.0f * rate;
+                rz = jz;
+            }
+        } else {
+            pw->oy = 0.0f;
+            pw->ox = 0.0f;
+            pw->roy = 0.0f;
+            pw->rox = 0.0f;
+            pw->innm = TSNumMov(pw->innm, 0, 7);
+            f22 = 1.0f - (float)pw->innm * 0.001953125f;
+            if (pw->anime == 4) {
+                f22 = 1.0f - f22;
+            }
+            f31 = 1.0f - f22;
+            rc = c;
+            rcs = cs;
+            f20 = f22 * 0.5f * 3.1415927f;
+            pw->rox = (1.0f - cosf(f20)) * 0.0f * rate * 1.0f;
+            pw->roy = sinf(f20) * -43.0f * rate * 1.0f;
+            if (pw->innm == 0) {
+                pw->time = 0;
+                pw->atime = 0;
+                if (pw->anime == 4) {
+                    rz = rate;
+                    pw->state = 2;
+                    jz = 1.0f * rz;
+                    pw->anime = 0;
+                } else {
+                    rz = rate;
+                    pw->state = 2;
+                    pw->anime = 7;
+                    jz = 1.0f * rz;
+                }
+            } else {
+                rz = rate;
+                jz = 1.0f * rz;
+            }
+        }
+        break;
+    case 7:
+        f31 = 0.0f;
+        a = pw->atime;
+        na = a + 1;
+        if (a == 0) {
+            pw->innm2 = 0x400;
+            pw->atime = 1;
+            pw->rrot = 0.0f;
+            pw->innm = 0x400;
+        } else {
+            pw->atime = na;
+            f20 = pw->rrot + (float)((na < 0x6F) ? na : 0x6E) * 0.0023f;
+            pw->rrot = f20;
+            if (6.2831855f < f20) {
+                pw->rrot = f20 - 6.2831855f;
+            }
+        }
+        rox0 = rate * 0.0f;
+        roy0 = rate * -43.0f;
+        f29 = 1.0f;
+        rrot = pw->rrot;
+        pw->rox = rox0;
+        pw->roy = roy0;
+        if (pw->atime >= 0x47) {
+            pw->innm2 = TSNumMov(pw->innm2, 0, 11);
+            f22 = 1.0f - (float)pw->innm2 * 0.0009765625f;
+            ton = (int)(f22 * 256.0f);
+            c = GetDToneColor(c, 0xFFFFFF, ton);
+            cs = GetDToneColor(cs, 0x808080, ton);
+            f26 = 1.0f - f22 * 0.5f;
+        }
+        if (pw->atime >= 0x65) {
+            pw->innm = TSNumMov(pw->innm, 0, 14);
+            f22 = 1.0f - (float)pw->innm * 0.0009765625f;
+            ton = (int)(f22 * 256.0f);
+            rc = GetDToneColor(rc, 0xFFFFFF, ton);
+            rcs = GetDToneColor(rcs, 0x808080, ton);
+            f29 = f22 * 0.8f + 1.0f;
+            TsPatGetSize(jpat, &psx, &psy, NULL, NULL);
+            pw->rox = rox0 - (float)((psx + ox) - 0x13E) * f22;
+            pw->roy = roy0 - (float)((psy + oy) - 0xB5) * f22;
+        }
+        jz = f26 * rate;
+        if (pw->innm == 0 && pw->innm2 == 0) {
+            pw->state = 0;
+            rz = f29 * rate;
+            pw->anime = 0;
+            pw->time = 0;
+            pw->atime = 0;
+        } else {
+            rz = f29 * rate;
+        }
+        break;
+    case 8:
+        f31 = 0.0f;
+        a = pw->atime;
+        if (a == 0) {
+            jz = 1.0f * rate;
+            pw->atime = 0x50;
+            pw->rrot = 0.0f;
+            rz = jz;
+            for (i = 0; i < 0x3C; i++) {
+                pw->rrot -= (float)i;
+            }
+            pw->innm = 0x400;
+            TsPatGetSize(jpat, &psx, &psy, NULL, NULL);
+            c = 0xFFFFFF;
+            cs = 0x808080;
+            pw->roy = (rate * -43.0f) - (float)((psy + oy) - 0xB5);
+            pw->rox = (rate * 0.0f) - (float)((psx + ox) - 0x13E);
+        } else {
+            na = a - 0x15;
+            pw->atime = a - 1;
+            if (na > 0) {
+                f20 = pw->rrot + (float)na;
+                rrot = f20 * 0.005f;
+                pw->rrot = f20;
+            } else {
+                rot = 0.0f;
+            }
+            pw->innm = TSNumMov(pw->innm, 0, 6);
+            f22 = (float)pw->innm * 0.0009765625f;
+            f20 = f22 * 256.0f;
+            ton = (int)f20;
+            f29 = f22 * 0.8f + 1.0f;
+            f26 = 1.0f - f22 * 0.5f;
+            c = GetDToneColor(c, 0xFFFFFF, ton);
+            cs = GetDToneColor(cs, 0x808080, ton);
+            TsPatGetSize(jpat, &psx, &psy, NULL, NULL);
+            f28 = rate * 0.0f;
+            f27 = rate * -43.0f;
+            ton2 = (int)(f20 * 0.5f);
+            pw->roy = f27 - (float)((psy + oy) - 0xB5) * f22;
+            pw->rox = f28 - (float)((psx + ox) - 0x13E) * f22;
+            rc = GetDToneColor(rc, 0xFFFFFF, ton2);
+            rcs = GetDToneColor(rcs, 0x808080, ton2);
+            if (pw->atime == 0) {
+                jz = f26 * rate;
+                pw->state = 2;
+                rz = f29 * rate;
+                pw->atime = 1;
+                pw->anime = 4;
+                pw->rox = f28;
+                pw->roy = f27;
+                pw->time = 0;
+            } else {
+                jz = f26 * rate;
+                rz = f29 * rate;
+            }
+        }
+        break;
+    default:
+        jz = 1.0f * rate;
+        rz = jz;
+        pw->ox = 0.0f;
+        pw->rot = 0.0f;
+        pw->oy = 0.0f;
+        break;
+    }
+
+    spr->ofsx += offx + pw->ox;
+    spr->ofsy += offy + pw->oy;
+    spr->ofsy += sinf((2.0f * (float)(anmtime % 240) / 240.0f + JUKEWAV_INITBL[pw->patNo]) * 3.1415927f) * 8.0f * f31;
+
+    if ((u_int)(pw->anime - 7) < 2) {
+        _TsJkJacketPut(pk, spr, pw, ox, oy, jz, rot, c, cs);
+        _TsJkRecordPut(pk, spr, pw, ox, oy, rz, rrot, rc, rcs);
+    } else {
+        _TsJkRecordPut(pk, spr, pw, ox, oy, rz, rrot, rc, rcs);
+        _TsJkJacketPut(pk, spr, pw, ox, oy, jz, rot, c, cs);
+    }
+
+    spr->ofsy = soy;
+    spr->ofsx = sox;
+}
+#endif
 
 static int TsJukeIsObjAnime(int isComp) {
     int        i;
@@ -5647,7 +6843,347 @@ static int TsJukeIsObjAnime(int isComp) {
     MENUSubt_PadFontArrowSet(flg);
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsJukeMenu_Flow);
+#else
+typedef struct { // 0x8
+    int id;
+    int len;
+} JUKEBGM_TBL;
+
+extern JUKEBGM_TBL JukeBgmTbl[]; // PAL data 19b0c8
+extern int JukeMenu_CmpMesNo[]; // PAL data 19b118
+extern int JukeMapAnmState; // PAL sdata 383800
+extern int JukeBgmReq; // PAL sdata 383804
+extern MNANM_TBL StageMapBGMCamera[];
+
+/* static */ int TsJukeMenu_Flow(int flg, u_int tpad) {
+    JUKE_MENU *pfw = &JukeMenu;
+    int state;
+    int i, flag;
+    int pos[2];
+    int sel, nsel;
+    int mapNo;
+    u_int bnk;
+
+    if (flg == 1) {
+        memset(pfw, 0, sizeof(*pfw));
+        pfw->selno = tpad;
+        if (tpad >= 10) {
+            pfw->selno = 0;
+        }
+        pfw->state = 0;
+        JukeMenu_Sw = flg;
+        pfw->anmTime = 0;
+        JukeMapAnmState = 0;
+        JukeBgmReq = 0;
+        for (i = 0; i < 10; i++) {
+            TSJukeCDObj_Init(&pfw->cusObj[i], i);
+        }
+        pfw->cusObj[8].bMsk = 0;
+
+        for (i = 0; i < 8; i++) {
+            if (pP3GameState->pLog->clrCOOL[i] < 4) {
+                pfw->cusObj[i].bMsk = 1;
+            }
+        }
+
+        flag = 0;
+        for (i = 0; i < 8; i++) {
+            if (pP3GameState->pLog->clrVSCOM1[i] < 4) {
+                flag = 1;
+                break;
+            }
+        }
+        if (flag) {
+            pfw->cusObj[9].bMsk = 1;
+        }
+
+        if (pfw->cusObj[pfw->selno].bMsk != 0) {
+            if (pfw->cusObj[0].bMsk == 0) {
+                pfw->selno = 0;
+            } else {
+                for (i = 1; i < 10; i++) {
+                    if (pfw->cusObj[i].bMsk == 0) {
+                        pfw->selno = i;
+                        break;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
+    if (flg == 2) {
+        JukeMenu_Sw = 0;
+        JukeMapAnmState = 0;
+        JukeBgmReq = 0;
+        return 0;
+    }
+
+    switch (JukeMapAnmState) {
+    case 0:
+        if (JukeBgmReq != 0) {
+            JukeMapAnmState = 0x2100;
+        }
+        break;
+    case 0x2000:
+        if (JukeBgmReq == 0) {
+            JukeMapAnmState = 0x100;
+        }
+        break;
+    case 0x100:
+        MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[1]);
+        MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[34]);
+        JukeMapAnmState = 0x110;
+        /* fallthrough */
+    case 0x110:
+        if (TsAnimeWait_withKeySkip(tpad, &MNS_StageMap, 0, 0xFFFFFFFF) == 0) {
+            MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[3]);
+            JukeMapAnmState = 0;
+        }
+        break;
+    case 0x2100:
+        MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[4]);
+        JukeMapAnmState = 0x2180;
+        break;
+    case 0x2180:
+        if (TsAnimeWait_withKeySkip(tpad, &MNS_StageMap, 0, 0xFFFFFFFF) != 0) {
+            break;
+        }
+        MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[1]);
+        MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[33]);
+        JukeMapAnmState = 0x2200;
+        /* fallthrough */
+    case 0x2200:
+        if (TsAnimeWait_withKeySkip(tpad, &MNS_StageMap, 0, 0xFFFFFFFF) == 0) {
+            MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimePA[5]);
+            JukeMapAnmState = 0x2000;
+        }
+        break;
+    default:
+        break;
+    }
+
+    state = pfw->state;
+    pfw->anmTime++;
+
+    switch (state) {
+    case 0:
+        TsJukeObjAnime(0);
+        state = 0x100;
+        pfw->cusObj[pfw->selno].time = 0;
+        pfw->cusObj[pfw->selno].state = 2;
+        /* fallthrough */
+    case 0x100:
+        if (TsJukeIsObjAnime(1)) {
+            pfw->state = state;
+            return 0;
+        }
+        /* fallthrough */
+    case 0x1000:
+        pfw->exitflg = 0;
+        state = 0x1100;
+        break;
+    case 0x1100:
+        _TsJKSetPadArrow(pfw->selno, pfw->cusObj);
+        TsCMPMes_SetMes(JukeMenu_CmpMesNo[pfw->selno]);
+        if (TsCheckTimeMapChange()) {
+            pfw->state = state;
+            return 0;
+        }
+        sel = pfw->selno;
+        pos[0] = sel % 5;
+        pos[1] = sel / 5;
+        if (tpad & 0x1000) {
+            _TsJKMoveCus(&pos[0], &pos[1], 0, -1, pfw->cusObj);
+        } else if (tpad & 0x4000) {
+            _TsJKMoveCus(&pos[0], &pos[1], 0, 1, pfw->cusObj);
+        } else if (tpad & 0x8000) {
+            _TsJKMoveCus(&pos[0], &pos[1], -1, 0, pfw->cusObj);
+        } else if (tpad & 0x2000) {
+            _TsJKMoveCus(&pos[0], &pos[1], 1, 0, pfw->cusObj);
+        }
+        nsel = pos[1] * 5 + pos[0];
+        if (sel != nsel) {
+            nsel = TSLIMIT(nsel, 0, 10);
+            pfw->selno = nsel;
+            pfw->cusObj[sel].state = 4;
+            pfw->cusObj[sel].time = 0;
+            pfw->cusObj[nsel].state = 3;
+            pfw->cusObj[nsel].time = 0;
+            TSSNDPLAY(2);
+        }
+        if (tpad & 0x10) {
+            pfw->exitflg = 1;
+            TSSNDPLAY(9);
+            state = 0xF020;
+        } else if (tpad & 0x40) {
+            pfw->exitflg = 0;
+            state = 0x3000;
+            pfw->cusObj[nsel].state = 5;
+            pfw->cusObj[nsel].time = 0;
+            TSSNDPLAY(7);
+        }
+        break;
+    case 0x3000:
+        JukeBgmReq = 1;
+        TsCMPMes_SetMes(-1);
+        state = 0x3010;
+        TsJukeObjAnime2(0);
+        MenuDataDiskSndReq(JukeBgmTbl[pfw->selno].id);
+        /* fallthrough */
+    case 0x3010:
+        if (TsJukeIsObjAnime(0)) {
+            pfw->state = state;
+            return 0;
+        }
+        TsBGMMute(40);
+        state = 0x3020;
+        /* fallthrough */
+    case 0x3020:
+        if (!TsJukeIsObjAnime(1) && (tpad & 0x810)) {
+            pfw->exitflg = 1;
+            TSSNDPLAY(9);
+            state = 0x6000;
+        }
+        if (MenuDataDiskSndReady()) {
+            pfw->state = state;
+            return 0;
+        }
+        /* fallthrough */
+    case 0x3F00:
+        TsBGMPause(1);
+        MenuDataDiskSndPlay();
+        state = 0x4000;
+        MenuDataDiskVolume(128);
+        memset(&pfw->MNS_StageMapW, 0, sizeof(pfw->MNS_StageMapW));
+        MNScene_CopyState(&pfw->MNS_StageMapW, &MNS_StageMap);
+        MNScene_StartAnime(&MNS_StageMap, -1, &StageMapAnimeSEA[1]);
+        MNScene_StartAnime(&MNS_StageMap, -1, &StageMapBGMCamera[pfw->selno]);
+        pfw->timeV = 0;
+        break;
+    case 0x4000:
+        if (TsJukeIsObjAnime(1)) {
+            pfw->state = state;
+            return 0;
+        }
+        i = pfw->timeV;
+        pfw->timeV = i + 1;
+        if (pfw->timeV < JukeBgmTbl[pfw->selno].len) {
+            if (i + 61 < JukeBgmTbl[pfw->selno].len && (tpad & 0x810)) {
+                pfw->exitflg = 1;
+                TSSNDPLAY(9);
+                state = 0x5000;
+                pfw->state = state;
+                return 0;
+            }
+        } else {
+            state = 0x6000;
+        }
+        break;
+    case 0x5000:
+        state = 0x5008;
+        _bMapCaptureReq = 1;
+        break;
+    case 0x5008:
+        mapNo = TsMENU_GetMapNo(NULL);
+        TsSetScene_Map(&MNS_StageMap2, CurMapNo, CurMapOldFlg, 0);
+        state = 0x5010;
+        MNScene_CopyState(&MNS_StageMap, &pfw->MNS_StageMapW);
+        TsMENU_SetMapScreen(mapNo);
+        MNScene_CopyState(&MNS_StageMap, &pfw->MNS_StageMapW);
+        MNScene_DispSw(&MNS_StageMap2, 1);
+        bnk = MNScene_StartAnime(&MNS_StageMap2, -1, &StageMapAnimePA[33]);
+        MNScene_SetAnimeBankEnd(&MNS_StageMap2, bnk | 0x80000000);
+        MNScene_DispSw(&MNS_StageMap, 0);
+        pfw->bgmFadeVol = 128;
+        TsJukeObjAnime2(2);
+        /* fallthrough */
+    case 0x5010:
+        if (pfw->bgmFadeVol > 0) {
+            pfw->bgmFadeVol -= 3;
+            if (pfw->bgmFadeVol < 0) {
+                pfw->bgmFadeVol = 0;
+            }
+            MenuDataDiskVolume(pfw->bgmFadeVol);
+        }
+        if (TsSCFADE_Set(5, 60, 2)) {
+            pfw->state = state;
+            return 0;
+        }
+        state = 0x5020;
+        MNScene_DispSw(&MNS_StageMap2, 0);
+        MNScene_End(&MNS_StageMap2);
+        MNScene_StartAnime(&MNS_StageMap, -1, StageMapAnimeSEA);
+        MNScene_DispSw(&MNS_StageMap, 1);
+        MenuDataDiskSndEnd();
+        TsJukeObjAnime2(1);
+        JukeBgmReq = 0;
+        TsBGMPause(0);
+        TsBGMPlay(pP3GameState->nStage + 1, 20);
+        if (!TsJukeIsObjAnime(1)) {
+            state = 0x1000;
+        }
+        break;
+    case 0x5020:
+    case 0x6020:
+        if (!TsJukeIsObjAnime(1)) {
+            state = 0x1000;
+        }
+        break;
+    case 0x6000:
+        TsJukeObjAnime2(2);
+        MenuDataDiskSndEnd();
+        state = 0x6010;
+        mapNo = TsMENU_GetMapNo(NULL);
+        MNScene_CopyStateMdl(&pfw->MNS_StageMapW, &MNS_StageMap);
+        TsMENU_SetMapScreen(mapNo);
+        MNScene_CopyState(&MNS_StageMap, &pfw->MNS_StageMapW);
+        MNScene_StartAnime(&MNS_StageMap, -1, StageMapAnimeSEA);
+        JukeBgmReq = 0;
+        TsBGMPause(0);
+        TsBGMPlay(pP3GameState->nStage + 1, 60);
+        pfw->state = state;
+        return 0;
+    case 0x6010:
+        if (!TsJukeIsObjAnime(1) || TsJukeIsObjAnime(0)) {
+            TsJukeObjAnime2(1);
+            state = 0x6020;
+            if (!TsJukeIsObjAnime(1)) {
+                state = 0x1000;
+            }
+        }
+        break;
+    case 0xF000:
+    case 0xF010:
+    case 0xF020:
+        TsJukeObjAnime(1);
+        state = 0xF080;
+        /* fallthrough */
+    case 0xF080:
+        if (TsJukeIsObjAnime(1)) {
+            pfw->state = state;
+            return 0;
+        }
+        /* fallthrough */
+    case 0xF100:
+        if (pfw->exitflg == 0) {
+            return -1;
+        }
+        JukeMenu_Sw = 0;
+        state = 0xFF20;
+        break;
+    case 0xFF20:
+        return -1;
+    default:
+        break;
+    }
+
+    pfw->state = state;
+    return 0;
+}
+#endif
 
 static void TsJukeMenu_Draw(SPR_PKT pk, SPR_PRM *spr) {
     JUKE_MENU *pfw;
@@ -5703,20 +7239,25 @@ static void TsCmnCell_CusorMASK(CELLOBJ *obj) {
     obj->flg = 0xffff;
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsCmnCell_CusorDraw);
-#if 0
-extern PTPOS D_0019A258[];
+#else
+extern PTPOS CellCusPos[];
 
 /* static */ void TsCmnCell_CusorDraw(SPR_PKT pk, SPR_PRM *spr, int n, CELLOBJ *obj, int ox, int oy, int CurColor) {
     TSTEX_INF *ptex;
     int        flg;
     int        ton;
+    int        n1;
+    int        isCell;
 
-    if ((u_int)(n + 1) >= 9) {
+    n1 = n + 1;
+    if ((u_int)n1 >= 9) {
         return;
     }
+    isCell = (u_int)n < 7;
 
-    if ((u_int)n < 7) {
+    if (isCell) {
         if (obj != NULL) {
             int state = obj->state;
 
@@ -5760,7 +7301,7 @@ extern PTPOS D_0019A258[];
         }
     }
 
-    if ((u_int)n < 7) {
+    if (isCell) {
         flg = obj->flg;
         ton = obj->ton;
     } else {
@@ -5790,18 +7331,352 @@ extern PTPOS D_0019A258[];
     spr->uy = 0;
     spr->uw = ptex->w;
     spr->uh = ptex->h;
-    spr->px = D_0019A258[n + 1].x + ox;
+    spr->px = CellCusPos[n1].x + ox;
     spr->sw = 0x234;
-    spr->py = D_0019A258[n + 1].y + oy;
+    spr->py = CellCusPos[n1].y + oy;
     spr->sh = ptex->h * 2;
     PkNSprite_Add(pk, spr, 1);
     PkALPHA_Add(pk, 0x44);
 }
 #endif
-
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsOption_Flow);
+#else
+typedef struct { // 0x8
+    int val;
+    int val2;
+} MNOPT_VAL;
 
+typedef struct { // 0x10
+    int val;
+    PATPOS pat;
+} MNOPT_ENTRY;
+
+typedef struct { // 0x1c
+    int type;
+    int max;
+    int min;
+    MNOPT_ENTRY *list;
+    int msgSel;
+    int sndSel;
+    int msgAdj;
+} MNOPT_SELINF;
+
+typedef struct { // 0x88
+    int state;
+    int cancel;
+    int cur;
+    MNOPT_VAL item[5];
+    CELLOBJ cell[5];
+    short anm[5][4];
+    int arrow;
+} OPTION_MENU;
+
+extern OPTION_MENU OptionMenu; // PAL bss 1c6cf80
+extern MNOPT_SELINF OptionSelTbl[]; // PAL data 19b140
+extern PATPOS D_0019A558[]; // PAL data 19a558
+extern PATPOS D_0019A598[][4]; // PAL data 19a598
+extern int OptTmp_Lang; // PAL sdata 383850
+extern int OptTmp_Subt; // PAL sdata 383854
+extern int OptTmp_Vibr; // PAL sdata 383858
+extern int OptTmp_Oneb; // PAL sdata 38385c
+extern int OptTmp_AdjX; // PAL sdata 383860
+extern int OptTmp_AdjY; // PAL sdata 383864
+
+#define OPT_GS_ADJX(gs) (*(int *)((char *)(gs) + 0xd0))
+#define OPT_GS_ADJY(gs) (*(int *)((char *)(gs) + 0xd4))
+
+void func_00102f78(int x, int y);
+void func_00103028(void);
+void cmnfTim2Trans(void);
+void MenuLangTim2Trans(int lang);
+
+static int TSLOOP2(int no, int min, int max) {
+    if (no < min) {
+        return max - 1;
+    }
+    if (no < max) {
+        return no;
+    }
+    return min;
+}
+
+static int *OptTmp_Tbl(int i) {
+    switch (i) {
+    case 0: return &OptTmp_Lang;
+    case 1: return &OptTmp_Subt;
+    case 2: return &OptTmp_Vibr;
+    default: return &OptTmp_Oneb;
+    }
+}
+
+static void TsOption_Init(OPTION_MENU *pfw) {
+    GAME_STATUS *gs;
+    int i, k;
+    int *pv;
+    MNOPT_SELINF *tbl;
+
+    gs = pP3GameState->pGameStatus;
+    OptTmp_AdjX = OPT_GS_ADJX(gs);
+    OptTmp_Lang = gs->language_type;
+    OptTmp_Subt = gs->subtitle;
+    OptTmp_Vibr = gs->vibration;
+    OptTmp_Oneb = gs->play_table_modeG;
+    OptTmp_AdjY = OPT_GS_ADJY(gs);
+
+    memset(pfw->cell, 0, sizeof(pfw->cell));
+    memset(pfw->anm, 0, sizeof(pfw->anm));
+    TsCmnCell_CusorSET(&pfw->cell[pfw->cur]);
+
+    for (i = 0; i < 5; i++) {
+        tbl = &OptionSelTbl[i];
+        switch (i) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+            pv = OptTmp_Tbl(i);
+            k = 0;
+            if (tbl->max > 0) {
+                for (k = 0; k < tbl->max; k++) {
+                    if (tbl->list[k].val == *pv) {
+                        break;
+                    }
+                }
+                if (k < tbl->max) {
+                    pfw->item[i].val = k;
+                } else {
+                    pfw->item[i].val = 0;
+                }
+            } else {
+                pfw->item[i].val = 0;
+            }
+            break;
+        case 4:
+            pfw->item[i].val = OptTmp_AdjX;
+            pfw->item[i].val2 = OptTmp_AdjY;
+            break;
+        }
+    }
+
+    func_00103028();
+}
+
+static void TsOption_Apply(OPTION_MENU *pfw) {
+    GAME_STATUS *gs;
+    int i;
+
+    for (i = 0; i < 5; i++) {
+        switch (i) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+            *OptTmp_Tbl(i) = OptionSelTbl[i].list[pfw->item[i].val].val;
+            break;
+        case 4:
+            OptTmp_AdjX = pfw->item[i].val;
+            OptTmp_AdjY = pfw->item[i].val2;
+            break;
+        }
+    }
+
+    gs = pP3GameState->pGameStatus;
+    OPT_GS_ADJX(gs) = OptTmp_AdjX;
+    gs->language_type = OptTmp_Lang;
+    gs->subtitle = OptTmp_Subt;
+    OPT_GS_ADJY(gs) = OptTmp_AdjY;
+    gs->vibration = OptTmp_Vibr;
+    gs->play_table_modeG = OptTmp_Oneb;
+    func_00103028();
+    cmnfTim2Trans();
+    MenuLangTim2Trans(pP3GameState->pGameStatus->language_type);
+}
+
+int TsOption_Flow(int flg, u_int tpad) {
+    OPTION_MENU *pfw = &OptionMenu;
+    int state;
+    int cur, nxt;
+    int v0, v1, o0, o1;
+    MNOPT_SELINF *tbl;
+
+    if (flg == 1) {
+        pfw->state = 0;
+        pfw->cur = 0;
+        TsOption_Init(pfw);
+        pfw->arrow = -1;
+        return 0;
+    }
+    if (flg == 2) {
+        return 0;
+    }
+
+    state = pfw->state;
+    switch (state) {
+    case 0:
+        state = 0x1000;
+        /* fallthrough */
+    case 0x1000:
+        if (tpad & 0x40) {
+            pfw->cancel = 0;
+            TSSNDPLAY(6);
+            state = 0x2000;
+            pfw->arrow = pfw->cur;
+        } else if (tpad & 0x10) {
+            state = 0xF000;
+            pfw->cancel = 1;
+            TSSNDPLAY(9);
+        } else {
+            cur = pfw->cur;
+            nxt = cur;
+            if (tpad & 0x1000) {
+                nxt = cur - 1;
+            }
+            if (tpad & 0x4000) {
+                nxt = nxt + 1;
+            }
+            if (cur != nxt) {
+                nxt = TSLOOP(nxt, 5);
+                TsCmnCell_CusorOFF(&pfw->cell[cur]);
+                TsCmnCell_CusorON(&pfw->cell[nxt]);
+                pfw->cur = nxt;
+                TSSNDPLAY(OptionSelTbl[nxt].sndSel);
+                TSSNDPLAY(5);
+                cur = pfw->cur;
+            }
+            TsCMPMes_SetMes(OptionSelTbl[cur].msgSel);
+        }
+        pfw->state = state;
+        return 0;
+    case 0x2000:
+        cur = pfw->cur;
+        v0 = o0 = pfw->item[cur].val;
+        v1 = o1 = pfw->item[cur].val2;
+        if (tpad & 0x8000) {
+            v0--;
+        }
+        if (tpad & 0x2000) {
+            v0++;
+        }
+        if (cur == 4) {
+            if (tpad & 0x1000) {
+                v1--;
+            }
+            if (tpad & 0x4000) {
+                v1++;
+            }
+        }
+        if (o0 != v0 || o1 != v1) {
+            tbl = &OptionSelTbl[cur];
+            if (o0 != v0) {
+                pfw->anm[cur][(v0 < o0) ? 0 : 1] = 6;
+            }
+            if (o1 != v1) {
+                pfw->anm[cur][(v1 < o1) ? 2 : 3] = 6;
+            }
+            if (tbl->type == 0) {
+                v0 = TSLOOP2(v0, tbl->min, tbl->max);
+                v1 = TSLOOP2(v1, tbl->min, tbl->max);
+            } else if (tbl->type == 1) {
+                v0 = TSLIMIT(v0, tbl->min, tbl->max);
+                v1 = TSLIMIT(v1, tbl->min, tbl->max);
+            }
+            pfw->item[pfw->cur].val = v0;
+            pfw->item[pfw->cur].val2 = v1;
+            if (pfw->cur == 4) {
+                func_00102f78(v0, v1);
+            }
+            TSSNDPLAY(2);
+        }
+        if (tpad & 0x40) {
+            state = 0x1000;
+            TSSNDPLAY(6);
+            TsOption_Apply(pfw);
+            TsCMPMes_SetMes(-1);
+            pfw->arrow = -1;
+            memset(pfw->anm, 0, sizeof(pfw->anm));
+        }
+        if (tpad & 0x10) {
+            TSSNDPLAY(9);
+            state = 0x1000;
+            TsOption_Init(pfw);
+            pfw->arrow = -1;
+            memset(pfw->anm, 0, sizeof(pfw->anm));
+        }
+        TsCMPMes_SetMes(OptionSelTbl[pfw->cur].msgAdj);
+        pfw->state = state;
+        return 0;
+    case 0xF000:
+        if (pfw->cancel == 0) {
+            TsOption_Apply(pfw);
+            TsCMPMes_SetMes(-1);
+        }
+        pfw->state = (pfw->cancel == 0) ? 0xFF10 : 0xFF20;
+        return 0;
+    case 0xF100:
+        pfw->state = (pfw->cancel == 0) ? 0xFF10 : 0xFF20;
+        return 0;
+    case 0xFF10:
+        return 1;
+    case 0xFF20:
+        return -1;
+    default:
+        pfw->state = state;
+        return 0;
+    }
+}
+#endif
+
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsOption_Draw);
+#else
+void TsOption_Draw(SPR_PKT pk, SPR_PRM *spr) {
+    OPTION_MENU *pfw = &OptionMenu;
+    char buf[32];
+    float rots[4] = { -1.5707964f, 1.5707964f, 0.0f, 3.1415927f };
+    int i, j;
+    float zr;
+    PATPOS *ppat;
+
+    for (i = 0; i < 5; i++) {
+        TsCmnCell_CusorDraw(pk, spr, i, &pfw->cell[i], 0, 0, 0x1A808080);
+    }
+
+    for (i = 0; i < 5; i++) {
+        spr->rgba0 = 0x800062FF;
+        TsPatPut(pk, spr, &D_0019A558[i], 0, 0);
+        if (pfw->arrow == i) {
+            for (j = 0; j < 4; j++) {
+                ppat = &D_0019A598[i][j];
+                if (ppat->texNo >= 0) {
+                    if (pfw->anm[i][j] > 0) {
+                        pfw->anm[i][j]--;
+                        spr->rgba0 = 0x80FFFFFF;
+                        zr = (float)((double)(float)pfw->anm[i][j] * 0.5 * 0.1666666716337204 + 1.0);
+                    } else {
+                        zr = 1.0f;
+                        spr->rgba0 = 0x80808080;
+                    }
+                    TsPatPutRZoom(pk, spr, ppat, 0, 0, zr, rots[j]);
+                }
+            }
+        }
+    }
+
+    PkALPHA_Add(pk, 0x44);
+    spr->zx = 1.0f;
+    spr->zy = 0.5f;
+    spr->rgba0 = 0x80808080;
+    for (i = 0; i < 5; i++) {
+        if (i != 4) {
+            TsPatPut(pk, spr, &OptionSelTbl[i].list[pfw->item[i].val].pat, 0, 0);
+        }
+    }
+
+    sprintf(buf, "X:%d Y:%d", pfw->item[4].val, pfw->item[4].val2);
+    MENUFontPutS(pk, spr, OptionSelTbl[4].list->pat.x, OptionSelTbl[4].list->pat.y, 0x80808080, 1, (u_char *)buf);
+}
+#endif
 
 static int TsUserList_GetCurFileNo(int *isBroken) {
     USERLIST_MENU *pfw   = &UserListMenu;
@@ -5964,9 +7839,593 @@ static int TsUserList_TagChangeAble(USERLIST_MENU *pfw, int *pno) {
     return 0;
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsUserList_Flow);
+#else
+extern MNANM_TBL CounterAnime[]; // PAL data (jul 18afa8)
 
+/* static */ int TsUserList_Flow(int flg, u_int tpad, u_int tpad2) {
+    USERLIST_MENU *pfw = &UserListMenu;
+    int s2;
+    int i;
+    int r;
+    int v0;
+    int cnt;
+    int cpg;
+    int s0;
+    int s1;
+    int s4;
+    int s7;
+    int tag, ntag, pno;
+    int isRep;
+    float sl;
+    int nameR0, nameR1;
+
+    if (flg == 1) {
+        pfw->curFileNo = -1;
+        pfw->state = 0;
+        pfw->wuser = UserWork;
+        pfw->ptypttbl = NULL;
+        pfw->scene = NULL;
+        pfw->nTag = 0;
+        pfw->dataMode = 0;
+        pfw->dispColor = 0;
+        pfw->isSave = 0;
+        pfw->cmpMesTbl = NULL;
+        pfw->gameMode = 0;
+        pfw->curuser = 0;
+        pfw->curPageTop = 0;
+        pfw->isNameIn = 0;
+        pfw->sline = 0.0f;
+        pfw->pusrlst = NULL;
+        pfw->exitflg = 0;
+        pfw->userMax = TsUserList_SortUser();
+        pfw->mcerrNo = 0;
+        pfw->mcRetTag = 0;
+        TsNAMEINBox_Flow(2, &pfw->nameinw[0], 0);
+        TsNAMEINBox_Flow(2, &pfw->nameinw[1], 0);
+        memset(pfw->cellcs, 0, 0x30);
+        for (i = 4; i >= 0; i--) {
+            TsCmnCell_CusorMASK(&pfw->cellcs[4 - i]);
+        }
+        return 0;
+    }
+
+    if (flg == 3) {
+        if (pfw->ptypttbl == NULL || TsUserList_SetCurTag(pfw, tpad) == 0) {
+            pfw->isNameIn = 0;
+            pfw->pusrlst = UserLst;
+            pfw->sline = 0.0f;
+            pfw->exitflg = 0;
+            pfw->userMax = TsUserList_SortUser();
+            TsNAMEINBox_Flow(2, &pfw->nameinw[0], 0);
+            TsNAMEINBox_Flow(2, &pfw->nameinw[1], 0);
+            pfw->curuser = 0;
+            pfw->curPageTop = 0;
+            cnt = (pfw->userMax >= 6) ? 5 : pfw->userMax;
+            if (pfw->curFileNo >= 0) {
+                TsUserList_SetCurFileNoCusor(pfw->curFileNo, pfw->curFileDate);
+            }
+            if (pfw->scene != NULL) {
+                MNScene_StartAnime(pfw->scene, -1, &CounterAnime[cnt]);
+                MNScene_DispSw(pfw->scene, 1);
+            }
+            memset(pfw->cellcs, 0, 0x30);
+            for (i = cnt; i < 5; i++) {
+                TsCmnCell_CusorMASK(&pfw->cellcs[i]);
+            }
+            if (pfw->userMax > 0) {
+                TsCmnCell_CusorSET(&pfw->cellcs[pfw->curuser]);
+            }
+            if (pfw->cmpMesTbl != NULL) {
+                TsCMPMes_SetMes(pfw->cmpMesTbl[0]);
+            }
+        }
+        return 0;
+    }
+
+    s2 = pfw->state;
+
+    if (flg == 2) {
+        pfw->isNameIn = 0;
+        pfw->pusrlst = NULL;
+        pfw->exitflg = 0;
+        if (pfw->ptypttbl != NULL) {
+            if (pfw->ptypttbl->nType > 0) {
+                i = 0;
+                do {
+                    MNScene_DispSw(UserListTbl[pfw->ptypttbl->typeNo[i]].pScene, 0);
+                    i++;
+                } while (i < pfw->ptypttbl->nType);
+            }
+        }
+        pfw->scene = NULL;
+        return 0;
+    }
+
+    if (s2 <= 0xDFFF) {
+        r = P3MC_CheckChange();
+        if (r == 3 || r == 5) {
+            TsCMPMes_SetMes(-1);
+            s2 = 0xE000;
+            TsMCAMes_SetMes(-1);
+            pfw->isNameIn = 0;
+            TsNAMEINBox_Flow(2, &pfw->nameinw[0], 0);
+            TsNAMEINBox_Flow(2, &pfw->nameinw[1], 0);
+        }
+    }
+
+    switch (s2) {
+    case 0x1000:
+        if (pfw->mcerrNo == 0 || McErrorMess(pfw->mcerrNo) >= 0) {
+            s2 = 0x3000;
+            pfw->nTag = pfw->mcRetTag;
+            TsUserList_Flow(3, pfw->mcRetTag, 0);
+        }
+        break;
+    case 0x3F00:
+        pfw->wtim--;
+        if (pfw->wtim <= 0) {
+            s2 = 0x3F08;
+        }
+        break;
+    case 0x4000:
+        s2 = 0x4010;
+        if (pfw->pusrlst->pUserTbl[pfw->curuser + pfw->curPageTop]->fileNo == 0xFFFF) {
+            s2 = 0x4005;
+            /* fallthrough */
+    case 0x4005:
+            if (McErrorMess(((pfw->dataMode ^ 2) != 0) ? 7 : 15) >= 0) {
+                s2 = 0x3000;
+            }
+        }
+        break;
+    case 0x4F00:
+        s2 = 0xF000;
+        break;
+    case 0x3000:
+    case 0:
+        pfw->isNameIn = 0;
+        s2 = 0x3100;
+        pfw->exitflg = 0;
+        /* fallthrough */
+    case 0x3100:
+        if (pfw->cmpMesTbl != NULL) {
+            TsCMPMes_SetMes(pfw->cmpMesTbl[0]);
+        }
+        isRep = 0;
+        if (pfw->sline != 0.0f) {
+            if (pfw->sline > 0.0f) {
+                sl = pfw->sline - 3.625f;
+                pfw->sline = sl;
+                if (sl < 0.0f) {
+                    pfw->sline = 0.0f;
+                }
+            } else {
+                sl = pfw->sline + 3.625f;
+                pfw->sline = sl;
+                if (sl > 0.0f) {
+                    pfw->sline = 0.0f;
+                }
+            }
+            isRep = 1;
+            if (pfw->sline != 0.0f) {
+                break;
+            }
+        }
+
+        s4 = tpad & 0x8000;
+        tag = pfw->nTag;
+        s1 = tag;
+        if (s4 != 0) {
+            s1 = tag - 1;
+        }
+        if (tpad & 0x2000) {
+            s1 = s1 + 1;
+        }
+        ntag = TSLIMIT(s1, 0, pfw->ptypttbl->nType);
+        if (tag != ntag) {
+            if (s4 != 0) {
+                TSSNDPLAY(0);
+            } else {
+                TSSNDPLAY(1);
+            }
+            pno = ntag;
+            v0 = TsUserList_TagChangeAble(pfw, &pno);
+            if (v0 != 0) {
+                s2 = 0x1000;
+                pfw->mcerrNo = v0;
+                pfw->mcRetTag = pfw->nTag;
+            }
+            pfw->nTag = ntag;
+            TsUserList_Flow(3, ntag, 0);
+            break;
+        }
+
+        s1 = pfw->curuser;
+        cpg = s1;
+        s4 = s1;
+        s7 = pfw->curPageTop;
+        if (pfw->userMax > 0) {
+            if (tpad & 0x1000) {
+                s1 = s1 - 1;
+            }
+            if (tpad & 0x4000) {
+                s1 = s1 + 1;
+            }
+            if (isRep != 0 && s1 == cpg) {
+                if (TsGetMenuPadIsRepeat(0, 0) != 0) {
+                    s1 = s1 - 1;
+                }
+                if (TsGetMenuPadIsRepeat(0, 1) != 0) {
+                    s1 = s1 + 1;
+                }
+            }
+        }
+        if (s4 != s1) {
+            s0 = 1;
+            if (s1 < 0) {
+                s0 = 2;
+                pfw->curPageTop += s1;
+                s1 = 0;
+            }
+            if (s1 >= 5) {
+                s0 = 3;
+                pfw->curPageTop = pfw->curPageTop - 4 + s1;
+                s1 = 4;
+            }
+            if (pfw->curPageTop < 0) {
+                pfw->curPageTop = 0;
+                s0 = 0;
+            }
+            if (pfw->curPageTop + s1 >= pfw->userMax) {
+                s0 = 0;
+                if (pfw->curPageTop == 0) {
+                    s1 = pfw->userMax - 1;
+                } else {
+                    pfw->curPageTop = pfw->userMax - (s1 + 1);
+                }
+            }
+            pfw->curuser = s1;
+            if (s0 != 0) {
+                if (s1 < s4) {
+                    TSSNDPLAY(3);
+                } else {
+                    TSSNDPLAY(4);
+                }
+            }
+            if (s7 != pfw->curPageTop) {
+                if (pfw->curPageTop < s7) {
+                    pfw->sline = -29.0f;
+                } else {
+                    pfw->sline = 29.0f;
+                }
+            }
+            if (s4 != s1) {
+                TsCmnCell_CusorOFF(&pfw->cellcs[s4]);
+                TsCmnCell_CusorON(&pfw->cellcs[s1]);
+            }
+            if (s0 == 2) {
+                TsCmnCell_CusorOFF(&pfw->cellcs[s1 + 1]);
+                TsCmnCell_CusorON(&pfw->cellcs[s1]);
+            } else if (s0 == 3) {
+                TsCmnCell_CusorOFF(&pfw->cellcs[s1 - 1]);
+                TsCmnCell_CusorON(&pfw->cellcs[s1]);
+            }
+        }
+        if (tpad & 0x40) {
+            s2 = 0x3F00;
+            TsCmnCell_CusorSEL(&pfw->cellcs[pfw->curuser]);
+            pfw->wtim = 28;
+            TSSNDPLAY(6);
+        }
+        if (tpad & 0x10) {
+            s2 = 0x3F10;
+            TSSNDPLAY(9);
+        }
+        break;
+    case 0x3F08:
+        s2 = (pfw->isSave != 0) ? 0x4000 : 0x5000;
+        break;
+    case 0x3F10:
+        s2 = 0xFF20;
+        pfw->exitflg = 1;
+        break;
+    case 0x5000:
+        s2 = 0x5010;
+        TsMCAMes_SetMes(0x10000016);
+        /* fallthrough */
+    case 0x5010:
+        r = TsMCAMes_GetSelect();
+        if (r != 0) {
+            s2 = 0xFF10;
+            if (r != 1) {
+                s2 = 0x3000;
+                TsMCAMes_SetMes(-1);
+            }
+        }
+        break;
+    case 0x4010:
+        if (pfw->pusrlst->pUserTbl[pfw->curuser + pfw->curPageTop]->flg == 0) {
+            s2 = 0x4020;
+        } else {
+            s2 = 0x4015;
+            TsMCAMes_SetMes(0x1000000F);
+    case 0x4015:
+            r = TsMCAMes_GetSelect();
+            if (r != 0) {
+                s2 = ((r ^ 1) == 0) ? 0x4020 : 0x3000;
+                TsMCAMes_SetMes(-1);
+            }
+        }
+        break;
+    case 0x4020:
+        pfw->isNameIn = 1;
+        pfw->wuser->fileNo = TsUserList_GetCurFileNo(NULL);
+        if (pfw->dataMode == 1) {
+            TsNAMEINBox_Flow(1, &pfw->nameinw[0], (u_int)pfw->wuser);
+        } else {
+            TsNAMEINBox_Flow(1, &pfw->nameinw[0], (u_int)pfw->wuser->name1);
+        }
+        if (pfw->dataMode == 1) {
+            pfw->nameinw[0].dispType = 0;
+        } else if (pfw->gameMode == 0) {
+            pfw->nameinw[0].dispType = 0;
+        } else {
+            pfw->nameinw[0].dispType = 1;
+            if (pfw->gameMode == 1) {
+                TsNAMEINBox_Flow(1, &pfw->nameinw[1], (u_int)pfw->wuser->name2);
+                pfw->nameinw[1].dispType = 2;
+            }
+        }
+        s2 = 0x4030;
+        if (pfw->cmpMesTbl != NULL) {
+            TsCMPMes_SetMes(pfw->cmpMesTbl[1]);
+        }
+        /* fallthrough */
+    case 0x4030:
+        pfw->nameinw[0].isCan = 1;
+        nameR1 = 1;
+        nameR0 = TsNAMEINBox_Flow(0, &pfw->nameinw[0], tpad);
+        if (pfw->gameMode == 1 && pfw->dataMode != 1) {
+            pfw->nameinw[1].isCan = 1;
+            nameR1 = TsNAMEINBox_Flow(0, &pfw->nameinw[1], tpad2);
+        }
+        if (nameR0 == -2 || nameR1 == -2) {
+            TsNAMEINBox_Flow(3, &pfw->nameinw[0], 0);
+            TsNAMEINBox_Flow(3, &pfw->nameinw[1], 0);
+        }
+        if (nameR0 == -1 || nameR1 == -1) {
+            s2 = 0x4F10;
+        }
+        if (nameR0 == 1) {
+            if ((nameR1 ^ 1) == 0) {
+                s2 = 0x4F00;
+            }
+        }
+        break;
+    case 0x4F10:
+        TsNAMEINBox_Flow(2, &pfw->nameinw[0], 0);
+        s2 = 0x3000;
+        TsNAMEINBox_Flow(2, &pfw->nameinw[1], 0);
+        pfw->exitflg = 1;
+        break;
+    case 0xE000:
+        r = P3MC_CheckChange();
+        if (r == 0 || r == 5) {
+            s2 = 0xFF40;
+        } else {
+            v0 = 3;
+            if (pfw->isSave != 0) {
+                v0 = ((pfw->dataMode ^ 2) == 0) ? 60 : 50;
+            }
+            if (McErrorMess(v0) >= 0) {
+                s2 = 0xEE10;
+            }
+        }
+        break;
+    case 0xEE10:
+        s2 = 0xFF20;
+        break;
+    case 0xF000:
+        TsUserList_SetCurDispUserData(pfw->wuser);
+        pfw->state = 0xF100;
+        /* fallthrough */
+    case 0xF100:
+        TsMCAMes_SetMes(-1);
+        /* fallthrough */
+    case 0xFF10:
+        if (P3MC_CheckChange() >= 0) {
+            pfw->exitflg = 0;
+            pfw->state = 0x3000;
+            pfw->isNameIn = 0;
+            TsNAMEINBox_Flow(2, &pfw->nameinw[0], 0);
+            TsNAMEINBox_Flow(2, &pfw->nameinw[1], 0);
+            return 1;
+        }
+        break;
+    case 0xFF20:
+        if (P3MC_CheckChange() >= 0) {
+            pfw->isNameIn = 0;
+            pfw->exitflg = 1;
+            TsMCAMes_SetMes(-1);
+            TsNAMEINBox_Flow(2, &pfw->nameinw[0], 0);
+            TsNAMEINBox_Flow(2, &pfw->nameinw[1], 0);
+            return -1;
+        }
+        break;
+    case 0xFF40:
+        pfw->isNameIn = 0;
+        pfw->exitflg = 1;
+        TsNAMEINBox_Flow(2, &pfw->nameinw[0], 0);
+        TsNAMEINBox_Flow(2, &pfw->nameinw[1], 0);
+        return -3;
+    default:
+        break;
+    }
+
+    pfw->state = s2;
+    return 0;
+}
+#endif
+
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsUserList_Draw);
+#else
+extern PATPOS LG_SCROLL_MARK[]; // PAL data (jul 18bd30)
+extern PATPOS RP_SCROLL_MARK[]; // PAL data (jul 18bd48)
+extern PATPOS LLG_SCROLL_MARK[]; // PAL data (jul 18bd60)
+extern PATPOS CSSLASH_MARK; // PAL data (jul 18bd78)
+extern STRPOS PAGENO_StrCOD[]; // PAL data (jul 18bd88)
+extern PTPOS CellCusPos[]; // PAL data (jul 18bd98)
+
+/* static */ void TsUserList_Draw(SPR_PKT pk, SPR_PRM *spr) {
+    USERLIST_MENU *pfw = &UserListMenu;
+    char buf[16];
+    float oy;
+    int dispColor;
+    PATPOS *pscr;
+    int scrolling;
+    int py;
+    int k;
+    int cnt;
+    int i;
+    int idx;
+    int pflg;
+    int tm;
+    USER_DATA *pud;
+    short x, y;
+
+    oy = spr->ofsy;
+    spr->zx = 1.0f;
+    spr->zy = 0.5f;
+    PkALPHA_Add(pk, 0x44);
+    spr->rgba0 = 0x80808080;
+
+    dispColor = pfw->dispColor;
+    if (dispColor != 1) {
+        if (dispColor < 2) {
+            pscr = RP_SCROLL_MARK;
+            if (dispColor == 0) {
+                pscr = LG_SCROLL_MARK;
+            }
+        } else {
+            pscr = RP_SCROLL_MARK;
+        }
+    } else {
+        pscr = LLG_SCROLL_MARK;
+    }
+    if (pfw->curPageTop > 0) {
+        TsPatPut(pk, spr, &pscr[0], 0, 0);
+    }
+    if (pfw->curPageTop + 5 < pfw->userMax) {
+        TsPatPut(pk, spr, &pscr[1], 0, 0);
+    }
+    TsPatPut(pk, spr, &CSSLASH_MARK, 0, 0);
+
+    scrolling = 1;
+    sprintf(buf, "%d", pfw->curuser + pfw->curPageTop + 1);
+    MENUFontPutS(pk, spr, PAGENO_StrCOD[0].x, PAGENO_StrCOD[0].y, PAGENO_StrCOD[0].abgr, 0x201, (u_char *)buf);
+    sprintf(buf, "%d", pfw->userMax);
+    MENUFontPutS(pk, spr, PAGENO_StrCOD[1].x, PAGENO_StrCOD[1].y, PAGENO_StrCOD[1].abgr, 0x201, (u_char *)buf);
+    if (pfw->sline == 0.0f) {
+        scrolling = 0;
+    }
+
+    if (scrolling != 0) {
+        TsMenu_CaptureVram(pk, spr);
+        py = 0x2F;
+        PkSCISSOR_Add(pk, 0x26, 0x30, 0x230, 0x8F);
+        spr->zy = 1.0f;
+        spr->zx = 1.0f;
+        spr->ofsy += pfw->sline;
+        if (pfw->sline > 1.0f) {
+            py = 0x12;
+        }
+        PkALPHA_Add(pk, ((u_long)0x80 << 32) | 0x64);
+        spr->rgba0 = 0x80808080;
+        spr->ux = 0x26;
+        spr->uy = 0x4C;
+        k = 5;
+        spr->uw = 0x230;
+        spr->uh = 0x1D;
+        spr->py = py;
+        do {
+            spr->px = 0x26;
+            spr->sw = 0x230;
+            spr->sh = 0x1D;
+            k--;
+            py += 0x1D;
+            PkNSprite_AddAdj(pk, spr, 1);
+            if (k >= 0) {
+                spr->py = py;
+            }
+        } while (k >= 0);
+        spr->ofsy = oy;
+        spr->zx = 1.0f;
+        spr->zy = 0.5f;
+        PkALPHA_Add(pk, 0x44);
+    }
+
+    spr->rgba0 = 0x80808080;
+    cnt = 5;
+    if (scrolling != 0) {
+        cnt = 6;
+        spr->ofsy += pfw->sline;
+    }
+    for (i = 0; i < cnt; i++) {
+        idx = i;
+        if (pfw->sline > 0.0f) {
+            idx = i - 1;
+        }
+        if (idx < 0) {
+            TsCmnCell_CusorDraw(pk, spr, idx, NULL, 0, 0, 0x20808080);
+        } else {
+            TsCmnCell_CusorDraw(pk, spr, idx, &pfw->cellcs[idx], 0, 0, 0x20808080);
+        }
+    }
+
+    spr->ofsy = oy;
+    cnt = 5;
+    if (scrolling != 0) {
+        cnt = 6;
+        spr->ofsy = oy + pfw->sline;
+    }
+    for (i = 0; i < cnt; i++) {
+        idx = i;
+        if (pfw->sline > 0.0f) {
+            idx = i - 1;
+        }
+        tm = idx + pfw->curPageTop;
+        if (tm >= 0 && tm < pfw->userMax) {
+            pud = &pfw->pusrdspWk->pUserDisp[tm];
+            if (pfw->curuser == i) {
+                pflg = ((pfw->nameinw[0].nameMsk ^ 1) != 0) ? 0 : 2;
+                if ((pfw->nameinw[1].nameMsk ^ 1) == 0) {
+                    pflg = pflg | 4;
+                }
+                if (pfw->nameinw[0].nameMsk != 0 || pfw->nameinw[1].nameMsk != 0) {
+                    pud = pfw->wuser;
+                }
+            } else {
+                pflg = 0;
+            }
+            TsUser_PanelDraw(pk, spr, pud, CellCusPos[idx + 1].x, CellCusPos[idx + 1].y, pflg, dispColor);
+        }
+    }
+
+    spr->ofsy = oy;
+    PkDefSCISSOR_Add(pk);
+    x = CellCusPos[pfw->curuser + 1].x;
+    y = CellCusPos[pfw->curuser + 1].y;
+    if (pfw->nameinw[0].isOn != 0) {
+        TsNAMEINBox_Draw(pk, spr, x, y, dispColor, &pfw->nameinw[0], 0);
+    }
+    if (pfw->nameinw[1].isOn != 0) {
+        TsNAMEINBox_Draw(pk, spr, x, y, dispColor, &pfw->nameinw[1], 1);
+    }
+}
+#endif
 
 static void NameSpaceCut(u_char *dst, u_char *src) {
     int     i, l;
@@ -5999,7 +8458,124 @@ static void NameSpaceCut(u_char *dst, u_char *src) {
 
 INCLUDE_RODATA("asm/nonmatchings/menu/menusub", D_00396120);
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsUser_PanelDraw);
+#else
+extern char *StageWordStr[]; // PAL data 199568: per-language "STAGE"
+extern char *RoundWordStr[]; // PAL data 199550: per-language "ROUND"
+extern char *BrokenStr[]; // PAL data 199580
+extern char *_MONTH_STR[]; // PAL data 199cd8
+extern STRPOS LOGS_StrCOD[]; // PAL data 19a278 (6 entries)
+extern STRPOS LOGL_StrCOD[]; // PAL data 19a2a8 (6 entries)
+extern STRPOS REPLAY_StrCOD[]; // PAL data 19a2d8 (7 entries)
+extern STRPOS VSREPLAY_StrCOD[]; // PAL data 19a310 (9 entries)
+extern PATPOS VS_MARK; // PAL data 19a358
+extern PATPOS VS_WINMARK1; // PAL data 19a368
+extern PATPOS VS_WINMARK2; // PAL data 19a378
+extern PATPOS LG_NEWDATA_MARK; // PAL data 19a388
+extern PATPOS RP_NEWDATA_MARK; // PAL data 19a398
+
+/* static */ void TsUser_PanelDraw(SPR_PKT pk, SPR_PRM *spr, USER_DATA *user, int px, int py, int pflg, int isLog) {
+    char buf[32];
+    char buf2[16];
+    STRPOS *pstr;
+    PATPOS *pmark;
+    int r;
+    u_int m;
+    int num;
+
+    spr->zx = 1.0f;
+    spr->zy = 0.5f;
+    PkALPHA_Add(pk, 0x44);
+
+    if (user != NULL && user->flg != 0) {
+        if (user->mode == 2) {
+            if (user->isVs != 0) {
+                spr->rgba0 = 0x80808080;
+                TsPatPut(pk, spr, &VS_MARK, px, py);
+                if (user->winner == 1) {
+                    TsPatPut(pk, spr, &VS_WINMARK2, px, py);
+                } else if (user->winner == 0) {
+                    TsPatPut(pk, spr, &VS_WINMARK1, px, py);
+                }
+                pstr = VSREPLAY_StrCOD;
+            } else {
+                pstr = REPLAY_StrCOD;
+            }
+            sprintf(buf, "%s", StageWordStr[game_status.language_type]);
+            num = user->stageNo;
+            sprintf(buf2, "%d", num);
+        } else {
+            if (isLog != 0) {
+                pstr = LOGL_StrCOD;
+            } else {
+                pstr = LOGS_StrCOD;
+            }
+            if (user->roundNo != 0) {
+                r = user->roundNo + 1;
+                sprintf(buf, "%s", RoundWordStr[game_status.language_type]);
+                num = (u_short)((r >= 100) ? 99 : r);
+                sprintf(buf2, "%d", num);
+            } else {
+                sprintf(buf, "%s", StageWordStr[game_status.language_type]);
+                sprintf(buf2, "%d", user->stageNo);
+            }
+        }
+        if (user->flg == 2) {
+            sprintf(buf, "%s", StageWordStr[game_status.language_type]);
+            sprintf(buf2, "?");
+        }
+        MENUFontPutS(pk, spr, pstr[0].x + px, pstr[0].y + py, pstr[0].abgr, 0x201, (u_char *)buf);
+        MENUFontPutS(pk, spr, pstr[1].x + px, pstr[1].y + py, pstr[1].abgr, 0x201, (u_char *)buf2);
+
+        if (user->flg != 2 && user->date_year != 0) {
+            m = user->date_month;
+            sprintf(buf, "%02x.%s.%04x", user->date_day, _MONTH_STR[(m >= 0x13U) ? 0x12 : m], user->date_year);
+            MENUFontPutS(pk, spr, pstr[2].x + px, pstr[2].y + py, pstr[2].abgr, 0x201, (u_char *)buf);
+            sprintf(buf, "%02x:%02x", user->date_hour, user->date_minute);
+            MENUFontPutS(pk, spr, pstr[3].x + px, pstr[3].y + py, pstr[3].abgr, 0x201, (u_char *)buf);
+        } else {
+            MENUFontPutS(pk, spr, pstr[2].x + px, pstr[2].y + py, pstr[2].abgr, 0x201, (u_char *)"--.---.----");
+            MENUFontPutS(pk, spr, pstr[3].x + px, pstr[3].y + py, pstr[3].abgr, 0x201, (u_char *)"--:--");
+        }
+        sprintf(buf, "%02d", user->fileNo + 1);
+        MENUFontPutS(pk, spr, pstr[4].x + px, pstr[4].y + py, pstr[4].abgr, 0x201, (u_char *)buf);
+
+        if (!(pflg & 2)) {
+            if (user->mode == 1) {
+                NameSpaceCut((u_char *)buf, (u_char *)user);
+            } else {
+                NameSpaceCut((u_char *)buf, (u_char *)user->name1);
+            }
+            if (user->flg == 2) {
+                NameSpaceCut((u_char *)buf, (u_char *)BrokenStr[game_status.language_type]);
+            }
+            MENUFontPutL(pk, spr, pstr[5].x + px, pstr[5].y + py, pstr[5].abgr, 0x201, (u_char *)buf);
+        }
+
+        if (user->mode == 2) {
+            sprintf(buf, "%06d", user->score);
+            MENUFontPutS(pk, spr, pstr[6].x + px, pstr[6].y + py, pstr[6].abgr, 0x201, (u_char *)buf);
+            if (user->isVs != 0) {
+                if (!(pflg & 4)) {
+                    NameSpaceCut((u_char *)buf, (u_char *)user->name2);
+                    MENUFontPutL(pk, spr, pstr[7].x + px, pstr[7].y + py, pstr[7].abgr, 0x201, (u_char *)buf);
+                }
+                sprintf(buf, "%06d", user->score2);
+                MENUFontPutS(pk, spr, pstr[8].x + px, pstr[8].y + py, pstr[8].abgr, 0x201, (u_char *)buf);
+            }
+        }
+    } else {
+        spr->rgba0 = 0x80808080;
+        if (isLog >= 0 && isLog < 2) {
+            pmark = &LG_NEWDATA_MARK;
+        } else {
+            pmark = &RP_NEWDATA_MARK;
+        }
+        TsPatPut(pk, spr, pmark, px, py);
+    }
+}
+#endif
 
 extern u_char *UserName_InitialStr;
 
@@ -6223,7 +8799,140 @@ extern u_char *UserName_InitialStr2;
     return 0;
 }
 
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/menu/menusub", TsNAMEINBox_Draw);
+#else
+extern PATPOS STGCNameBox[]; // PAL data 19a3a8 (5 entries)
+extern PATPOS STGCNameBoxOK; // PAL data 19a3e8
+extern PATPOS VS1PNameBox[]; // PAL data 19a3f8 (5 entries)
+extern PATPOS VS1PNameBoxOK; // PAL data 19a438
+extern PATPOS VS2PNameBox[]; // PAL data 19a448 (5 entries)
+extern PATPOS VS2PNameBoxOK; // PAL data 19a488
+
+/* static */ void TsNAMEINBox_Draw(SPR_PKT pk, SPR_PRM *spr, int px, int py, int isLog, NAMEINW *pfw, int side) {
+    char buf[2];
+    float oxs, oys;
+    float rt0, rt1;
+    float f0, f2;
+    float ang;
+    PATPOS *pbox;
+    PATPOS *pok;
+    int ton;
+    u_int col, col2, col3, c;
+    int x0, y0, x, y;
+    int i;
+    u_short *pc;
+    u_short ch;
+
+    oxs = spr->ofsx;
+    oys = spr->ofsy;
+    f0 = (float)(MNSceneGetMusicFitTimer() % 360) / 360.0f;
+    if (side != 0) {
+        ang = 2.0f * f0 * 3.1415927f - 1.5707964f;
+    } else {
+        ang = 2.0f * f0 * 3.1415927f;
+    }
+    rt0 = sinf(ang) * 4.0f;
+    spr->zx = 1.0f;
+    spr->zy = 0.5f;
+    spr->ofsy += rt0;
+
+    if (pfw->dispType != 1) {
+        if (pfw->dispType < 2) {
+            pbox = STGCNameBox;
+            pok = &STGCNameBoxOK;
+        } else if (pfw->dispType != 2) {
+            pbox = STGCNameBox;
+            pok = &STGCNameBoxOK;
+        } else {
+            pok = &VS2PNameBoxOK;
+            pbox = VS2PNameBox;
+        }
+    } else {
+        pok = &VS1PNameBoxOK;
+        pbox = VS1PNameBox;
+    }
+
+    if (TsANIME_GetRate(&pfw->awork, &rt0, &rt1, NULL) != 0) {
+        spr->zoom.centerX = (float)(px + pbox[0].x + 0x72);
+        spr->zoom.centerY = (float)(py + pbox[0].y + 0xA);
+        f0 = TSNumRBack(rt1, 0.3f);
+        if (!(pfw->awork.aflg & 1)) {
+            f0 = (1.0f - f0) * 1.2f + 1.0f;
+        }
+        spr->zoom.zoomX = f0;
+        f2 = TSNumRBack(rt0, 0.15f);
+        spr->zoom.isOn = 1;
+        spr->zoom.zoomY = f2 * f2;
+        ton = (int)(rt0 * rt0 * 256.0f);
+    } else {
+        spr->zoom.isOn = 0;
+        ton = 0x100;
+    }
+
+    col = GetDToneColor(0x808080, 0x80808080, ton);
+    spr->rgba0 = col;
+    PkALPHA_Add(pk, 0x44);
+    pc = pfw->curnchr;
+    i = 0;
+    do {
+        TsPatPut(pk, spr, &pbox[i], px, py);
+        i++;
+    } while (i < 5);
+
+    f0 = sinf(((float)(MNSceneGetMusicFitTimer() % 12) / (float)12) * 3.1415927f) * 256.0f;
+    if (pfw->onTime != 0) {
+        c = GetDToneColor(0x800A6EC8, 0x80FFFFFF, (int)f0);
+    } else {
+        c = GetDToneColor(0x803CA0FF, 0x80B4FFFF, (int)f0);
+    }
+    x0 = px + pbox[0].x + 0x2A;
+    y0 = py + pbox[0].y + 0xA;
+    if (pfw->onTime != 0) {
+        spr->px = x0;
+        spr->py = y0;
+        spr->sw = 0xB8;
+        spr->sh = 0x19;
+    } else {
+        spr->py = y0;
+        spr->px = pfw->curnpos * 0x14 + x0;
+        spr->sh = 0x19;
+        spr->sw = ((pfw->curnpos ^ 8) == 0) ? 0x18 : 0x15;
+    }
+    spr->rgba0 = GetDToneColor(c & 0xFFFFFF, c, ton);
+    PkCRect_Add(pk, spr, 2);
+    spr->rgba0 = col;
+    TsPatPut(pk, spr, pok, px, py);
+
+    x = px + pbox[0].x + 0x35;
+    y = py + pbox[0].y + 0xA;
+    switch (isLog) {
+    case 0:
+        col2 = 0x80660000;
+        break;
+    case 1:
+        col2 = 0x801E4000;
+        break;
+    default:
+        col2 = 0x80000061;
+        break;
+    }
+    col3 = GetDToneColor(0x808080, col2, ton);
+    i = 7;
+    do {
+        ch = *pc;
+        buf[0] = UserName_CharSet[ch >> 12].ptbl[ch & 0xFFF];
+        buf[1] = 0;
+        MENUFontPutL(pk, spr, x, y, col3, 1, (u_char *)buf);
+        x += 0x14;
+        pc++;
+        i--;
+    } while (i >= 0);
+
+    spr->ofsy = oys;
+    spr->ofsx = oxs;
+}
+#endif
 
 int TsSCFADE_Set(int flg, int num, int prio) {
     SCFADE *pfw = &ScFade;
