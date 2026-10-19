@@ -16,7 +16,7 @@ segments:
       - { path: src/dbug/dbgmsg.c.o }
       - { path: src/dbug/syori.c.o }
       - { path: src/dbug/vramsave.c.o }
-      - { path: asm/os/mtc.s.o }
+      - { path: src/os/mtc.c.o }
       - { path: asm/os/syssub.s.o }
       - { path: asm/os/system.s.o }
       - { path: asm/os/cmngifpk.s.o }
@@ -25,18 +25,18 @@ segments:
       - { path: asm/main/cdctrl.s.o }
       - { path: asm/main/stdat.s.o }
       - { path: asm/main/scrctrl.s.o }
-      - { path: asm/main/sprite.s.o }
+      - { path: src/main/sprite.c.o }
       - { path: src/main/fadectrl.c.o }
       - { path: asm/main/subt.s.o }
       - { path: asm/main/drawctrl.s.o }
-      - { path: asm/main/effect.s.o }
+      - { path: src/main/effect.c.o }
       - { path: asm/main/mbar.s.o }
       - { path: asm/main/pack.s.o }
       - { path: asm/main/etc.s.o }
       - { path: asm/main/wipe.s.o }
       - { path: src/main/mcctrl.c.o }
       - { path: asm/main/main.s.o }
-      - { path: asm/main/cmnfile.s.o }
+      - { path: src/main/cmnfile.c.o }
       - { path: asm/main/p3str.s.o }
       - { path: asm/main/commake.s.o }
       - { path: asm/menu/menu.s.o }
@@ -46,7 +46,7 @@ segments:
       - { path: asm/menu/p3mc.s.o }
       - { path: asm/menu/memc.s.o }
       - { path: src/menu/mntm2hed.c.o }
-      - { path: asm/menu/menufont.s.o }
+      - { path: src/menu/menufont.c.o }
       - { path: asm/menu/pksprite.s.o }
       - { path: asm/iop_mdl/wp2cd_rpc.s.o }
       - { path: src/iop_mdl/tapctrl_rpc.c.o }
@@ -70,22 +70,22 @@ segments:
       - { path: src/dbug/dbgmsg.c.o }
       - { path: src/dbug/syori.c.o }
       - { path: src/dbug/vramsave.c.o }
-      - { path: asm/os/mtc.s.o }
+      - { path: src/os/mtc.c.o }
       - { path: asm/os/syssub.s.o }
       - { path: asm/os/system.s.o }
       - { path: asm/os/cmngifpk.s.o }
       - { path: asm/os/usrmem.s.o }
-      - { path: asm/data/pal/data_189390.data.s.o }
+      - { path: asm/data/pal/data_189440.data.s.o }
       - { path: src/os/tim2.c.o }
       - { path: asm/main/cdctrl.s.o }
       - { path: asm/main/stdat.s.o }
       - { path: asm/main/scrctrl.s.o }
-      - { path: asm/main/sprite.s.o }
+      - { path: src/main/sprite.c.o }
       - { path: asm/data/pal/data_18e1f8.data.s.o }
       - { path: src/main/fadectrl.c.o }
       - { path: asm/main/subt.s.o }
       - { path: asm/main/drawctrl.s.o }
-      - { path: asm/main/effect.s.o }
+      - { path: src/main/effect.c.o }
       - { path: asm/main/mbar.s.o }
       - { path: asm/main/pack.s.o }
       - { path: asm/main/etc.s.o }
@@ -93,7 +93,7 @@ segments:
       - { path: asm/data/pal/data_1928b0.data.s.o }
       - { path: src/main/mcctrl.c.o }
       - { path: asm/main/main.s.o }
-      - { path: asm/main/cmnfile.s.o }
+      - { path: src/main/cmnfile.c.o }
       - { path: asm/main/p3str.s.o }
       - { path: asm/main/commake.s.o }
       - { path: asm/menu/menu.s.o }
@@ -103,7 +103,7 @@ segments:
       - { path: asm/menu/p3mc.s.o }
       - { path: asm/menu/memc.s.o }
       - { path: src/menu/mntm2hed.c.o }
-      - { path: asm/menu/menufont.s.o }
+      - { path: src/menu/menufont.c.o }
       - { path: asm/menu/pksprite.s.o }
       - { path: asm/iop_mdl/wp2cd_rpc.s.o }
       - { path: src/iop_mdl/tapctrl_rpc.c.o }
@@ -128,7 +128,7 @@ segments:
       - { path: src/dbug/dbgmsg.c.o }
       - { path: src/dbug/syori.c.o }
       - { path: src/dbug/vramsave.c.o }
-      - { path: asm/os/mtc.s.o }
+      - { path: src/os/mtc.c.o }
       - { path: asm/os/syssub.s.o }
       - { path: asm/os/system.s.o }
       - { path: asm/os/cmngifpk.s.o }
@@ -138,19 +138,21 @@ segments:
       - { path: asm/main/cdctrl.s.o }
       - { path: asm/main/stdat.s.o }
       - { path: asm/main/scrctrl.s.o }
-      - { path: asm/main/sprite.s.o }
+      - { path: asm/data/pal/rodata_377b10.rodata.s.o }
+      - { path: src/main/sprite.c.o }
       - { path: src/main/fadectrl.c.o }
       - { path: asm/main/subt.s.o }
       - { path: asm/main/drawctrl.s.o }
-      - { path: asm/main/effect.s.o }
+      - { path: asm/data/pal/rodata_378b40.rodata.s.o }
+      - { path: src/main/effect.c.o }
       - { path: asm/main/mbar.s.o }
       - { path: asm/main/pack.s.o }
       - { path: asm/main/etc.s.o }
       - { path: asm/main/wipe.s.o }
-      - { path: asm/data/pal/rodata_377b10.rodata.s.o }
+      - { path: asm/data/pal/rodata_378dd0.rodata.s.o }
       - { path: src/main/mcctrl.c.o }
       - { path: asm/main/main.s.o }
-      - { path: asm/main/cmnfile.s.o }
+      - { path: src/main/cmnfile.c.o }
       - { path: asm/main/p3str.s.o }
       - { path: asm/main/commake.s.o }
       - { path: asm/menu/menu.s.o }
@@ -160,7 +162,7 @@ segments:
       - { path: asm/menu/p3mc.s.o }
       - { path: asm/menu/memc.s.o }
       - { path: src/menu/mntm2hed.c.o }
-      - { path: asm/menu/menufont.s.o }
+      - { path: src/menu/menufont.c.o }
       - { path: asm/menu/pksprite.s.o }
       - { path: asm/iop_mdl/wp2cd_rpc.s.o }
       - { path: src/iop_mdl/tapctrl_rpc.c.o }
@@ -183,7 +185,7 @@ segments:
       - { path: src/dbug/dbgmsg.c.o }
       - { path: src/dbug/syori.c.o }
       - { path: src/dbug/vramsave.c.o }
-      - { path: asm/os/mtc.s.o }
+      - { path: src/os/mtc.c.o }
       - { path: asm/os/syssub.s.o }
       - { path: asm/os/system.s.o }
       - { path: asm/os/cmngifpk.s.o }
@@ -192,18 +194,18 @@ segments:
       - { path: asm/main/cdctrl.s.o }
       - { path: asm/main/stdat.s.o }
       - { path: asm/main/scrctrl.s.o }
-      - { path: asm/main/sprite.s.o }
+      - { path: src/main/sprite.c.o }
       - { path: src/main/fadectrl.c.o }
       - { path: asm/main/subt.s.o }
       - { path: asm/main/drawctrl.s.o }
-      - { path: asm/main/effect.s.o }
+      - { path: src/main/effect.c.o }
       - { path: asm/main/mbar.s.o }
       - { path: asm/main/pack.s.o }
       - { path: asm/main/etc.s.o }
       - { path: asm/main/wipe.s.o }
       - { path: src/main/mcctrl.c.o }
       - { path: asm/main/main.s.o }
-      - { path: asm/main/cmnfile.s.o }
+      - { path: src/main/cmnfile.c.o }
       - { path: asm/main/p3str.s.o }
       - { path: asm/main/commake.s.o }
       - { path: asm/menu/menu.s.o }
@@ -213,7 +215,7 @@ segments:
       - { path: asm/menu/p3mc.s.o }
       - { path: asm/menu/memc.s.o }
       - { path: src/menu/mntm2hed.c.o }
-      - { path: asm/menu/menufont.s.o }
+      - { path: src/menu/menufont.c.o }
       - { path: asm/menu/pksprite.s.o }
       - { path: asm/iop_mdl/wp2cd_rpc.s.o }
       - { path: src/iop_mdl/tapctrl_rpc.c.o }
@@ -230,7 +232,7 @@ segments:
       - { path: src/dbug/dbgmsg.c.o }
       - { path: src/dbug/syori.c.o }
       - { path: src/dbug/vramsave.c.o }
-      - { path: asm/os/mtc.s.o }
+      - { path: src/os/mtc.c.o }
       - { path: asm/os/syssub.s.o }
       - { path: asm/os/system.s.o }
       - { path: asm/os/cmngifpk.s.o }
@@ -239,18 +241,19 @@ segments:
       - { path: asm/main/cdctrl.s.o }
       - { path: asm/main/stdat.s.o }
       - { path: asm/main/scrctrl.s.o }
-      - { path: asm/main/sprite.s.o }
+      - { path: src/main/sprite.c.o }
       - { path: src/main/fadectrl.c.o }
       - { path: asm/main/subt.s.o }
       - { path: asm/main/drawctrl.s.o }
-      - { path: asm/main/effect.s.o }
+      - { path: asm/data/pal/lit4_382d00.lit4.s.o }
+      - { path: src/main/effect.c.o }
       - { path: asm/main/mbar.s.o }
       - { path: asm/main/pack.s.o }
       - { path: asm/main/etc.s.o }
       - { path: asm/main/wipe.s.o }
       - { path: src/main/mcctrl.c.o }
       - { path: asm/main/main.s.o }
-      - { path: asm/main/cmnfile.s.o }
+      - { path: src/main/cmnfile.c.o }
       - { path: asm/main/p3str.s.o }
       - { path: asm/main/commake.s.o }
       - { path: asm/menu/menu.s.o }
@@ -260,14 +263,15 @@ segments:
       - { path: asm/menu/p3mc.s.o }
       - { path: asm/menu/memc.s.o }
       - { path: src/menu/mntm2hed.c.o }
-      - { path: asm/menu/menufont.s.o }
+      - { path: asm/data/pal/lit4_382d60.lit4.s.o }
+      - { path: src/menu/menufont.c.o }
       - { path: asm/menu/pksprite.s.o }
       - { path: asm/iop_mdl/wp2cd_rpc.s.o }
       - { path: src/iop_mdl/tapctrl_rpc.c.o }
       - { path: asm/pal/movie.s.o }
       - { path: asm/pal/prlib.s.o }
       - { path: src/prlib/vu1/vump_common.dsm.o }
-      - { path: asm/data/pal/lit4_382d00.lit4.s.o }
+      - { path: asm/data/pal/lit4_382f04.lit4.s.o }
 
   - name: sdata
     alloc_sections: [.sdata]
@@ -279,28 +283,29 @@ segments:
       - { path: src/dbug/syori.c.o }
       - { path: asm/data/pal/sdata_383100.sdata.s.o }
       - { path: src/dbug/vramsave.c.o }
-      - { path: asm/os/mtc.s.o }
+      - { path: src/os/mtc.c.o }
       - { path: asm/os/syssub.s.o }
       - { path: asm/os/system.s.o }
       - { path: asm/os/cmngifpk.s.o }
       - { path: asm/os/usrmem.s.o }
-      - { path: asm/data/pal/sdata_383110.sdata.s.o }
+      - { path: asm/data/pal/sdata_383118.sdata.s.o }
       - { path: src/os/tim2.c.o }
       - { path: asm/main/cdctrl.s.o }
       - { path: asm/main/stdat.s.o }
       - { path: asm/main/scrctrl.s.o }
-      - { path: asm/main/sprite.s.o }
+      - { path: asm/data/pal/sdata_383160.sdata.s.o }
+      - { path: src/main/sprite.c.o }
       - { path: src/main/fadectrl.c.o }
       - { path: asm/main/subt.s.o }
       - { path: asm/main/drawctrl.s.o }
-      - { path: asm/main/effect.s.o }
+      - { path: src/main/effect.c.o }
       - { path: asm/main/mbar.s.o }
       - { path: asm/main/pack.s.o }
       - { path: asm/main/etc.s.o }
       - { path: asm/main/wipe.s.o }
       - { path: src/main/mcctrl.c.o }
       - { path: asm/main/main.s.o }
-      - { path: asm/main/cmnfile.s.o }
+      - { path: src/main/cmnfile.c.o }
       - { path: asm/main/p3str.s.o }
       - { path: asm/main/commake.s.o }
       - { path: asm/menu/menu.s.o }
@@ -310,14 +315,14 @@ segments:
       - { path: asm/menu/p3mc.s.o }
       - { path: asm/menu/memc.s.o }
       - { path: src/menu/mntm2hed.c.o }
-      - { path: asm/menu/menufont.s.o }
+      - { path: src/menu/menufont.c.o }
       - { path: asm/menu/pksprite.s.o }
       - { path: asm/iop_mdl/wp2cd_rpc.s.o }
       - { path: src/iop_mdl/tapctrl_rpc.c.o }
       - { path: asm/pal/movie.s.o }
       - { path: asm/pal/prlib.s.o }
       - { path: src/prlib/vu1/vump_common.dsm.o }
-      - { path: asm/data/pal/sdata_383160.sdata.s.o }
+      - { path: asm/data/pal/sdata_383278.sdata.s.o }
 
   - name: sbss
     alloc_sections: [.sbss, .scommon]
@@ -328,7 +333,7 @@ segments:
       - { path: src/dbug/dbgmsg.c.o }
       - { path: src/dbug/syori.c.o }
       - { path: src/dbug/vramsave.c.o }
-      - { path: asm/os/mtc.s.o }
+      - { path: src/os/mtc.c.o }
       - { path: asm/os/syssub.s.o }
       - { path: asm/os/system.s.o }
       - { path: asm/os/cmngifpk.s.o }
@@ -337,19 +342,20 @@ segments:
       - { path: asm/main/cdctrl.s.o }
       - { path: asm/main/stdat.s.o }
       - { path: asm/main/scrctrl.s.o }
-      - { path: asm/main/sprite.s.o }
+      - { path: asm/data/pal/sbss_38371c.sbss.s.o }
+      - { path: src/main/sprite.c.o }
       - { path: src/main/fadectrl.c.o }
       - { path: asm/main/subt.s.o }
       - { path: asm/main/drawctrl.s.o }
-      - { path: asm/main/effect.s.o }
+      - { path: src/main/effect.c.o }
       - { path: asm/main/mbar.s.o }
       - { path: asm/main/pack.s.o }
       - { path: asm/main/etc.s.o }
       - { path: asm/main/wipe.s.o }
-      - { path: asm/data/pal/sbss_383718.sbss.s.o }
+      - { path: asm/data/pal/sbss_383748.sbss.s.o }
       - { path: src/main/mcctrl.c.o }
       - { path: asm/main/main.s.o }
-      - { path: asm/main/cmnfile.s.o }
+      - { path: src/main/cmnfile.c.o }
       - { path: asm/main/p3str.s.o }
       - { path: asm/main/commake.s.o }
       - { path: asm/menu/menu.s.o }
@@ -359,7 +365,7 @@ segments:
       - { path: asm/menu/p3mc.s.o }
       - { path: asm/menu/memc.s.o }
       - { path: src/menu/mntm2hed.c.o }
-      - { path: asm/menu/menufont.s.o }
+      - { path: src/menu/menufont.c.o }
       - { path: asm/menu/pksprite.s.o }
       - { path: asm/iop_mdl/wp2cd_rpc.s.o }
       - { path: src/iop_mdl/tapctrl_rpc.c.o }
@@ -378,30 +384,31 @@ segments:
       - { path: src/dbug/dbgmsg.c.o }
       - { path: src/dbug/syori.c.o }
       - { path: src/dbug/vramsave.c.o }
-      - { path: asm/os/mtc.s.o }
+      - { path: src/os/mtc.c.o }
       - { path: asm/os/syssub.s.o }
       - { path: asm/os/system.s.o }
       - { path: asm/os/cmngifpk.s.o }
       - { path: asm/os/usrmem.s.o }
-      - { path: asm/data/pal/bss_393b10.bss.s.o }
+      - { path: asm/data/pal/bss_3a3e40.bss.s.o }
       - { path: src/os/tim2.c.o }
       - { path: asm/main/cdctrl.s.o }
       - { path: asm/main/stdat.s.o }
       - { path: asm/main/scrctrl.s.o }
-      - { path: asm/main/sprite.s.o }
       - { path: asm/data/pal/bss_1c48d80.bss.s.o }
+      - { path: src/main/sprite.c.o }
       - { path: src/main/fadectrl.c.o }
       - { path: asm/main/subt.s.o }
       - { path: asm/main/drawctrl.s.o }
-      - { path: asm/main/effect.s.o }
+      - { path: asm/data/pal/bss_1c59ba0.bss.s.o }
+      - { path: src/main/effect.c.o }
       - { path: asm/main/mbar.s.o }
       - { path: asm/main/pack.s.o }
       - { path: asm/main/etc.s.o }
       - { path: asm/main/wipe.s.o }
-      - { path: asm/data/pal/bss_1c59ba0.bss.s.o }
+      - { path: asm/data/pal/bss_1c5bfc0.bss.s.o }
       - { path: src/main/mcctrl.c.o }
       - { path: asm/main/main.s.o }
-      - { path: asm/main/cmnfile.s.o }
+      - { path: src/main/cmnfile.c.o }
       - { path: asm/main/p3str.s.o }
       - { path: asm/main/commake.s.o }
       - { path: asm/menu/menu.s.o }
@@ -411,10 +418,11 @@ segments:
       - { path: asm/menu/p3mc.s.o }
       - { path: asm/menu/memc.s.o }
       - { path: src/menu/mntm2hed.c.o }
-      - { path: asm/menu/menufont.s.o }
+      - { path: asm/data/pal/bss_1c63630.bss.s.o }
+      - { path: src/menu/menufont.c.o }
       - { path: asm/menu/pksprite.s.o }
       - { path: asm/iop_mdl/wp2cd_rpc.s.o }
-      - { path: asm/data/pal/bss_1c63630.bss.s.o }
+      - { path: asm/data/pal/bss_1c6e900.bss.s.o }
       - { path: src/iop_mdl/tapctrl_rpc.c.o }
       - { path: asm/pal/movie.s.o }
       - { path: asm/pal/prlib.s.o }
