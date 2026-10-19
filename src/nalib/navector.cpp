@@ -77,4 +77,55 @@ float* func_00154580(
 }
 
 /* nalib/navector.cpp */
+#ifndef NON_MATCHING
 INCLUDE_ASM("asm/nonmatchings/nalib/navector", func_001545D8);
+#else
+#include <nalib/namatrix.h>
+
+/* Static data initializer for the nalib vector/matrix constants (all addresses are PAL .bss/.sbss). */
+extern float D_00372040[4]; /* NaVECTOR<float, 4>: (0, 0, 0, 0) */
+extern float D_00372050[4]; /* NaVECTOR<float, 4>: (0, 0, 0, 1) */
+extern float D_00372060[16]; /* NaMATRIX<float, 4, 4>: all zero */
+extern float D_003720E0[3]; /* (0, 0, 0) */
+extern float D_003720F0[3]; /* (0, 0, 1) */
+extern float D_003836D8[2]; /* (0, 0) */
+extern float D_00372100[4]; /* NaVECTOR<float, 4>: (0, 0, 0, 0) */
+extern float D_00372110[9]; /* 3x3 matrix: all zero */
+extern float D_00372138[4]; /* 2x2 matrix: identity */
+extern float D_00372148[9]; /* 3x3 matrix: identity */
+
+void func_001545D8() asm("func_001545D8");
+void func_001545D8() {
+    int i;
+
+    D_00372040[0] = 0.0f; D_00372040[1] = 0.0f; D_00372040[2] = 0.0f; D_00372040[3] = 0.0f;
+    D_00372050[0] = 0.0f; D_00372050[1] = 0.0f; D_00372050[2] = 0.0f; D_00372050[3] = 1.0f;
+
+    for (i = 0; i < 16; i++) {
+        D_00372060[i] = 0.0f;
+    }
+
+    float *ident = (float*)&NaMATRIX<float, 4, 4>::IDENT;
+    for (i = 0; i < 16; i++) {
+        ident[i] = (i % 5 == 0) ? 1.0f : 0.0f;
+    }
+
+    D_003836D8[0] = 0.0f; D_003836D8[1] = 0.0f;
+    D_003720E0[0] = 0.0f; D_003720E0[1] = 0.0f; D_003720E0[2] = 0.0f;
+    D_003720F0[0] = 0.0f; D_003720F0[1] = 0.0f; D_003720F0[2] = 1.0f;
+
+    func_00154558(D_00372100, 0.0f, 0.0f, 0.0f, 0.0f);
+
+    func_00154580(D_00372110,
+        0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f);
+
+    func_00154558(D_00372138, 1.0f, 0.0f, 0.0f, 1.0f);
+
+    func_00154580(D_00372148,
+        1.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 1.0f);
+}
+#endif
